@@ -1,0 +1,75 @@
+<mat-toolbar color="primary">
+  <span>NETTIC - Dashboard</span>
+  <span class="spacer"></span>
+  
+  <!-- Avatar con foto o icono -->
+  <div class="avatar-section" *ngIf="currentUser">
+    <div class="user-email">{{ currentUser.email }}</div>
+    <div class="avatar" [title]="currentUser.email">
+      <img 
+        *ngIf="currentUser.foto_perfil" 
+        [src]="getAvatarUrl(currentUser.foto_perfil)" 
+        alt="Avatar"
+        class="avatar-img"
+      />
+      <mat-icon *ngIf="!currentUser.foto_perfil" class="avatar-icon">account_circle</mat-icon>
+    </div>
+  </div>
+  
+  <button mat-icon-button (click)="logout()" title="Cerrar sesión">
+    <mat-icon>logout</mat-icon>
+  </button>
+</mat-toolbar>
+
+<div class="dashboard-container">
+  <mat-card class="welcome-card">
+    <mat-card-header>
+      <mat-card-title>¡Bienvenido a NETTIC!</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <p *ngIf="currentUser">Hola, <strong>{{ currentUser.email }}</strong></p>
+      <p>Sistema de Control de Asistencia y Horas Extras</p>
+      
+      <div class="modules">
+        <h3>Módulos Disponibles:</h3>
+        <div class="modules-grid">
+          <!-- Gestión de Empleados -->
+          <button mat-raised-button class="module-btn" (click)="irA('empleados')">
+            <mat-icon>people</mat-icon>
+            <div class="btn-text">
+              <span class="btn-title">Gestión de Empleados</span>
+              <span class="btn-desc">Crear, editar, eliminar empleados</span>
+            </div>
+          </button>
+
+          <!-- Registro de Asistencia -->
+          <button mat-raised-button class="module-btn" (click)="irA('asistencia')">
+            <mat-icon>access_time</mat-icon>
+            <div class="btn-text">
+              <span class="btn-title">Registro de Asistencia</span>
+              <span class="btn-desc">Check-in / Check-out con GPS</span>
+            </div>
+          </button>
+
+          <!-- Reportes -->
+          <button mat-raised-button class="module-btn" (click)="irA('reportes')" disabled>
+            <mat-icon>bar_chart</mat-icon>
+            <div class="btn-text">
+              <span class="btn-title">Reportes</span>
+              <span class="btn-desc">Análisis y estadísticas</span>
+            </div>
+          </button>
+
+          <!-- Horas Extras -->
+          <button mat-raised-button class="module-btn" (click)="irA('horas-extras')" disabled>
+            <mat-icon>schedule</mat-icon>
+            <div class="btn-text">
+              <span class="btn-title">Horas Extras</span>
+              <span class="btn-desc">Control de horas extras</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

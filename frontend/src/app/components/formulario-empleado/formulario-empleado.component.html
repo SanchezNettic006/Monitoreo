@@ -1,0 +1,106 @@
+<h2 mat-dialog-title>
+  {{ editando ? '✏️ Editar Empleado' : '➕ Nuevo Empleado' }}
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form">
+    <!-- Foto de Perfil -->
+    <div class="foto-section">
+      <div class="foto-preview" *ngIf="previewFoto">
+        <img [src]="previewFoto" alt="Preview foto" class="preview-img" />
+      </div>
+      <div class="foto-upload">
+        <input 
+          type="file" 
+          #fotoInput 
+          (change)="onFotoSelected($event)" 
+          accept="image/*"
+          style="display: none"
+        />
+        <button 
+          type="button"
+          mat-raised-button
+          color="accent"
+          (click)="fotoInput.click()"
+          class="upload-btn"
+        >
+          <mat-icon>photo_camera</mat-icon>
+          {{ previewFoto ? 'Cambiar Foto' : 'Subir Foto' }}
+        </button>
+        <p class="foto-info">JPG, PNG o GIF (máx 5MB)</p>
+      </div>
+    </div>
+
+    <!-- Nombre -->
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Nombre</mat-label>
+      <input matInput formControlName="nombre" placeholder="Ingresa nombre" />
+      <mat-error *ngIf="nombre?.hasError('required')">
+        Nombre es requerido
+      </mat-error>
+      <mat-error *ngIf="nombre?.hasError('minlength')">
+        Mínimo 3 caracteres
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Apellido -->
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Apellido</mat-label>
+      <input matInput formControlName="apellido" placeholder="Ingresa apellido" />
+      <mat-error *ngIf="apellido?.hasError('required')">
+        Apellido es requerido
+      </mat-error>
+      <mat-error *ngIf="apellido?.hasError('minlength')">
+        Mínimo 3 caracteres
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Cargo -->
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Cargo (opcional)</mat-label>
+      <input matInput formControlName="cargo" placeholder="Ej: Técnico, Supervisor" />
+      <mat-error *ngIf="cargo?.hasError('minlength')">
+        Mínimo 2 caracteres
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Teléfono -->
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Teléfono (opcional)</mat-label>
+      <input matInput formControlName="telefono" placeholder="Ej: 3001234567" />
+      <mat-error *ngIf="telefono?.hasError('pattern')">
+        Teléfono inválido
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Departamento -->
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Departamento</mat-label>
+      <mat-select formControlName="departamento_id">
+        <mat-option *ngFor="let depto of departamentos" [value]="depto.id">
+          {{ depto.nombre }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </form>
+
+  <!-- Spinner de carga -->
+  <div *ngIf="cargando" class="spinner-overlay">
+    <mat-spinner diameter="30"></mat-spinner>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  <button mat-stroked-button (click)="cancelar()" [disabled]="cargando">
+    Cancelar
+  </button>
+  <span class="spacer"></span>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="guardar()"
+    [disabled]="form.invalid || cargando"
+  >
+    {{ cargando ? 'Guardando...' : (editando ? 'Actualizar' : 'Crear') }}
+  </button>
+</mat-dialog-actions>

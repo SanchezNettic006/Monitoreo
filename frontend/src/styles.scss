@@ -1,0 +1,340 @@
+/* Tailwind CSS Directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global Styles for NETTIC Application */
+
+/* ===== Color Palette ===== */
+:root {
+  --color-green-dark: #2B8A3E;
+  --color-green-light: #94C120;
+  --color-orange: #F0A400;
+  --color-white: #FFFFFF;
+  --color-gray-dark: #333333;
+  --color-gray-light: #F5F5F5;
+  --color-gray-border: #E0E0E0;
+}
+
+/* ===== Base Styles ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+  background-color: #f9f9f9;
+  color: var(--color-gray-dark);
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* ===== Angular Material Theme Customization ===== */
+::ng-deep {
+  /* Primary Color: Green */
+  .mat-mdc-toolbar.mat-primary,
+  .mat-primary .mdc-button--unelevated {
+    background-color: var(--color-green-dark) !important;
+    color: white !important;
+  }
+
+  .mat-primary {
+    .mdc-button__ripple::after {
+      background-color: rgba(244, 164, 0, 0.2) !important;
+    }
+  }
+
+  /* Accent Color: Orange */
+  .mat-accent {
+    color: var(--color-orange) !important;
+  }
+
+  /* Focus Outline Color */
+  .mdc-notched-outline__leading,
+  .mdc-notched-outline__notch,
+  .mdc-notched-outline__trailing {
+    border-color: var(--color-green-dark) !important;
+  }
+
+  .mat-mdc-form-field.mat-focused {
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: var(--color-green-dark) !important;
+      border-width: 2px !important;
+    }
+
+    .mat-mdc-form-field-label {
+      color: var(--color-green-dark) !important;
+    }
+  }
+
+  /* Disabled State */
+  .mat-mdc-form-field.mat-form-field-disabled {
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: rgba(0, 0, 0, 0.12) !important;
+    }
+  }
+
+  /* Buttons */
+  .mat-mdc-raised-button {
+    &.mat-primary {
+      background-color: var(--color-green-dark) !important;
+      color: white !important;
+    }
+
+    &:disabled {
+      background-color: rgba(0, 0, 0, 0.12) !important;
+      color: rgba(0, 0, 0, 0.38) !important;
+    }
+  }
+
+  /* Cards */
+  .mat-mdc-card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  /* Icons */
+  .mat-icon {
+    color: inherit;
+  }
+
+  /* Toolbar */
+  .mat-toolbar {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Links */
+  a {
+    color: var(--color-green-dark);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  /* Error Messages */
+  .mat-error {
+    font-size: 12px !important;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-green-dark);
+    border-radius: 4px;
+
+    &:hover {
+      background: #1a5a2a;
+    }
+  }
+
+  /* Snackbar Customization */
+  .mat-mdc-snack-bar-container {
+    background-color: var(--color-green-dark) !important;
+
+    &.error {
+      background-color: #f44336 !important;
+    }
+
+    &.success {
+      background-color: var(--color-green-dark) !important;
+    }
+  }
+
+  /* Dialog */
+  .mat-mdc-dialog-container {
+    border-radius: 8px;
+  }
+
+  /* Loading Spinner */
+  mat-spinner {
+    .mat-progress-spinner circle,
+    .mat-spinner circle {
+      stroke: var(--color-green-dark) !important;
+    }
+  }
+}
+
+/* ===== Utility Classes ===== */
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; }
+.mt-4 { margin-top: 32px; }
+
+.mb-1 { margin-bottom: 8px; }
+.mb-2 { margin-bottom: 16px; }
+.mb-3 { margin-bottom: 24px; }
+.mb-4 { margin-bottom: 32px; }
+
+.p-1 { padding: 8px; }
+.p-2 { padding: 16px; }
+.p-3 { padding: 24px; }
+.p-4 { padding: 32px; }
+
+.gap-1 { gap: 8px; }
+.gap-2 { gap: 16px; }
+.gap-3 { gap: 24px; }
+
+.text-green { color: var(--color-green-dark); }
+.text-orange { color: var(--color-orange); }
+.text-white { color: white; }
+
+.bg-green { background-color: var(--color-green-dark); }
+.bg-orange { background-color: var(--color-orange); }
+.bg-light { background-color: var(--color-gray-light); }
+
+.border-green { border: 1px solid var(--color-green-dark); }
+.border-orange { border: 1px solid var(--color-orange); }
+
+.rounded { border-radius: 4px; }
+.rounded-md { border-radius: 8px; }
+.rounded-lg { border-radius: 12px; }
+
+.shadow-sm {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.shadow {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.shadow-lg {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.slide-in-up {
+  animation: slideInUp 0.3s ease-out;
+}
+
+.slide-in-down {
+  animation: slideInDown 0.3s ease-out;
+}
+
+/* ===== Responsive Utilities ===== */
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
+
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .hide-desktop {
+    display: none !important;
+  }
+}
+
+/* ===== Accessibility ===== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ===== Focus Styles ===== */
+button:focus,
+a:focus,
+input:focus {
+  outline: 2px solid var(--color-orange);
+  outline-offset: 2px;
+}
+
+/* ===== Selection ===== */
+::selection {
+  background-color: var(--color-orange);
+  color: white;
+}
+
+/* ===== Print Styles ===== */
+@media print {
+  body {
+    background-color: white;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

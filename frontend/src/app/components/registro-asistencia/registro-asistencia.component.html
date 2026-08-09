@@ -1,0 +1,179 @@
+<div class="container">
+  <!-- Spinner de carga -->
+  <div *ngIf="cargando" class="spinner-overlay">
+    <mat-progress-spinner mode="indeterminate" diameter="40"></mat-progress-spinner>
+  </div>
+
+  <!-- Contenedor principal -->
+  <mat-card class="registro-card">
+    <!-- Encabezado -->
+    <mat-card-header>
+      <div class="header-content">
+        <mat-card-title>Registro de Asistencia</mat-card-title>
+        <p class="fecha">
+          {{ (registroHoy?.fecha | date: 'dd/MM/yyyy') || 'Hoy' }}
+        </p>
+      </div>
+    </mat-card-header>
+
+    <!-- Contenido -->
+    <mat-card-content>
+      <!-- SIN REGISTRO - Mostrar botón check-in -->
+      <div *ngIf="estado === 'sin_registro'" class="section sin-registro">
+        <h2>Sin registro de entrada</h2>
+        <p>Comienza tu jornada laboral</p>
+
+        <!-- Captura de foto -->
+        <div class="foto-section">
+          <div *ngIf="previewFoto" class="foto-preview">
+            <img [src]="previewFoto" alt="Preview" class="preview-img" />
+            <button
+              type="button"
+              mat-icon-button
+              (click)="limpiarFoto()"
+              class="btn-limpiar"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          <button
+            type="button"
+            mat-raised-button
+            color="accent"
+            (click)="capturarFoto()"
+            [disabled]="cargando"
+            class="btn-foto"
+          >
+            <mat-icon>photo_camera</mat-icon>
+            Capturar Foto
+          </button>
+        </div>
+
+        <!-- Botón Check-in -->
+        <button
+          type="button"
+          mat-raised-button
+          color="primary"
+          (click)="realizarCheckIn()"
+          [disabled]="cargando || !fotoCapturada"
+          class="btn-checkin"
+          [title]="!fotoCapturada ? 'Debes capturar una foto primero' : ''"
+        >
+          <mat-icon>login</mat-icon>
+          CHECK-IN
+        </button>
+      </div>
+
+      <!-- ACTIVO - Mostrar entrada y botón check-out -->
+      <div *ngIf="estado === 'activo'" class="section activo">
+        <div class="icon-large">✅</div>
+        <h2>Jornada Iniciada</h2>
+
+        <!-- Info de entrada -->
+        <div class="info-card">
+          <div class="info-item">
+            <span class="label">🕐 Hora Entrada:</span>
+            <span class="valor">{{ formatearHora(registroHoy?.hora_entrada) }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">⏱️ Durando:</span>
+            <span class="valor duracion">{{ obtenerDuracion() }}</span>
+          </div>
+          <div class="info-item" *ngIf="gpsActual">
+            <span class="label">📍 GPS:</span>
+            <span class="valor gps"
+              >{{ gpsActual.latitud.toFixed(4) }} , {{ gpsActual.longitud.toFixed(4) }}</span
+            >
+          </div>
+        </div>
+
+        <!-- Captura de foto -->
+        <div class="foto-section">
+          <div *ngIf="previewFoto" class="foto-preview">
+            <img [src]="previewFoto" alt="Preview" class="preview-img" />
+            <button
+              type="button"
+              mat-icon-button
+              (click)="limpiarFoto()"
+              class="btn-limpiar"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          <button
+            type="button"
+            mat-raised-button
+            color="accent"
+            (click)="capturarFoto()"
+            [disabled]="cargando"
+            class="btn-foto"
+          >
+            <mat-icon>photo_camera</mat-icon>
+            Capturar Foto
+          </button>
+        </div>
+
+        <!-- Botón Check-out -->
+        <button
+          type="button"
+          mat-raised-button
+          color="warn"
+          (click)="realizarCheckOut()"
+          [disabled]="cargando || !fotoCapturada"
+          class="btn-checkout"
+          [title]="!fotoCapturada ? 'Debes capturar una foto primero' : ''"
+        >
+          <mat-icon>logout</mat-icon>
+          CHECK-OUT
+        </button>
+      </div>
+
+      <!-- FINALIZADO - Mostrar resumen -->
+      <div *ngIf="estado === 'finalizado'" class="section finalizado">
+        <div class="icon-large">🏁</div>
+        <h2>Jornada Completada</h2>
+
+        <!-- Info completa -->
+        <div class="info-card">
+          <div class="info-item">
+            <span class="label">🕐 Entrada:</span>
+            <span class="valor">{{ formatearHora(registroHoy?.hora_entrada) }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">🕐 Salida:</span>
+            <span class="valor">{{ formatearHora(registroHoy?.hora_salida) }}</span>
+          </div>
+          <div class="info-item highlight">
+            <span class="label">⏱️ Total trabajado:</span>
+            <span class="valor horas">{{ obtenerDuracion() }}</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          mat-stroked-button
+          (click)="cargarRegistroHoy()"
+          class="btn-refresh"
+        >
+          <mat-icon>refresh</mat-icon>
+          Actualizar
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Tarjeta de estado GPS -->
+  <mat-card class="gps-status-card">
+    <mat-card-content>
+      <div class="gps-status">
+        <mat-icon>location_on</mat-icon>
+        <span class="status-text">
+          {{ gpsActual ? '✅ GPS Habilitado' : '❌ GPS No Disponible' }}
+        </span>
+      </div>
+      <p class="gps-info">
+        Asegúrate de habilitar los servicios de ubicación en tu dispositivo
+      </p>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -1,0 +1,66 @@
+// Login Component Styles - Complementarios a Tailwind
+
+// Material Form Field Customization
+::ng-deep {
+  .mat-mdc-form-field {
+    width: 100%;
+    
+    // Estilo para appearance="fill"
+    .mdc-text-field--filled {
+      background-color: rgba(248, 250, 252, 0.8) !important;
+      border-bottom: none !important;
+      
+      &:hover {
+        background-color: rgba(241, 245, 249, 1) !important;
+      }
+    }
+    
+    &.mat-focused {
+      .mdc-text-field--filled {
+        background-color: rgba(226, 232, 240, 0.6) !important;
+      }
+
+      .mat-mdc-form-field-label {
+        color: #2B8A3E !important;
+      }
+    }
+  }
+
+  .mat-mdc-checkbox {
+    &.mat-checked {
+      .mdc-checkbox__native-control:checked ~ .mdc-checkbox__background {
+        border-color: #2B8A3E;
+        background-color: #2B8A3E;
+      }
+    }
+  }
+}
+
+// Animaciones
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+// Aplicar animaciones
+:host {
+  animation: slideDown 0.5s ease-out;
+}
+.max-w-md {
+ max-width: 28rem /* 768px */;
+}

@@ -1,0 +1,369 @@
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  position: relative;
+}
+
+mat-card {
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+
+  &.registro-card {
+    background: linear-gradient(135deg, #2b8a3e 0%, #1a5a2a 100%);
+    color: white;
+  }
+}
+
+.spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+// Header
+mat-card-header {
+  padding: 20px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 20px;
+
+  .header-content {
+    text-align: center;
+
+    mat-card-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0 0 8px 0;
+      color: white;
+    }
+
+    .fecha {
+      margin: 0;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+  }
+}
+
+// Contenido
+mat-card-content {
+  padding: 20px;
+}
+
+.section {
+  text-align: center;
+  animation: slideIn 0.3s ease-out;
+
+  &.sin-registro {
+    .icon-large {
+      font-size: 80px;
+      margin: 20px 0;
+    }
+
+    h2 {
+      font-size: 22px;
+      margin: 10px 0;
+      color: #2b8a3e;
+    }
+
+    > p {
+      color: #666;
+      margin: 10px 0 30px;
+    }
+  }
+
+  &.activo {
+    .icon-large {
+      font-size: 80px;
+      margin: 20px 0;
+    }
+
+    h2 {
+      font-size: 22px;
+      margin: 10px 0;
+      color: #2b8a3e;
+    }
+  }
+
+  &.finalizado {
+    .icon-large {
+      font-size: 80px;
+      margin: 20px 0;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    h2 {
+      font-size: 22px;
+      margin: 10px 0;
+      color: #2b8a3e;
+    }
+  }
+}
+
+// Tarjeta de información
+.info-card {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  text-align: left;
+  backdrop-filter: blur(10px);
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .label {
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .valor {
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    font-weight: 600;
+
+    &.duracion {
+      font-size: 18px;
+      color: #94c120;
+    }
+
+    &.horas {
+      font-size: 18px;
+      color: #94c120;
+    }
+
+    &.gps {
+      font-size: 12px;
+      background: rgba(148, 193, 32, 0.2);
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+  }
+
+  &.highlight {
+    background: rgba(148, 193, 32, 0.15);
+    border-radius: 6px;
+    padding: 12px;
+    margin: 0 -12px;
+    border: 1px solid rgba(148, 193, 32, 0.3);
+  }
+}
+
+// Foto
+.foto-section {
+  margin: 20px 0;
+  text-align: center;
+
+  .foto-preview {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 15px;
+
+    .preview-img {
+      width: 200px;
+      height: 200px;
+      border-radius: 12px;
+      border: 3px solid #94c120;
+      object-fit: cover;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-limpiar {
+      position: absolute;
+      top: -12px;
+      right: -12px;
+      background: #f0a400;
+      color: white;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #d68400;
+        transform: scale(1.1);
+      }
+    }
+  }
+}
+
+// Botones
+.btn-foto {
+  display: block;
+  margin: 0 auto 15px;
+  width: 100%;
+  background: linear-gradient(135deg, #f0a400 0%, #d68400 100%);
+  color: white;
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.btn-checkin {
+  width: 100%;
+  height: 56px;
+  font-size: 18px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #94c120 0%, #2b8a3e 100%);
+  color: white;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(148, 193, 32, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  mat-icon {
+    margin-right: 8px;
+  }
+}
+
+.btn-checkout {
+  width: 100%;
+  height: 56px;
+  font-size: 18px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  color: white;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(244, 67, 54, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  mat-icon {
+    margin-right: 8px;
+  }
+}
+
+.btn-refresh {
+  width: 100%;
+  margin-top: 20px;
+  color: #2b8a3e;
+  border: 2px solid #2b8a3e;
+
+  &:hover {
+    background: rgba(43, 138, 62, 0.1);
+  }
+}
+
+// GPS Status
+.gps-status-card {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-left: 4px solid #2196f3;
+
+  .gps-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+
+    mat-icon {
+      color: #2196f3;
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+
+    .status-text {
+      font-weight: 600;
+      color: #1976d2;
+      font-size: 16px;
+    }
+  }
+
+  .gps-info {
+    margin: 0;
+    color: #1565c0;
+    font-size: 12px;
+  }
+}
+
+// Animaciones
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+// Responsive
+@media (max-width: 600px) {
+  .container {
+    padding: 10px;
+  }
+
+  .info-card {
+    padding: 15px;
+  }
+
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .label {
+      margin-bottom: 5px;
+    }
+
+    .valor {
+      margin-left: 0;
+    }
+  }
+
+  .btn-checkin,
+  .btn-checkout {
+    height: 48px;
+    font-size: 16px;
+  }
+}

@@ -1,0 +1,125 @@
+h2[mat-dialog-title] {
+  color: #2B8A3E;
+  margin: 0 0 16px 0;
+}
+
+mat-dialog-content {
+  min-width: 300px;
+  padding: 20px;
+  position: relative;
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+// Foto de perfil
+.foto-section {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f0f4f8 0%, #e8f0f5 100%);
+  border-radius: 8px;
+  border-left: 4px solid #2B8A3E;
+
+  .foto-preview {
+    flex-shrink: 0;
+
+    .preview-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #2B8A3E;
+      box-shadow: 0 2px 8px rgba(43, 138, 62, 0.2);
+    }
+  }
+
+  .foto-upload {
+    flex: 1;
+
+    .upload-btn {
+      width: 100%;
+      height: 40px;
+      background: linear-gradient(135deg, #2B8A3E 0%, #1a5a2a 100%) !important;
+      color: white !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+
+      &:hover:not([disabled]) {
+        background: linear-gradient(135deg, #1a5a2a 0%, #0d3a1d 100%) !important;
+        box-shadow: 0 4px 12px rgba(43, 138, 62, 0.3);
+      }
+
+      &[disabled] {
+        opacity: 0.6;
+      }
+    }
+
+    .foto-info {
+      font-size: 11px;
+      color: #666;
+      margin: 8px 0 0 0;
+      text-align: center;
+    }
+  }
+}
+
+.spinner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+  z-index: 10;
+}
+
+mat-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 0 0 0;
+
+  .spacer {
+    flex: 1 1 auto;
+  }
+}
+
+::ng-deep {
+  .mat-mdc-form-field-subscript-dynamic {
+    position: absolute;
+  }
+
+  .mdc-text-field--filled {
+    background-color: rgba(248, 250, 252, 0.8);
+  }
+
+  .mat-mdc-form-field-focused .mdc-text-field--filled {
+    background-color: rgba(226, 232, 240, 0.6);
+  }
+
+  .mat-mdc-form-field-focused label {
+    color: #2B8A3E !important;
+  }
+}

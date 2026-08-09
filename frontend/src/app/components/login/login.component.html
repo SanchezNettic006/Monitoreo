@@ -1,0 +1,111 @@
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f0d3cf] via-[#f0d3cf] to-[#f3ebea] p-4">
+  <!-- Elemento decorativo de fondo -->
+ 
+  <!-- Card principal -->
+  <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
+    
+    <!-- Header con gradiente NETTIC -->
+    <div class="bg-gradient-to-r from-[#2B8A3E] via-[#2B8A3E] to-[#1a5a2a] px-8 py-12 text-center">
+      <img src="/logo-nettic.svg" alt="NETTIC Logo" class="mx-auto ">
+    </div>
+
+    <!-- Contenido -->
+    <div class="p-8 space-y-6">
+      
+      <!-- Mensaje de error -->
+      <div 
+        *ngIf="errorMessage" 
+        class="flex items-center gap-3 p-4 bg-red-50  border-red-500 text-red-700 rounded-lg animate-pulse"
+      >
+       
+        <span class="text-sm font-semibold">{{ errorMessage }}</span>
+      </div>
+
+      <!-- Formulario -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5">
+        
+        <!-- Email -->
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Correo Electrónico</label>
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Email</mat-label>
+            <input
+              matInput
+              type="email"
+              formControlName="email"
+              placeholder="ejemplo@nettic.com"
+              [disabled]="isLoading"
+              autocomplete="email"
+             class="bg-slate-50"
+            />
+            
+            <mat-error *ngIf="email.hasError('required')">
+              El correo es requerido
+            </mat-error>
+            <mat-error *ngIf="email.hasError('email')">
+              Email inválido
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Contraseña -->
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Contraseña</label>
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Contraseña</mat-label>
+            <input
+              matInput
+              [type]="hidePassword ? 'password' : 'text'"
+              formControlName="password_hash"
+              placeholder="••••••••"
+              [disabled]="isLoading"
+              autocomplete="current-password"
+              class="bg-slate-50"
+            />
+            <mat-icon matPrefix class="text-[#2B8A3E]">lock_outline</mat-icon>
+            <button
+         
+              type="button"
+              mat-icon-button
+              matSuffix
+              (click)="hidePassword = !hidePassword"
+              [disabled]="isLoading"
+              class="text-[#F0A400] hover:text-[#2B8A3E] transition-colors "
+            >
+              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-error *ngIf="password.hasError('required')">
+              La contraseña es requerida
+            </mat-error>
+            <mat-error *ngIf="password.hasError('minlength')">
+              Mínimo 6 caracteres
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+
+        <!-- Botón Login -->
+        <button
+          type="submit"
+          class="w-full h-12 bg-green-500 text-white font-bold text-base rounded-lg hover:shadow-lg hover:scale-105 transform transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 uppercase tracking-wide flex items-center justify-center gap-2 "
+          [disabled]="!loginForm.valid || isLoading"
+        >
+          <span *ngIf="!isLoading" class="flex items-center gap-2">
+            Iniciar Sesión
+          </span>
+          <span *ngIf="isLoading" class="flex items-center gap-2">
+            <mat-spinner diameter="18"></mat-spinner>
+            Verificando...
+          </span>
+        </button>
+      </form>
+      
+    </div>
+
+    <!-- Footer -->
+    <div class="bg-slate-50 px-8 py-4 border-t border-slate-200 text-center">
+      <p class="text-xs text-slate-500">© 2026 NETTIC • Sistema de Control de Asistencia</p>
+     
+    </div>
+  </div>
+</div>

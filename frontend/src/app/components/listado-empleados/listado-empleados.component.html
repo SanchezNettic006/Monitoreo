@@ -1,0 +1,96 @@
+<mat-toolbar color="primary">
+  <span>👥 Gestión de Empleados</span>
+  <span class="spacer"></span>
+  <button mat-raised-button color="accent" (click)="abrirFormulario()">
+    <mat-icon>add</mat-icon>
+    Nuevo Empleado
+  </button>
+  <button mat-icon-button (click)="volver()" title="Volver">
+    <mat-icon>close</mat-icon>
+  </button>
+</mat-toolbar>
+
+<div class="container">
+  <mat-card class="empleados-card">
+    <mat-card-header>
+      <mat-card-title>Listado de Empleados</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Spinner de carga -->
+      <div *ngIf="cargando" class="spinner-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Cargando empleados...</p>
+      </div>
+
+      <!-- Tabla de empleados -->
+      <div *ngIf="!cargando && empleados.length > 0" class="table-container">
+        <table mat-table [dataSource]="empleados" class="empleados-table">
+          <!-- ID Column -->
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef>ID</th>
+            <td mat-cell *matCellDef="let empleado">{{ empleado.id }}</td>
+          </ng-container>
+
+        <!-- Nombres Column -->
+          <ng-container matColumnDef="nombre">
+            <th mat-header-cell *matHeaderCellDef>Nombre</th>
+            <td mat-cell *matCellDef="let empleado">{{ empleado.nombre }}</td>
+          </ng-container>
+
+          <!-- Apellidos Column -->
+          <ng-container matColumnDef="apellido">
+            <th mat-header-cell *matHeaderCellDef>Apellido</th>
+            <td mat-cell *matCellDef="let empleado">{{ empleado.apellido }}</td>
+          </ng-container>
+
+          <!-- Cargo Column -->
+          <ng-container matColumnDef="cargo">
+            <th mat-header-cell *matHeaderCellDef>Cargo</th>
+            <td mat-cell *matCellDef="let empleado">{{ empleado.cargo || '-' }}</td>
+          </ng-container>
+
+          <!-- Teléfono Column -->
+          <ng-container matColumnDef="telefono">
+            <th mat-header-cell *matHeaderCellDef>Teléfono</th>
+            <td mat-cell *matCellDef="let empleado">{{ empleado.telefono || '-' }}</td>
+          </ng-container>
+
+          <!-- Departamento Column -->
+          <ng-container matColumnDef="departamento">
+            <th mat-header-cell *matHeaderCellDef>Departamento</th>
+            <td mat-cell *matCellDef="let empleado">
+              {{ empleado.departamento?.nombre || '-' }}
+            </td>
+          </ng-container>
+
+          <!-- Acciones Column -->
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef>Acciones</th>
+            <td mat-cell *matCellDef="let empleado">
+              <button mat-icon-button color="accent" (click)="editarEmpleado(empleado)" title="Editar">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="eliminarEmpleado(empleado)" title="Eliminar">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+
+      <!-- Sin empleados -->
+      <div *ngIf="!cargando && empleados.length === 0" class="empty-state">
+        <mat-icon class="empty-icon">people_outline</mat-icon>
+        <p>No hay empleados registrados</p>
+        <button mat-raised-button color="primary" (click)="abrirFormulario()">
+          <mat-icon>add</mat-icon>
+          Crear primer empleado
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
