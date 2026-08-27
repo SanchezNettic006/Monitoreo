@@ -1,0 +1,111 @@
+.preview-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.foto-preview {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #2b8a3e;
+
+  .preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.preview-placeholder {
+  font-size: 100px;
+  width: 100px;
+  height: 100px;
+  color: #ccc;
+}
+
+.datos-section {
+  text-align: center;
+  margin-bottom: 20px;
+
+  h3 {
+    margin: 0 0 12px;
+    color: #333;
+  }
+}
+
+.dato-fila {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 0;
+  color: #555;
+  font-size: 14px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #2b8a3e;
+  }
+}
+
+.foto-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+.foto-info {
+  font-size: 12px;
+  color: #999;
+  margin: 0;
+}
+
+.guardar-btn {
+  margin-top: 6px;
+}
+
+.telegram-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 16px;
+  margin-top: 16px;
+  border-top: 1px solid #eee;
+  text-align: center;
+}
+
+.telegram-estado {
+  font-weight: 600;
+  color: #999;
+
+  &.vinculado {
+    color: #2b8a3e;
+  }
+}
+
+.telegram-actualizar {
+  margin-top: -4px;
+}
+
+.loading {
+  text-align: center;
+  color: #888;
+  padding: 20px 0;
+}
+
+.spinner-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

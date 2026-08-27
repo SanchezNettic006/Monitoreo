@@ -9,6 +9,13 @@ import { errorHandler } from '@middleware/errorHandler';
 import authRoutes from '@routes/auth.routes';
 import asistenciaRoutes from '@routes/asistencia.routes';
 import empleadosRoutes from '@routes/empleados.routes';
+import reportesRoutes from '@routes/reportes.routes';
+import horaExtraRoutes from '@routes/horaExtra.routes';
+import solicitudRoutes from '@routes/solicitud.routes';
+import notificacionRoutes from '@routes/notificacion.routes';
+import calendarioRoutes from '@routes/calendario.routes';
+import grupoRoutes from '@routes/grupo.routes';
+import telegramRoutes from '@routes/telegram.routes';
 
 const app: Express = express();
 
@@ -31,6 +38,13 @@ app.use('/uploads', express.static(config.upload.dir));
 app.use('/api/auth', authRoutes);
 app.use('/api/asistencia', asistenciaRoutes);
 app.use('/api/empleados', empleadosRoutes);
+app.use('/api/reportes', reportesRoutes);
+app.use('/api/asistencia/hora-extra', horaExtraRoutes);
+app.use('/api/solicitudes', solicitudRoutes);
+app.use('/api/notificaciones', notificacionRoutes);
+app.use('/api/calendario', calendarioRoutes);
+app.use('/api/grupos', grupoRoutes);
+app.use('/api/telegram', telegramRoutes);
 
 // Health check
 app.get('/health', (req: Request, res: Response) => {

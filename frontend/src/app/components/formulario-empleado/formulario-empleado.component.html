@@ -82,6 +82,60 @@
         </mat-option>
       </mat-select>
     </mat-form-field>
+
+    <!-- Rol -->
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Rol</mat-label>
+      <mat-select formControlName="rol">
+        <mat-option value="empleado">Empleado</mat-option>
+        <mat-option value="lider">Líder de departamento</mat-option>
+      </mat-select>
+      <mat-hint>Un líder ve y gestiona las solicitudes, asistencias y empleados de su departamento</mat-hint>
+    </mat-form-field>
+
+    <!-- Fecha de ingreso -->
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Fecha de ingreso (opcional)</mat-label>
+      <input matInput type="date" formControlName="fecha_ingreso" />
+      <mat-hint>Se usa como referencia para el cálculo de vacaciones</mat-hint>
+    </mat-form-field>
+
+    <!-- Cupo de vacaciones -->
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Días de vacaciones al año</mat-label>
+      <input matInput type="number" min="0" formControlName="dias_vacaciones_anuales" />
+      <mat-hint>Por defecto 15 (mínimo de ley); ajústalo si este empleado tiene otra condición</mat-hint>
+    </mat-form-field>
+
+    <!-- Credenciales de acceso (solo al crear) -->
+    <ng-container *ngIf="!editando">
+      <h3 class="credenciales-titulo">Credenciales de acceso</h3>
+
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Correo</mat-label>
+        <input matInput type="email" formControlName="email" placeholder="empleado@nettic.com" />
+        <mat-error *ngIf="email?.hasError('required')">
+          Correo es requerido
+        </mat-error>
+        <mat-error *ngIf="email?.hasError('email')">
+          Correo inválido
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Contraseña</mat-label>
+        <input matInput [type]="mostrarPassword ? 'text' : 'password'" formControlName="password" placeholder="Mínimo 6 caracteres" />
+        <button mat-icon-button matSuffix type="button" (click)="mostrarPassword = !mostrarPassword">
+          <mat-icon>{{ mostrarPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-error *ngIf="password?.hasError('required')">
+          Contraseña es requerida
+        </mat-error>
+        <mat-error *ngIf="password?.hasError('minlength')">
+          Mínimo 6 caracteres
+        </mat-error>
+      </mat-form-field>
+    </ng-container>
   </form>
 
   <!-- Spinner de carga -->

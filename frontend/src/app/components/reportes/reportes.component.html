@@ -1,0 +1,297 @@
+<div class="reports-container">
+  <!-- Header -->
+  <div class="reports-header">
+    <h1>Reportes de Asistencia</h1>
+    <p>Análisis y estadísticas de asistencia</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid" *ngIf="resumen">
+    <div class="stat-card">
+      <div class="stat-icon presente">
+        <mat-icon>people</mat-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Presente Hoy</span>
+        <span class="stat-value">{{ resumen.presenteHoy || 0 }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon empleados">
+        <mat-icon>person_add</mat-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Total Empleados</span>
+        <span class="stat-value">{{ resumen.totalEmpleados || 0 }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon extras">
+        <mat-icon>schedule</mat-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Horas Extras (Mes)</span>
+        <span class="stat-value">{{ formatearDuracion(resumen.horasExtrasAlMes) || '0m' }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon pausas">
+        <mat-icon>pause_circle</mat-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Promedio Pausas</span>
+        <span class="stat-value">{{ formatearDuracion(resumen.promedioPausas) || '0m' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros Section -->
+  <div class="filters-section">
+    <h3>Filtros</h3>
+    <div class="filters-grid">
+      <mat-form-field class="filter-field">
+        <mat-label>Fecha Inicio</mat-label>
+        <input
+          matInput
+          [matDatepicker]="pickerInicio"
+          [(ngModel)]="filtroFechaInicio"
+          placeholder="Seleccionar fecha"
+        />
+        <mat-datepicker-toggle matIconSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+        <mat-datepicker #pickerInicio></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field class="filter-field">
+        <mat-label>Fecha Fin</mat-label>
+        <input
+          matInput
+          [matDatepicker]="pickerFin"
+          [(ngModel)]="filtroFechaFin"
+          placeholder="Seleccionar fecha"
+        />
+        <mat-datepicker-toggle matIconSuffix [for]="pickerFin"></mat-datepicker-toggle>
+        <mat-datepicker #pickerFin></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field class="filter-field">
+        <mat-label>Buscar empleado</mat-label>
+        <input matInput [(ngModel)]="filtroNombreEmpleado" placeholder="Nombre o apellido" />
+      </mat-form-field>
+
+      <mat-form-field class="filter-field">
+        <mat-label>Departamento ID</mat-label>
+        <input matInput [(ngModel)]="filtroDepartamentoId" type="number" placeholder="ID" />
+      </mat-form-field>
+    </div>
+
+    <div class="filter-actions">
+      <button mat-raised-button color="primary" (click)="aplicarFiltros()" class="btn-apply">
+        <mat-icon>search</mat-icon>
+        Aplicar Filtros
+      </button>
+      <button mat-stroked-button (click)="limpiarFiltros()" class="btn-clear">
+        <mat-icon>clear</mat-icon>
+        Limpiar
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabla de Asistencias -->
+  <div class="table-section">
+    <div class="table-section-header">
+      <h3>Registros de Asistencia</h3>
+      <button mat-stroked-button color="primary" (click)="exportarExcel()" [disabled]="exportando">
+        <mat-icon>file_download</mat-icon>
+        {{ exportando ? 'Exportando...' : 'Exportar a Excel' }}
+      </button>
+    </div>
+
+    <div class="table-wrapper" *ngIf="asistencias.data.length > 0">
+      <table class="table-asistencias">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Empleado</th>
+            <th>Departamento</th>
+            <th>Proyecto</th>
+            <th>Entrada</th>
+            <th>Salida</th>
+            <th>Horas</th>
+            <th>Pausas</th>
+            <th>Extras</th>
+            <th>Horas Netas</th>
+            <th>Motivo</th>
+            <th>Fotos</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let element of asistencias.data">
+            <td>{{ formatearFecha(element.fecha) }}</td>
+            <td>{{ element.empleado }}</td>
+            <td>{{ element.departamento || '-' }}</td>
+            <!-- Proyecto (solo aplica a asistencia, empleados sin grupo/proyecto no muestran nada) -->
+            <td>
+              <span *ngIf="element.tipo === 'asistencia' && element.proyecto" class="badge badge-proyecto">{{ element.proyecto }}</span>
+              <span *ngIf="!(element.tipo === 'asistencia' && element.proyecto)" style="color: #999;">-</span>
+            </td>
+            <!-- Entrada -->
+            <td>
+              <span *ngIf="element.tipo === 'asistencia'">{{ formatearHora(element.entrada) }}</span>
+              <span *ngIf="element.tipo !== 'asistencia'" style="color: #999;">-</span>
+            </td>
+            <!-- Salida -->
+            <td>
+              <span *ngIf="element.tipo === 'asistencia'">{{ formatearHora(element.salida) }}</span>
+              <span *ngIf="element.tipo !== 'asistencia'" style="color: #999;">-</span>
+            </td>
+            <!-- Horas trabajadas -->
+            <td>
+              <span *ngIf="element.tipo === 'asistencia'" class="badge badge-horas">{{ formatearDuracion(element.horasTrabajadas) }}</span>
+              <span *ngIf="element.tipo !== 'asistencia'" style="color: #999;">-</span>
+            </td>
+            <!-- Pausas -->
+            <td>
+              <span *ngIf="element.tipo === 'asistencia'" class="badge badge-pausas">{{ formatearDuracion(element.totalPausas) }}</span>
+              <span *ngIf="element.tipo !== 'asistencia'" style="color: #999;">-</span>
+            </td>
+            <!-- Extras (para asistencia) o duración (para horaExtra) -->
+            <td>
+              <span *ngIf="element.tipo === 'asistencia' && (element.horasExtras ?? 0) > 0" class="badge badge-extras">{{ formatearDuracion(element.horasExtras) }}</span>
+              <span *ngIf="element.tipo === 'asistencia' && (element.horasExtras ?? 0) <= 0">-</span>
+              <span *ngIf="element.tipo === 'horaExtra' && (element.duracionHoraExtra ?? 0) > 0" class="badge badge-extras">{{ formatearDuracion(element.duracionHoraExtra) }}</span>
+              <span *ngIf="element.tipo === 'horaExtra' && (element.duracionHoraExtra ?? 0) <= 0" style="color: #999;">-</span>
+              <span *ngIf="element.tipo === 'evento'" style="color: #999;">-</span>
+            </td>
+            <!-- Horas Netas -->
+            <td>
+              <span *ngIf="element.tipo === 'asistencia'" class="badge badge-netas">{{ formatearDuracion(calcularHorasNetas(element.horasTrabajadas, element.totalPausas, element.horasExtras)) }}</span>
+              <span *ngIf="element.tipo === 'horaExtra'" class="badge badge-netas">{{ formatearDuracion(element.duracionHoraExtra) }}</span>
+              <span *ngIf="element.tipo === 'evento'" style="color: #999;">-</span>
+            </td>
+            <!-- Motivo (solo para días no trabajados por feriado/permiso) -->
+            <td>
+              <span *ngIf="element.tipo === 'evento'" class="badge badge-motivo">{{ element.motivo }}</span>
+              <span *ngIf="element.tipo !== 'evento'">-</span>
+            </td>
+            <td>
+              <button
+                mat-icon-button
+                (click)="verFotos(element.fotos, element.descripcionTrabajo)"
+                [disabled]="!element.fotos || element.fotos.length === 0"
+                title="Ver fotos"
+                class="fotos-btn"
+              >
+                <mat-icon>image</mat-icon>
+                {{ element.fotos?.length || 0 }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-wrapper" *ngIf="asistencias.data.length === 0">
+      <p style="padding: 20px; text-align: center; color: #999;">No hay registros de asistencia</p>
+    </div>
+
+    <!-- Paginator -->
+    <mat-paginator
+      [length]="total"
+      [pageSize]="limit"
+      [pageSizeOptions]="pageSizeOptions"
+      (page)="onPageChange($event)"
+    ></mat-paginator>
+  </div>
+
+  <!-- Departamentos Stats -->
+  <div class="departamentos-section" *ngIf="departamentos.length > 0">
+    <h3>Estadísticas por Departamento</h3>
+    <div class="departamentos-grid">
+      <div class="depto-card" *ngFor="let depto of departamentos">
+        <h4>{{ depto.departamento }}</h4>
+        <div class="depto-stat">
+          <span class="label">Total Registros:</span>
+          <span class="value">{{ depto.total }}</span>
+        </div>
+        <div class="depto-stat">
+          <span class="label">Presentes:</span>
+          <span class="value">{{ depto.presentes }}</span>
+        </div>
+        <div class="depto-stat">
+          <span class="label">Prom. Horas:</span>
+          <span class="value">{{ formatearDuracion(depto.promedioHoras) }}</span>
+        </div>
+        <div class="depto-stat">
+          <span class="label">Total Extras:</span>
+          <span class="value">{{ formatearDuracion(depto.totalExtras) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cumplimiento de Reportes -->
+  <div class="cumplimiento-section">
+    <div class="cumplimiento-header">
+      <div>
+        <h3>Cumplimiento de Reportes</h3>
+        <p class="subtitle">% de días laborables del mes con jornada reportada (check-out)</p>
+      </div>
+      <mat-form-field appearance="fill" class="mes-selector">
+        <mat-label>Mes</mat-label>
+        <mat-select [(ngModel)]="mesCumplimiento" (selectionChange)="cargarCumplimiento()">
+          <mat-option *ngFor="let opcion of opcionesMesCumplimiento" [value]="opcion.value">{{ opcion.label }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="leyenda-cumplimiento">
+      <span class="item"><span class="punto reportado"></span> Reportado</span>
+      <span class="item"><span class="punto pendiente"></span> Pendiente</span>
+    </div>
+
+    <div class="loading" *ngIf="cargandoCumplimiento">Cargando...</div>
+
+    <!-- Vista: por departamento -->
+    <div class="barras-lista" *ngIf="!cargandoCumplimiento && !departamentoCumplimientoActivo">
+      <div
+        class="barra-fila"
+        *ngFor="let depto of cumplimiento?.departamentos"
+        (click)="verDepartamentoCumplimiento(depto)"
+      >
+        <span class="fila-nombre">{{ depto.departamento }}</span>
+        <div class="barra-cumplimiento" [title]="depto.diasReportados + ' de ' + depto.diasLaborables + ' días laborables reportados'">
+          <div class="segmento reportado" [style.width.%]="depto.porcentaje"></div>
+          <div class="segmento pendiente" [style.width.%]="100 - depto.porcentaje"></div>
+        </div>
+        <span class="fila-porcentaje">{{ depto.porcentaje }}%</span>
+        <mat-icon class="fila-icono">chevron_right</mat-icon>
+      </div>
+      <div class="sin-datos" *ngIf="cumplimiento?.departamentos?.length === 0">Sin datos para este mes</div>
+    </div>
+
+    <!-- Vista: por empleado (drill-down) -->
+    <div class="barras-lista" *ngIf="!cargandoCumplimiento && departamentoCumplimientoActivo">
+      <button mat-button class="btn-volver" (click)="volverADepartamentosCumplimiento()">
+        <mat-icon>arrow_back</mat-icon>
+        {{ departamentoCumplimientoActivo.departamento }}
+      </button>
+
+      <div
+        class="barra-fila"
+        *ngFor="let empleado of departamentoCumplimientoActivo.empleados"
+        (click)="abrirDetalleEmpleadoCumplimiento(empleado)"
+      >
+        <span class="fila-nombre">{{ empleado.nombre }}</span>
+        <div class="barra-cumplimiento" [title]="empleado.diasReportados + ' de ' + empleado.diasLaborables + ' días laborables reportados'">
+          <div class="segmento reportado" [style.width.%]="empleado.porcentaje"></div>
+          <div class="segmento pendiente" [style.width.%]="100 - empleado.porcentaje"></div>
+        </div>
+        <span class="fila-porcentaje">{{ empleado.diasReportados }}/{{ empleado.diasLaborables }} días</span>
+        <mat-icon class="fila-icono">info</mat-icon>
+      </div>
+    </div>
+  </div>
+</div>

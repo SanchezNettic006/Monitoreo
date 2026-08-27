@@ -1,0 +1,63 @@
+<div class="dialog-container">
+  <mat-dialog-content>
+    <div class="dialog-header">
+      <mat-icon class="header-icon">receipt_long</mat-icon>
+      <h2>{{ horaExtra.numero_ticket }}</h2>
+    </div>
+
+    <div class="detalle-fila">
+      <span class="label">Fecha</span>
+      <span class="valor">{{ formatearFecha(horaExtra.hora_inicio) }}</span>
+    </div>
+    <div class="detalle-fila">
+      <span class="label">Inicio</span>
+      <span class="valor">{{ formatearHora(horaExtra.hora_inicio) }}</span>
+    </div>
+    <div class="detalle-fila">
+      <span class="label">Fin</span>
+      <span class="valor">{{ formatearHora(horaExtra.hora_fin) }}</span>
+    </div>
+    <div class="detalle-fila">
+      <span class="label">Horas reportadas</span>
+      <span class="valor">{{ formatearDuracion(horaExtra.duracion) }}</span>
+    </div>
+
+    <ng-container *ngIf="horaExtra.estado_aprobacion !== 'pendiente'; else pendienteBloque">
+      <div class="detalle-fila">
+        <span class="label">Horas aprobadas</span>
+        <span class="valor destacado" [class.rechazado]="horaExtra.estado_aprobacion === 'rechazada'">
+          {{ formatearDuracion(horaExtra.horas_aprobadas) }}
+        </span>
+      </div>
+      <div class="detalle-fila">
+        <span class="label">Revisado el</span>
+        <span class="valor">{{ formatearFecha(horaExtra.fecha_aprobacion) }}</span>
+      </div>
+      <div class="motivo-bloque" *ngIf="horaExtra.motivo_ajuste">
+        <span class="label">Motivo</span>
+        <p>{{ horaExtra.motivo_ajuste }}</p>
+      </div>
+    </ng-container>
+    <ng-template #pendienteBloque>
+      <div class="detalle-fila" *ngIf="horaExtra.estado === 'finalizada'">
+        <span class="label">Estado</span>
+        <span class="valor">Pendiente de revisión por el administrador</span>
+      </div>
+      <div class="detalle-fila" *ngIf="horaExtra.estado === 'iniciada'">
+        <span class="label">Estado</span>
+        <span class="valor">En progreso</span>
+      </div>
+    </ng-template>
+
+    <div class="fotos-section" *ngIf="horaExtra.fotos && horaExtra.fotos.length > 0">
+      <span class="label">Fotos</span>
+      <div class="fotos-grid">
+        <img *ngFor="let foto of horaExtra.fotos" [src]="foto.url_foto" [alt]="foto.tipo" [title]="foto.tipo" />
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="cerrar()">Cerrar</button>
+  </mat-dialog-actions>
+</div>

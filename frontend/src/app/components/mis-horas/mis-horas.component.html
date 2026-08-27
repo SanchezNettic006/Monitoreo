@@ -1,0 +1,169 @@
+<div class="mis-horas-container">
+  <div class="header">
+    <h1>Mis Horas</h1>
+    <p>Consulta tus horas trabajadas y horas extra</p>
+  </div>
+
+  <mat-tab-group class="tabs-section">
+    <mat-tab label="Asistencias">
+      <div class="tab-body">
+
+  <!-- Resumen -->
+  <div class="stats-grid">
+    <mat-card class="stat-card">
+      <mat-icon class="stat-icon horas">schedule</mat-icon>
+      <div>
+        <p class="stat-label">Horas Trabajadas</p>
+        <p class="stat-value">{{ formatearDuracion(totalHoras) }}</p>
+      </div>
+    </mat-card>
+    <mat-card class="stat-card">
+      <mat-icon class="stat-icon extras">bolt</mat-icon>
+      <div>
+        <p class="stat-label">Horas Extra</p>
+        <p class="stat-value">{{ formatearDuracion(totalExtras) }}</p>
+        <p class="stat-nota" *ngIf="hayExtrasPendientes">Incluye días aún sin revisar</p>
+      </div>
+    </mat-card>
+    <mat-card class="stat-card">
+      <mat-icon class="stat-icon pausas">pause_circle</mat-icon>
+      <div>
+        <p class="stat-label">Pausas</p>
+        <p class="stat-value">{{ formatearDuracion(totalPausas) }}</p>
+      </div>
+    </mat-card>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros-section">
+    <mat-form-field appearance="fill">
+      <mat-label>Mes</mat-label>
+      <mat-select [(ngModel)]="mesSeleccionado" (selectionChange)="aplicarMes()">
+        <mat-option *ngFor="let opcion of opcionesMes" [value]="opcion.value">{{ opcion.label }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Fecha Inicio</mat-label>
+      <input matInput type="date" [(ngModel)]="fechaInicio" />
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Fecha Fin</mat-label>
+      <input matInput type="date" [(ngModel)]="fechaFin" />
+    </mat-form-field>
+    <button mat-raised-button color="primary" (click)="cargar()">
+      <mat-icon>search</mat-icon> Aplicar
+    </button>
+    <button mat-stroked-button (click)="limpiar()">
+      <mat-icon>close</mat-icon> Limpiar
+    </button>
+  </div>
+
+  <!-- Tabla -->
+  <div class="tabla-section">
+    <h3>Mis Registros de Asistencia</h3>
+
+    <div *ngIf="cargando" class="loading">Cargando...</div>
+
+    <table class="tabla-registros" *ngIf="!cargando && registros.length > 0">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Entrada</th>
+          <th>Salida</th>
+          <th>Horas</th>
+          <th>Pausas</th>
+          <th>Extras</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let registro of registrosPaginados">
+          <td>{{ formatearFecha(registro.fecha) }}</td>
+          <td>{{ formatearHora(registro.entrada) }}</td>
+          <td>{{ formatearHora(registro.salida) }}</td>
+          <td>{{ formatearDuracion(registro.horasTrabajadas) }}</td>
+          <td>{{ formatearDuracion(registro.totalPausas) }}</td>
+          <td>
+            {{ formatearDuracion(registro.horasExtras) }}
+            <span class="nota-pendiente" *ngIf="registro.horasExtrasPendiente">(pendiente)</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <mat-paginator
+      *ngIf="!cargando && registros.length > 0"
+      [length]="registros.length"
+      [pageIndex]="paginaRegistros"
+      [pageSize]="tamPaginaRegistros"
+      [pageSizeOptions]="[10, 20, 50, 100]"
+      (page)="onPageRegistros($event)">
+    </mat-paginator>
+
+    <div *ngIf="!cargando && registros.length === 0" class="sin-datos">
+      No hay registros en el rango seleccionado
+    </div>
+  </div>
+
+      </div>
+    </mat-tab>
+
+    <!-- Horas Extra -->
+    <mat-tab label="Horas Extra">
+      <div class="tab-body">
+        <div *ngIf="cargandoHorasExtra" class="loading">Cargando...</div>
+
+        <table class="tabla-registros" *ngIf="!cargandoHorasExtra && horasExtra.length > 0">
+          <thead>
+            <tr>
+              <th>Ticket</th>
+              <th>Fecha</th>
+              <th>Reportadas</th>
+              <th>Aprobadas</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let he of horasExtraPaginadas">
+              <td>{{ he.numero_ticket }}</td>
+              <td>{{ formatearFecha(he.hora_inicio) }}</td>
+              <td>{{ formatearDuracion(he.duracion) }}</td>
+              <td>
+                <span *ngIf="he.estado_aprobacion !== 'pendiente'">{{ formatearDuracion(he.horas_aprobadas) }}</span>
+                <span *ngIf="he.estado_aprobacion === 'pendiente'">--</span>
+              </td>
+              <td>
+                <span
+                  class="badge-estado"
+                  [ngClass]="{
+                    'badge-pendiente': he.estado_aprobacion === 'pendiente',
+                    'badge-aprobada': he.estado_aprobacion === 'aprobada',
+                    'badge-rechazada': he.estado_aprobacion === 'rechazada'
+                  }"
+                >
+                  {{ estadoAprobacionLabel(he) }}
+                </span>
+              </td>
+              <td>
+                <button mat-icon-button (click)="verDetalleHoraExtra(he)" title="Ver detalle">
+                  <mat-icon>info</mat-icon>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <mat-paginator
+          *ngIf="!cargandoHorasExtra && horasExtra.length > 0"
+          [length]="horasExtra.length"
+          [pageIndex]="paginaHorasExtra"
+          [pageSize]="tamPaginaHorasExtra"
+          [pageSizeOptions]="[10, 20, 50, 100]"
+          (page)="onPageHorasExtra($event)">
+        </mat-paginator>
+
+        <div *ngIf="!cargandoHorasExtra && horasExtra.length === 0" class="sin-datos">
+          No tienes horas extra registradas
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

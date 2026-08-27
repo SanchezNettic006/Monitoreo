@@ -1,0 +1,73 @@
+<div class="dialog-container">
+  <div class="dialog-header">
+    <div class="header-icon-wrap">
+      <mat-icon class="header-icon">assignment_turned_in</mat-icon>
+    </div>
+    <div>
+      <h2>Reporte de cierre</h2>
+      <p class="header-subtitle">Cuéntanos qué hiciste hoy antes de terminar</p>
+    </div>
+  </div>
+
+  <mat-dialog-content>
+    <p class="aviso">
+      Tu departamento requiere describir el trabajo realizado y adjuntar al menos {{ fotosMinimas }} fotos como evidencia.
+    </p>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>¿Qué hiciste hoy?</mat-label>
+      <textarea
+        matInput
+        rows="4"
+        [(ngModel)]="descripcion"
+        placeholder="Ej: Reparación de motor del vehículo placa P123-456, cambio de aceite y revisión de frenos"
+        [disabled]="enviando"
+      ></textarea>
+    </mat-form-field>
+
+    <div class="fotos-section">
+      <div class="fotos-header">
+        <span class="section-label">Fotos del trabajo</span>
+        <span class="fotos-contador" [class.completo]="fotos.length >= fotosMinimas">
+          {{ fotos.length }} / {{ fotosMinimas }}
+        </span>
+      </div>
+
+      <div class="fotos-grid">
+        <div class="foto-item" *ngFor="let preview of previews; let i = index">
+          <img [src]="preview" alt="Foto del trabajo" />
+          <button type="button" class="btn-remove" (click)="quitarFoto(i)" [disabled]="enviando" title="Quitar foto">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <input
+        #inputArchivo
+        type="file"
+        accept="image/*"
+        multiple
+        hidden
+        (change)="seleccionarFotos($event)"
+      />
+
+      <div class="fotos-botones">
+        <button type="button" mat-stroked-button color="primary" (click)="capturarFoto()" [disabled]="enviando" class="btn-capturar">
+          <mat-icon>camera</mat-icon>
+          Capturar Foto
+        </button>
+        <button type="button" mat-stroked-button color="primary" (click)="inputArchivo.click()" [disabled]="enviando" class="btn-capturar">
+          <mat-icon>photo_library</mat-icon>
+          Elegir de Galería
+        </button>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-raised-button color="primary" (click)="enviar()" [disabled]="!puedeEnviar">
+      <mat-icon *ngIf="!enviando">send</mat-icon>
+      {{ enviando ? 'Enviando...' : 'Enviar reporte' }}
+    </button>
+  </mat-dialog-actions>
+</div>

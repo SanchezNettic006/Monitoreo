@@ -1,0 +1,41 @@
+<div class="calendario-container">
+  <div class="calendario-header">
+    <h1>Calendario Laboral</h1>
+    <p>Marca los días festivos y no laborables. Haz clic en un día para agregarlo, o en un día marcado para quitarlo.</p>
+
+    <div class="leyenda">
+      <span class="leyenda-item"><span class="dot festivo"></span> Día festivo</span>
+      <span class="leyenda-item"><span class="dot no-laborable"></span> Día no laborable</span>
+    </div>
+
+    <div class="anio-selector">
+      <button mat-icon-button (click)="cambiarAnio(-1)"><mat-icon>chevron_left</mat-icon></button>
+      <span class="anio-actual">{{ anio }}</span>
+      <button mat-icon-button (click)="cambiarAnio(1)"><mat-icon>chevron_right</mat-icon></button>
+    </div>
+  </div>
+
+  <div class="meses-grid" *ngIf="!cargando">
+    <div class="mes-card" *ngFor="let mes of meses">
+      <h4>{{ mes.nombre }}</h4>
+      <div class="dias-semana">
+        <span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sa</span><span>Do</span>
+      </div>
+      <div class="dias-grid">
+        <div
+          *ngFor="let dia of mes.dias"
+          class="dia-celda"
+          [class.vacio]="!dia"
+          [class.festivo]="dia?.diaEspecial?.tipo === 'festivo'"
+          [class.no-laborable]="dia?.diaEspecial?.tipo === 'no_laborable'"
+          [class.con-excepciones]="!!dia?.diaEspecial?.empleadosExceptuados?.length"
+          [title]="tituloCelda(dia)"
+          (click)="onClickDia(dia)"
+        >
+          {{ dia?.numero || '' }}
+          <span class="excepcion-dot" *ngIf="dia?.diaEspecial?.empleadosExceptuados?.length"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

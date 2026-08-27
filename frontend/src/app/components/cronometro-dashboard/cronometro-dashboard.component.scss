@@ -1,0 +1,440 @@
+.dashboard-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cronometro-card {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-left: 5px solid #2b8a3e;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &.status-active {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border-left-color: #2b8a3e;
+    box-shadow: 0 4px 20px rgba(43, 138, 62, 0.2);
+  }
+
+  &.status-completed {
+    background: linear-gradient(135deg, #e8f5e9 0%, #a5d6a7 100%);
+    border-left-color: #4caf50;
+  }
+
+  &.status-inactive {
+    background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+    border-left-color: #999;
+  }
+
+  // Estilos para la tarjeta de horas extras
+  &.hora-extra-card {
+    background: linear-gradient(135deg, #fff8e1 0%, #ffe082 100%);
+    border-left-color: #ff9800;
+
+    &.active {
+      background: linear-gradient(135deg, #fff3e0 0%, #ffcc80 100%);
+      border-left-color: #ff6f00;
+      box-shadow: 0 4px 20px rgba(255, 111, 0, 0.3);
+    }
+
+    .header-content h2 {
+      color: #e65100;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      mat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    .tiempo-display.hora-extra {
+      .tiempo-valor {
+        color: #ff6f00;
+      }
+    }
+
+    .estado-visual.estado-activo {
+      background: rgba(255, 111, 0, 0.15);
+      border-left: 4px solid #ff6f00;
+
+      .indicator {
+        background-color: #ff6f00;
+      }
+
+      .estado-text {
+        color: #ff6f00;
+      }
+    }
+
+    .info-section .info-item mat-icon {
+      color: #ff6f00;
+    }
+  }
+
+  mat-card-header {
+    margin-bottom: 20px;
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+
+      h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: #1a5a2a;
+      }
+
+      .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+
+        &.badge-active {
+          background-color: #4caf50;
+          color: white;
+        }
+
+        &.badge-completed {
+          background-color: #66bb6a;
+          color: white;
+        }
+
+        &.badge-inactive {
+          background-color: #bdbdbd;
+          color: white;
+        }
+      }
+    }
+  }
+
+  mat-card-content {
+    padding: 20px;
+  }
+}
+
+.cronometro-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tiempo-display {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 32px 20px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  .tiempo-valor {
+    font-family: 'SF Mono', 'Monaco', 'Roboto Mono', monospace;
+    font-size: 48px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #2b8a3e;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .tiempo-label {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+  }
+}
+
+.info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  padding: 16px;
+
+  .info-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    mat-icon {
+      color: #2b8a3e;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .info-text {
+      display: flex;
+      flex-direction: column;
+
+      .label {
+        font-size: 12px;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+      }
+    }
+  }
+}
+
+.estado-visual {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.8);
+
+  .indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #4caf50;
+    animation: pulse 2s infinite;
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.7;
+        transform: scale(1.2);
+      }
+    }
+  }
+
+  .estado-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2b8a3e;
+  }
+
+  &.estado-salida {
+    background: rgba(76, 175, 80, 0.15);
+    border-left: 4px solid #4caf50;
+
+    .indicator {
+      background-color: #66bb6a;
+      animation: none;
+    }
+
+    .estado-text {
+      color: #4caf50;
+    }
+  }
+
+  &.estado-inactivo {
+    background: rgba(200, 200, 200, 0.15);
+    border-left: 4px solid #999;
+
+    .indicator {
+      background-color: #999;
+      animation: none;
+    }
+
+    .estado-text {
+      color: #666;
+    }
+  }
+
+  &.estado-activo {
+    background: rgba(43, 138, 62, 0.15);
+    border-left: 4px solid #2b8a3e;
+  }
+}
+
+.action-section {
+  display: flex;
+  justify-content: center;
+
+  .action-btn {
+    width: 100%;
+    max-width: 280px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    &.active {
+      background-color: #f44336;
+      color: white;
+    }
+
+    &.finalizar {
+      background-color: #ff6f00;
+      color: white;
+
+      &:hover {
+        background-color: #e65100;
+      }
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .completed-msg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #4caf50;
+    font-weight: 600;
+    font-size: 14px;
+
+    mat-icon {
+      color: #4caf50;
+    }
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 32px 20px;
+  color: #999;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: #bdbdbd;
+    margin-bottom: 12px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+  }
+}
+
+.warning-message {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  border: 2px solid #ff9800;
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2);
+
+  mat-icon {
+    color: #ff6f00;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: #e65100;
+    line-height: 1.5;
+
+    strong {
+      font-weight: 700;
+    }
+
+    span {
+      display: block;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .dashboard-container {
+    padding: 12px;
+    gap: 16px;
+    grid-template-columns: 1fr;
+  }
+
+  .tiempo-display {
+    padding: 24px 16px;
+
+    .tiempo-valor {
+      font-size: 36px;
+      letter-spacing: 2px;
+    }
+  }
+
+  mat-card-header .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+
+    h2 {
+      font-size: 18px;
+    }
+  }
+
+  .warning-message {
+    flex-direction: column;
+    text-align: center;
+
+    mat-icon {
+      margin: 0 auto;
+    }
+  }
+}
+
+@media (max-width: 400px) {
+  .tiempo-display {
+    .tiempo-valor {
+      font-size: 28px;
+      letter-spacing: 1px;
+    }
+  }
+
+  .action-btn {
+    font-size: 12px !important;
+    padding: 10px 16px !important;
+  }
+}

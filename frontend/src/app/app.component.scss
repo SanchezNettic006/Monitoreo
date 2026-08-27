@@ -1,0 +1,15 @@
+.btn-volver-dashboard {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 600px) {
+  .btn-volver-dashboard {
+    bottom: 16px;
+    right: 16px;
+    transform: scale(0.9);
+  }
+}

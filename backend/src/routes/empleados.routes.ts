@@ -1,6 +1,11 @@
 import { Router } from 'express';
 import { EmpleadoController } from '@controllers/empleado.controller';
-import { authMiddleware } from '@middleware/auth.middleware';
+import {
+  authMiddleware,
+  adminMiddleware,
+  liderOAdminMiddleware,
+  cargarDepartamentoLider,
+} from '@middleware/auth.middleware';
 import { uploadFoto } from '@utils/upload';
 
 const router = Router();
@@ -9,15 +14,18 @@ const controller = new EmpleadoController();
 // Todas las rutas de empleados requieren autenticación
 router.use(authMiddleware);
 
-// GET /api/empleados - Obtener todos los empleados
-router.get('/', (req, res, next) =>
+// GET /api/empleados - Obtener todos los empleados (admin: todos; líder: solo su departamento)
+router.get('/', liderOAdminMiddleware, cargarDepartamentoLider, (req, res, next) =>
   controller.obtenerTodos(req, res, next),
 );
 
-// GET /api/empleados/:id - Obtener un empleado por ID
-router.get('/:id', (req, res, next) =>
+// GET /api/empleados/:id - Obtener un empleado por ID (admin: cualquiera; líder: solo su departamento)
+router.get('/:id', liderOAdminMiddleware, cargarDepartamentoLider, (req, res, next) =>
   controller.obtenerPorId(req, res, next),
 );
+
+// A partir de aquí, solo administradores (crear/editar/eliminar empleados)
+router.use(adminMiddleware);
 
 // POST /api/empleados - Crear nuevo empleado
 router.post('/', (req, res, next) =>

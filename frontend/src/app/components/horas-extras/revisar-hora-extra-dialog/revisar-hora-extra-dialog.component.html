@@ -1,0 +1,82 @@
+<div class="dialog-container">
+  <div class="dialog-header">
+    <div class="header-icon-wrap">
+      <mat-icon class="header-icon">fact_check</mat-icon>
+    </div>
+    <div>
+      <h2>Revisar Horas Extra</h2>
+      <p class="header-subtitle">Ticket {{ data.horaExtra.numero_ticket }}</p>
+    </div>
+  </div>
+
+  <mat-dialog-content>
+    <div class="ticket-info">
+      <div class="info-fila">
+        <mat-icon>person</mat-icon>
+        <div>
+          <span class="info-label">Empleado</span>
+          <span class="info-valor">{{ data.horaExtra.empleado_nombre_completo }}</span>
+        </div>
+      </div>
+      <div class="info-fila">
+        <mat-icon>schedule</mat-icon>
+        <div>
+          <span class="info-label">Horas reportadas</span>
+          <span class="info-valor destacado">{{ formatearDuracion(duracionReportada) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <form [formGroup]="formulario" class="form-section">
+      <span class="section-label">Horas aprobadas</span>
+
+      <div class="horas-inputs">
+        <mat-form-field appearance="outline" class="input-hm">
+          <mat-label>Horas</mat-label>
+          <input matInput type="number" min="0" formControlName="horas" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="input-hm">
+          <mat-label>Minutos</mat-label>
+          <input matInput type="number" min="0" max="59" formControlName="minutos" />
+        </mat-form-field>
+        <div class="resultado-hm">
+          <span class="resultado-valor" [class.error]="excedeReportado">{{ formatearDuracion(horasAprobadasDecimal) }}</span>
+          <span class="resultado-max">de {{ formatearDuracion(duracionReportada) }}</span>
+        </div>
+      </div>
+      <p class="error-texto" *ngIf="excedeReportado">
+        No puedes aprobar más de lo reportado ({{ formatearDuracion(duracionReportada) }})
+      </p>
+
+      <div class="atajos">
+        <button type="button" mat-stroked-button color="primary" (click)="aprobarCompleto()">
+          <mat-icon>check</mat-icon>
+          Aprobar todo
+        </button>
+        <button type="button" mat-stroked-button color="warn" (click)="rechazarTotal()">
+          <mat-icon>close</mat-icon>
+          Rechazar todo
+        </button>
+      </div>
+
+      <mat-form-field appearance="fill" class="full-width motivo-field">
+        <mat-label>Motivo del ajuste{{ esRecorte || esRechazoTotal ? ' (requerido)' : ' (opcional)' }}</mat-label>
+        <textarea matInput rows="3" formControlName="motivo" placeholder="Ej: Solo se justifican 4h con el ticket adjunto"></textarea>
+        <mat-hint>El empleado podrá ver este motivo en su registro</mat-hint>
+        <mat-error>El motivo es obligatorio cuando no se aprueban todas las horas</mat-error>
+      </mat-form-field>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">Cancelar</button>
+    <button
+      mat-raised-button
+      [color]="esRechazoTotal ? 'warn' : 'primary'"
+      (click)="onConfirm()"
+      [disabled]="formulario.invalid || excedeReportado"
+    >
+      {{ esRechazoTotal ? 'Rechazar' : esRecorte ? 'Aprobar parcial' : 'Aprobar' }}
+    </button>
+  </mat-dialog-actions>
+</div>

@@ -10,6 +10,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { EmpleadoService, Empleado } from '../../services/empleado.service';
+import { AuthService } from '../../services/auth.service';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -36,17 +37,22 @@ export class FormularioEmpleadoComponent {
   editando = false;
   departamentos = [
     { id: 1, nombre: 'Taller' },
-    { id: 2, nombre: 'Campo' },
-    { id: 3, nombre: 'Administración' }
+    { id: 2, nombre: 'PLEX' },
+    { id: 3, nombre: 'Administración' },
+    { id: 4, nombre: 'Troncal' },
+    { id: 5, nombre: 'Ventas' },
+    { id: 6, nombre: 'SAC' },
   ];
   
   // Foto
   fotoSeleccionada: File | null = null;
   previewFoto: string | null = null;
+  mostrarPassword = false;
 
   constructor(
     private formBuilder: FormBuilder,
     private empleadoService: EmpleadoService,
+    private authService: AuthService,
     private snackBar: MatSnackBar,
     private dialogRef: MatDialogRef<FormularioEmpleadoComponent>,
     @Inject(MAT_DIALOG_DATA) public data: Empleado | null
@@ -71,7 +77,12 @@ export class FormularioEmpleadoComponent {
       apellido: [this.data?.apellido || '', [Validators.required, Validators.minLength(3)]],
       cargo: [this.data?.cargo || '', [Validators.minLength(2)]],
       telefono: [this.data?.telefono || '', [Validators.pattern(/^\d{7,15}$/)]],
-      departamento_id: [this.data?.departamento_id || 1, [Validators.required]]
+      departamento_id: [this.data?.departamento_id || 1, [Validators.required]],
+      rol: [this.data?.usuario?.rol === 'lider' ? 'lider' : 'empleado', [Validators.required]],
+      fecha_ingreso: [this.data?.fecha_ingreso ? this.data.fecha_ingreso.slice(0, 10) : ''],
+      dias_vacaciones_anuales: [this.data?.dias_vacaciones_anuales ?? 15, [Validators.required, Validators.min(0)]],
+      email: ['', this.editando ? [] : [Validators.required, Validators.email]],
+      password: ['', this.editando ? [] : [Validators.required, Validators.minLength(6)]]
     });
   }
 
@@ -89,6 +100,14 @@ export class FormularioEmpleadoComponent {
 
   get telefono() {
     return this.form.get('telefono');
+  }
+
+  get email() {
+    return this.form.get('email');
+  }
+
+  get password() {
+    return this.form.get('password');
   }
 
   // Manejar selección de archivo
@@ -127,6 +146,12 @@ export class FormularioEmpleadoComponent {
     this.cargando = true;
     const datos = this.form.value;
 
+    // En edición no se envían credenciales, esos campos ni siquiera existen en el form
+    if (this.editando) {
+      delete datos.email;
+      delete datos.password;
+    }
+
     const operacion = this.editando
       ? this.empleadoService.actualizar(this.data!.id, datos)
       : this.empleadoService.crear(datos);
@@ -139,7 +164,13 @@ export class FormularioEmpleadoComponent {
         // Si hay foto, subirla
         if (this.fotoSeleccionada) {
           this.empleadoService.subirFoto(empleadoId, this.fotoSeleccionada).subscribe({
-            next: () => {
+            next: (fotoResponse: any) => {
+              const empleadoActualizado = fotoResponse.data as Empleado;
+              // Si el empleado editado es el usuario logueado, refrescar su avatar en el header
+              const usuarioLogueado = this.authService.getCurrentUser();
+              if (usuarioLogueado && empleadoActualizado?.usuario_id === usuarioLogueado.id && empleadoActualizado.foto_perfil) {
+                this.authService.actualizarFotoPerfil(empleadoActualizado.foto_perfil);
+              }
               this.finalizarGuardado(credenciales);
             },
             error: (error) => {

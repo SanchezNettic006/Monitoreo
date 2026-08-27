@@ -11,6 +11,8 @@ export interface Empleado {
   telefono?: string;
   foto_perfil?: string;
   estado?: string;
+  fecha_ingreso?: string;
+  dias_vacaciones_anuales?: number;
   usuario_id: number;
   departamento_id: number;
   usuario?: {

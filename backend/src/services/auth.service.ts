@@ -40,7 +40,7 @@ export class AuthService {
     // Buscar usuario
     const usuario = await this.usuarioRepository.findOne({
       where: { email },
-      relations: ['empleado'],
+      relations: ['empleado', 'empleado.departamento'],
     });
 
     if (!usuario) {
@@ -63,30 +63,45 @@ export class AuthService {
 
     return {
       token,
-      usuario: {
-        id: usuario.id,
-        email: usuario.email,
-        rol: usuario.rol,
-        foto_perfil: usuario.empleado?.foto_perfil || null,
-      },
+      usuario: this.mapearPerfil(usuario),
     };
   }
 
   async obtenerUsuario(id: number) {
     const usuario = await this.usuarioRepository.findOne({
       where: { id },
-      relations: ['empleado'],
+      relations: ['empleado', 'empleado.departamento'],
     });
 
     if (!usuario) {
       throw new OperationalError(404, 'Usuario no encontrado');
     }
 
+    return this.mapearPerfil(usuario);
+  }
+
+  /**
+   * Actualiza la foto de perfil propia del usuario logueado (independiente
+   * de Empleado.foto_perfil, para cuentas sin registro de empleado)
+   */
+  async actualizarFotoPropia(usuarioId: number, rutaFoto: string) {
+    await this.usuarioRepository.update({ id: usuarioId }, { foto_perfil: rutaFoto });
+    return this.obtenerUsuario(usuarioId);
+  }
+
+  /** Datos de perfil expuestos al frontend (login, /perfil, actualización de foto) */
+  private mapearPerfil(usuario: Usuario) {
     return {
       id: usuario.id,
       email: usuario.email,
+      username: usuario.username,
       rol: usuario.rol,
-      foto_perfil: usuario.empleado?.foto_perfil || null,
+      foto_perfil: usuario.empleado?.foto_perfil || usuario.foto_perfil || null,
+      nombre: usuario.empleado?.nombre || null,
+      apellido: usuario.empleado?.apellido || null,
+      cargo: usuario.empleado?.cargo || null,
+      telefono: usuario.empleado?.telefono || null,
+      departamento: usuario.empleado?.departamento?.nombre || null,
     };
   }
 }

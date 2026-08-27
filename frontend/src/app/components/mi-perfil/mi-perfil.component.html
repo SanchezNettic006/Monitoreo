@@ -1,0 +1,113 @@
+<h2 mat-dialog-title>👤 Mi Perfil</h2>
+
+<mat-dialog-content>
+  <div class="preview-section">
+    <div class="foto-preview" *ngIf="previewFoto">
+      <img [src]="previewFoto" alt="Preview foto" class="preview-img" />
+    </div>
+    <mat-icon *ngIf="!previewFoto" class="preview-placeholder">account_circle</mat-icon>
+  </div>
+
+  <!-- Datos de perfil -->
+  <div class="datos-section" *ngIf="!cargandoPerfil && perfil">
+    <h3 *ngIf="perfil.nombre">{{ perfil.nombre }} {{ perfil.apellido }}</h3>
+
+    <div class="dato-fila">
+      <mat-icon>badge</mat-icon>
+      <span>{{ rolLabel }}</span>
+    </div>
+    <div class="dato-fila">
+      <mat-icon>email</mat-icon>
+      <span>{{ perfil.email }}</span>
+    </div>
+    <div class="dato-fila" *ngIf="perfil.departamento">
+      <mat-icon>domain</mat-icon>
+      <span>{{ perfil.departamento }}</span>
+    </div>
+    <div class="dato-fila" *ngIf="perfil.cargo">
+      <mat-icon>work</mat-icon>
+      <span>{{ perfil.cargo }}</span>
+    </div>
+    <div class="dato-fila" *ngIf="perfil.telefono">
+      <mat-icon>phone</mat-icon>
+      <span>{{ perfil.telefono }}</span>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="cargandoPerfil">Cargando datos...</div>
+
+  <!-- Subir foto -->
+  <div class="foto-section">
+    <input
+      type="file"
+      #fotoInput
+      (change)="onFotoSelected($event)"
+      accept="image/*"
+      style="display: none"
+    />
+    <button type="button" mat-raised-button color="accent" (click)="fotoInput.click()">
+      <mat-icon>photo_camera</mat-icon>
+      {{ previewFoto ? 'Cambiar Foto' : 'Elegir Foto' }}
+    </button>
+    <p class="foto-info">JPG, PNG o GIF (máx 5MB)</p>
+
+    <button
+      mat-raised-button
+      color="primary"
+      class="guardar-btn"
+      [disabled]="!fotoSeleccionada || cargando"
+      (click)="subirFoto()"
+    >
+      {{ cargando ? 'Guardando...' : 'Guardar Foto' }}
+    </button>
+  </div>
+
+  <!-- Alertas por Telegram -->
+  <div class="telegram-section">
+    <div class="dato-fila">
+      <mat-icon>notifications_active</mat-icon>
+      <span>Alertas por Telegram</span>
+      <span class="telegram-estado" [class.vinculado]="telegramVinculado">
+        {{ telegramVinculado ? 'Vinculado ✅' : 'No vinculado' }}
+      </span>
+    </div>
+    <p class="foto-info" *ngIf="!telegramVinculado">
+      Vincula tu Telegram para recibir avisos (jornada sin cerrar, recordatorio de check-in).
+    </p>
+    <button
+      *ngIf="!telegramVinculado"
+      type="button"
+      mat-stroked-button
+      color="primary"
+      [disabled]="cargandoTelegram"
+      (click)="vincularTelegram()"
+    >
+      <mat-icon>send</mat-icon>
+      Vincular Telegram
+    </button>
+    <div *ngIf="!telegramVinculado" class="telegram-actualizar">
+      <button type="button" mat-button [disabled]="cargandoTelegram" (click)="cargarEstadoTelegram()">
+        Ya presioné Start, actualizar estado
+      </button>
+    </div>
+    <button
+      *ngIf="telegramVinculado"
+      type="button"
+      mat-stroked-button
+      color="warn"
+      [disabled]="cargandoTelegram"
+      (click)="desvincularTelegram()"
+    >
+      Desvincular Telegram
+    </button>
+  </div>
+
+  <div *ngIf="cargando" class="spinner-overlay">
+    <mat-spinner diameter="30"></mat-spinner>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  <span class="spacer"></span>
+  <button mat-stroked-button (click)="cerrar()">Cerrar</button>
+</mat-dialog-actions>

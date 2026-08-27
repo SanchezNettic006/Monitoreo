@@ -19,6 +19,7 @@ export const config = {
   server: {
     port: parseInt(process.env.PORT || '3001', 10),
     env: process.env.NODE_ENV || 'development',
+    baseUrl: process.env.SERVER_BASE_URL || `http://localhost:${parseInt(process.env.PORT || '3001', 10)}`,
   },
 
   // JWT
@@ -36,5 +37,23 @@ export const config = {
   upload: {
     dir: process.env.UPLOAD_DIR || './uploads',
     maxSize: parseInt(process.env.MAX_FILE_SIZE || '5242880', 10),
+  },
+
+  // Gmail SMTP
+  gmail: {
+    user: process.env.GMAIL_USER || '',
+    password: process.env.GMAIL_PASSWORD || '',
+    fromName: process.env.GMAIL_FROM_NAME || 'NETTIC - Sistema de Asistencias',
+  },
+
+  // Notificaciones
+  notificaciones: {
+    emailRrhh: process.env.RRHH_EMAIL || '',
+  },
+
+  // Telegram (alertas de jornada larga y recordatorio de check-in)
+  telegram: {
+    botToken: process.env.TELEGRAM_BOT_TOKEN || '',
+    botUsername: process.env.TELEGRAM_BOT_USERNAME || '',
   },
 };

@@ -1,7 +1,7 @@
 <mat-toolbar color="primary">
-  <span>👥 Gestión de Empleados</span>
+  <span>👥 {{ esAdmin ? 'Gestión de Empleados' : 'Empleados de mi Departamento' }}</span>
   <span class="spacer"></span>
-  <button mat-raised-button color="accent" (click)="abrirFormulario()">
+  <button mat-raised-button color="accent" *ngIf="esAdmin" (click)="abrirFormulario()">
     <mat-icon>add</mat-icon>
     Nuevo Empleado
   </button>
@@ -23,9 +23,32 @@
         <p>Cargando empleados...</p>
       </div>
 
+      <!-- Filtro de búsqueda -->
+      <div *ngIf="!cargando && empleados.length > 0" class="filtros-empleados">
+        <mat-form-field appearance="fill" class="filtro-nombre-field">
+          <mat-label>Buscar empleado</mat-label>
+          <input matInput [(ngModel)]="filtroNombre" (ngModelChange)="aplicarFiltroNombre()" placeholder="Nombre o apellido" />
+        </mat-form-field>
+        <button mat-stroked-button (click)="limpiarFiltroNombre()" *ngIf="filtroNombre">
+          <mat-icon>clear</mat-icon>
+          Limpiar
+        </button>
+        <mat-form-field appearance="fill" class="filtro-anio-field">
+          <mat-label>Año vacaciones</mat-label>
+          <mat-select [(ngModel)]="anioVacaciones" (selectionChange)="cargarSaldosVacaciones()">
+            <mat-option *ngFor="let anio of opcionesAnioVacaciones" [value]="anio">{{ anio }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <span class="spacer-filtro"></span>
+        <button mat-stroked-button color="primary" (click)="exportarExcel()">
+          <mat-icon>file_download</mat-icon>
+          Exportar a Excel
+        </button>
+      </div>
+
       <!-- Tabla de empleados -->
       <div *ngIf="!cargando && empleados.length > 0" class="table-container">
-        <table mat-table [dataSource]="empleados" class="empleados-table">
+        <table mat-table [dataSource]="dataSource" class="empleados-table">
           <!-- ID Column -->
           <ng-container matColumnDef="id">
             <th mat-header-cell *matHeaderCellDef>ID</th>
@@ -64,7 +87,24 @@
             </td>
           </ng-container>
 
-          <!-- Acciones Column -->
+          <!-- Vacaciones Column -->
+          <ng-container matColumnDef="vacaciones">
+            <th mat-header-cell *matHeaderCellDef>Vacaciones</th>
+            <td mat-cell *matCellDef="let empleado">
+              <ng-container *ngIf="saldosVacacionesPorEmpleado[empleado.id] as saldo; else sinSaldo">
+                <span
+                  class="badge-vacaciones"
+                  [class.bajo]="saldo.diasDisponibles <= 3"
+                  [title]="saldo.diasUsados + ' días usados de ' + saldo.cupoAnual + ' (' + saldo.anio + ')'"
+                >
+                  {{ saldo.diasDisponibles }}/{{ saldo.cupoAnual }} días
+                </span>
+              </ng-container>
+              <ng-template #sinSaldo>-</ng-template>
+            </td>
+          </ng-container>
+
+          <!-- Acciones Column (solo admin) -->
           <ng-container matColumnDef="acciones">
             <th mat-header-cell *matHeaderCellDef>Acciones</th>
             <td mat-cell *matCellDef="let empleado">
@@ -80,13 +120,17 @@
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
         </table>
+        <mat-paginator [pageSize]="20" [pageSizeOptions]="[10, 20, 50, 100]"></mat-paginator>
+        <p *ngIf="dataSource.filteredData.length === 0" class="empty-state" style="padding: 16px;">
+          Ningún empleado coincide con la búsqueda
+        </p>
       </div>
 
       <!-- Sin empleados -->
       <div *ngIf="!cargando && empleados.length === 0" class="empty-state">
         <mat-icon class="empty-icon">people_outline</mat-icon>
         <p>No hay empleados registrados</p>
-        <button mat-raised-button color="primary" (click)="abrirFormulario()">
+        <button mat-raised-button color="primary" *ngIf="esAdmin" (click)="abrirFormulario()">
           <mat-icon>add</mat-icon>
           Crear primer empleado
         </button>

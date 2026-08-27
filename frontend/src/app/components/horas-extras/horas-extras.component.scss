@@ -1,0 +1,665 @@
+// ============= CONTAINER =============
+.horas-extras-container {
+  min-height: 100vh;
+  background: #f8f9fb;
+  position: relative;
+}
+
+// ============= LOADING OVERLAY =============
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+}
+
+// ============= HEADER =============
+.header-section {
+  background: linear-gradient(135deg, #2B8A3E 0%, #1a5a2a 100%);
+  color: white;
+  padding: 48px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+
+  .header-content {
+    flex: 1;
+
+    h1 {
+      font-size: 36px;
+      font-weight: 600;
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.80);
+      margin: 8px 0 0 0;
+      font-weight: 400;
+    }
+  }
+
+  .btn-crear {
+    white-space: nowrap;
+    font-weight: 600;
+    
+    mat-icon {
+      margin-right: 8px;
+    }
+  }
+
+  .header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .nav-btn {
+      color: rgba(255, 255, 255, 0.9) !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.15) !important;
+      }
+    }
+  }
+}
+
+// ============= STATS GRID =============
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  max-width: 1200px;
+  margin: 28px auto;
+  padding: 0 20px;
+
+  .stat-card {
+    background: white;
+    padding: 28px 24px;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border-top: 4px solid #ddd;
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .stat-value {
+      font-size: 42px;
+      font-weight: 700;
+      color: #2B8A3E;
+      margin: 0 0 8px 0;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: #666;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    &.active {
+      border-top-color: #F0A400;
+
+      .stat-value {
+        color: #F0A400;
+      }
+    }
+
+    &.completed {
+      border-top-color: #4CAF50;
+
+      .stat-value {
+        color: #4CAF50;
+      }
+    }
+  }
+}
+
+// ============= ACTIVE HORA EXTRA CARD =============
+.active-hora-extra-card {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 32px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-left: 5px solid #F0A400;
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    padding-bottom: 0;
+    border-bottom: none;
+    gap: 16px;
+
+    .header-info {
+      flex: 1;
+
+      h3 {
+        margin: 0 0 4px 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: #2B8A3E;
+      }
+
+      .ticket-info {
+        margin: 0;
+        font-size: 14px;
+        color: #666;
+        font-weight: 500;
+
+        strong {
+          color: #F0A400;
+          font-weight: 600;
+        }
+      }
+    }
+
+    .status-badge {
+      background: #F0A400;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+  }
+
+  .card-content {
+    margin-bottom: 28px;
+
+    .timer-section {
+      text-align: center;
+      margin-bottom: 24px;
+      padding: 32px 24px;
+      background: #f8f9fb;
+      border-radius: 8px;
+      border: none;
+
+      .timer-label {
+        margin: 0 0 12px 0;
+        font-size: 13px;
+        color: #999;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .timer-display {
+        font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+        font-size: 48px;
+        font-weight: 700;
+        color: #2B8A3E;
+        margin: 0;
+        letter-spacing: 3px;
+      }
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+      }
+
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        padding: 16px 0;
+        background: transparent;
+        border-radius: 0;
+        border-left: none;
+
+        .info-label {
+          font-size: 12px;
+          font-weight: 600;
+          color: #999;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 6px;
+        }
+
+        .info-value {
+          font-size: 15px;
+          font-weight: 500;
+          color: #333;
+        }
+      }
+    }
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+
+    .btn-finalizar {
+      font-weight: 600;
+      
+      mat-icon {
+        margin-right: 6px;
+      }
+    }
+  }
+}
+
+// ============= FILTERS SECTION =============
+.filters-section {
+  max-width: 1200px;
+  margin: 24px auto;
+  padding: 0 20px;
+
+  .filters-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: flex-end;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+
+    .filter-field {
+      width: 100%;
+    }
+
+    .btn-clear {
+      height: 56px;
+      font-weight: 600;
+    }
+  }
+}
+
+.filters-grid-horas-aprobadas {
+  grid-template-columns: 200px 1fr 200px auto !important;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.filters-grid-he {
+  grid-template-columns: 1fr 1fr 180px auto !important;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.total-aprobado-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  margin: 0 0 20px;
+  padding: 14px 18px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+  .label {
+    color: #666;
+  }
+
+  .value {
+    font-weight: 700;
+    color: #2B8A3E;
+    font-size: 18px;
+  }
+}
+
+// ============= TABS =============
+.tabs-section {
+  max-width: 1200px;
+  margin: 24px auto;
+  padding: 0 20px 40px 20px;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+
+  ::ng-deep {
+    .mat-mdc-tab-header {
+      border-bottom: 1px solid #e0e0e0;
+      box-shadow: none;
+      background: transparent;
+    }
+
+    .mat-mdc-tab-labels {
+      display: flex;
+      gap: 0;
+    }
+
+    .mat-mdc-tab {
+      min-width: auto;
+      padding: 0;
+      margin-right: 32px;
+
+      &.mat-mdc-tab-disabled {
+        opacity: 0.5;
+      }
+
+      .tab-label {
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: none;
+        letter-spacing: 0;
+        padding: 16px 0;
+      }
+
+      .mdc-tab__text-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+    }
+
+    .mat-mdc-tab-header-pagination {
+      display: none;
+    }
+  }
+
+  .tab-content {
+    padding: 20px 0;
+  }
+}
+
+// ============= SECTION CARD =============
+.section-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  margin-bottom: 32px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    background: #f8f9fa;
+
+    h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #2B8A3E;
+    }
+
+    .count-badge {
+      background: linear-gradient(135deg, #2B8A3E 0%, #1a5a2a 100%);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 13px;
+      min-width: 40px;
+      text-align: center;
+    }
+  }
+}
+
+// ============= EMPTY STATE =============
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  color: #999;
+
+  mat-icon {
+    font-size: 56px;
+    width: 56px;
+    height: 56px;
+    opacity: 0.2;
+    margin-bottom: 20px;
+  }
+
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #666;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: #999;
+  }
+}
+
+// ============= TABLE =============
+.table-wrapper {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f1f3;
+
+  mat-icon {
+    margin-right: 6px;
+  }
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    background: #f8f9fb;
+    border-bottom: 1px solid #e5e8ec;
+
+    tr {
+      th {
+        padding: 16px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid #f0f1f3;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: #f8f9fb;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      td {
+        padding: 16px;
+        font-size: 14px;
+        color: #333;
+
+        &.ticket-cell {
+          .badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+
+            &.badge-active {
+              background: #FFF4E6;
+              color: #F0A400;
+            }
+
+            &.badge-completed {
+              background: #E8F5E9;
+              color: #4CAF50;
+            }
+          }
+        }
+
+        &.empleado-cell {
+          font-weight: 500;
+          color: #2B8A3E;
+        }
+
+        &.hora-cell {
+          font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+          font-weight: 500;
+          color: #333;
+          font-size: 13px;
+        }
+
+        &.duracion-cell {
+          font-weight: 600;
+          color: #2B8A3E;
+        }
+
+        &.aprobacion-cell {
+          .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+
+            &.badge-pendiente {
+              background: #FFF4E6;
+              color: #F0A400;
+            }
+
+            &.badge-aprobada {
+              background: #E8F5E9;
+              color: #4CAF50;
+            }
+
+            &.badge-rechazada {
+              background: #FDECEA;
+              color: #D32F2F;
+            }
+          }
+
+          .horas-aprobadas-info {
+            margin-top: 4px;
+            font-size: 11px;
+            color: #888;
+          }
+        }
+
+        &.acciones-cell {
+          display: flex;
+          gap: 8px;
+          justify-content: center;
+
+          .btn-info {
+            color: #999;
+            transition: all 0.2s ease;
+
+            &:hover {
+              color: #2B8A3E;
+              background: rgba(43, 138, 62, 0.08);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// ============= PAGINATOR =============
+::ng-deep .mat-mdc-paginator {
+  background: #f8f9fb;
+  border-top: 1px solid #e5e8ec;
+}
+
+// ============= RESPONSIVE =============
+@media (max-width: 768px) {
+  .header-section {
+    padding: 24px 16px;
+
+    .header-content {
+      h1 {
+        font-size: 24px;
+      }
+
+      .subtitle {
+        font-size: 14px;
+      }
+    }
+  }
+
+  .content-section {
+    padding: 24px 16px;
+  }
+
+  .tabs-container {
+    .tab-buttons {
+      flex-direction: column;
+
+      .tab-button {
+        border-bottom: none;
+        border-left: 3px solid transparent;
+
+        &.active {
+          border-left-color: #2B8A3E;
+          border-bottom-color: transparent;
+        }
+      }
+    }
+  }
+
+  .data-table {
+    font-size: 12px;
+
+    thead tr th,
+    tbody tr td {
+      padding: 12px 8px;
+    }
+  }
+
+  .btn-icon {
+    width: 32px;
+    height: 32px;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+}

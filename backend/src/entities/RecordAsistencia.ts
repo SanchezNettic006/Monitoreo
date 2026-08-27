@@ -9,6 +9,8 @@ import {
 import { Empleado } from './Empleado';
 import { FotoAsistencia } from './FotoAsistencia';
 import { ComentarioHoraExtra } from './ComentarioHoraExtra';
+import { PausaAsistencia } from './PausaAsistencia';
+import { HoraExtra } from './HoraExtra';
 
 @Entity('record_asistencia')
 export class RecordAsistencia {
@@ -19,8 +21,11 @@ export class RecordAsistencia {
   @JoinColumn({ name: 'empleado_id' })
   empleado!: Empleado;
 
-  @Column({ name: 'fecha_asistencia' })
-  fecha!: Date;
+  // Columna 'date' (sin hora). Se declara explícitamente como 'date' y se maneja como
+  // string 'YYYY-MM-DD': si se dejara inferir como timestamp, TypeORM la hidrata con
+  // new Date('YYYY-MM-DD') (medianoche UTC) y el día se corre al anterior en zonas GMT-x.
+  @Column({ name: 'fecha_asistencia', type: 'date' })
+  fecha!: string;
 
   @Column({ name: 'check_in', type: 'timestamp', nullable: true })
   hora_entrada!: Date;
@@ -29,16 +34,16 @@ export class RecordAsistencia {
   hora_salida!: Date;
 
   @Column({ name: 'latitude_in', type: 'decimal', precision: 10, scale: 7, nullable: true })
-  latitud_entrada!: number;
+  latitud_entrada!: number | null;
 
   @Column({ name: 'longitude_in', type: 'decimal', precision: 10, scale: 7, nullable: true })
-  longitud_entrada!: number;
+  longitud_entrada!: number | null;
 
   @Column({ name: 'latitude_out', type: 'decimal', precision: 10, scale: 7, nullable: true })
-  latitud_salida!: number;
+  latitud_salida!: number | null;
 
   @Column({ name: 'longitude_out', type: 'decimal', precision: 10, scale: 7, nullable: true })
-  longitud_salida!: number;
+  longitud_salida!: number | null;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   horas_trabajadas!: number;
@@ -49,11 +54,32 @@ export class RecordAsistencia {
   @Column({ default: 'presente' })
   estado!: string;
 
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
+  total_pausas!: number;
+
+  @Column({ name: 'descripcion_trabajo', type: 'text', nullable: true })
+  descripcion_trabajo?: string;
+
+  // Evitan reenviar las alertas de Telegram de "jornada sin cerrar" (primero al
+  // propio técnico, y si sigue sin cerrar, escalado al líder/admin) más de una
+  // vez por registro.
+  @Column({ name: 'alerta_jornada_larga_tecnico_enviada', default: false })
+  alerta_jornada_larga_tecnico_enviada!: boolean;
+
+  @Column({ name: 'alerta_jornada_larga_lider_enviada', default: false })
+  alerta_jornada_larga_lider_enviada!: boolean;
+
   @OneToMany(() => FotoAsistencia, (foto) => foto.record)
   fotos!: FotoAsistencia[];
 
   @OneToMany(() => ComentarioHoraExtra, (comentario) => comentario.record)
   comentarios!: ComentarioHoraExtra[];
+
+  @OneToMany(() => PausaAsistencia, (pausa) => pausa.record)
+  pausas!: PausaAsistencia[];
+
+  @OneToMany(() => HoraExtra, (horaExtra) => horaExtra.record)
+  horasExtras!: HoraExtra[];
 
   @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at!: Date;

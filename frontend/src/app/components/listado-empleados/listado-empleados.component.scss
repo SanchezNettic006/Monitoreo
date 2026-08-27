@@ -92,6 +92,42 @@ mat-card-title {
   }
 }
 
+.filtros-empleados {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+
+  .filtro-nombre-field {
+    width: 280px;
+  }
+
+  .filtro-anio-field {
+    width: 160px;
+  }
+
+  .spacer-filtro {
+    flex: 1;
+  }
+}
+
+.badge-vacaciones {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(43, 138, 62, 0.1);
+  color: #2b8a3e;
+  white-space: nowrap;
+
+  &.bajo {
+    background: rgba(211, 47, 47, 0.1);
+    color: #d32f2f;
+  }
+}
+
 ::ng-deep {
   .mat-mdc-button {
     &.mat-accent {

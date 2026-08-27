@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '@services/auth.service';
+import { AuthRequest } from '@middleware/auth.middleware';
+import { OperationalError } from '@middleware/errorHandler';
 
 const authService = new AuthService();
 
@@ -49,9 +51,9 @@ export class AuthController {
     }
   }
 
-  async obtenerPerfil(req: any, res: Response, next: NextFunction) {
+  async obtenerPerfil(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const usuario = await authService.obtenerUsuario(req.userId);
+      const usuario = await authService.obtenerUsuario(req.userId!);
 
       return res.status(200).json({
         data: usuario,
@@ -60,4 +62,28 @@ export class AuthController {
       next(error);
     }
   }
+
+  /**
+   * POST /api/auth/perfil/foto
+   * Subir una foto nueva como foto de perfil propia del usuario logueado
+   */
+  async subirFotoPropia(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const file = req.file;
+      if (!file) {
+        throw new OperationalError(400, 'No se proporcionó archivo');
+      }
+
+      const rutaFoto = `/uploads/${file.filename}`;
+      const usuario = await authService.actualizarFotoPropia(req.userId!, rutaFoto);
+
+      return res.status(200).json({
+        mensaje: 'Foto de perfil actualizada exitosamente',
+        data: usuario,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
 }

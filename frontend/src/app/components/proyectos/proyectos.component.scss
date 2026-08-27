@@ -1,0 +1,229 @@
+.proyectos-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  h1 {
+    color: #2b8a3e;
+    margin: 0 0 4px;
+  }
+
+  .subtitle {
+    color: #666;
+    margin: 0;
+  }
+
+  .btn-nuevo {
+    height: 44px;
+  }
+}
+
+.filtros-section {
+  margin-bottom: 16px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  .filtro-depto,
+  .filtro-tecnico {
+    width: 240px;
+  }
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+}
+
+.grupos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.grupo-card {
+  padding: 18px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+.grupo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+
+  h3 {
+    margin: 0;
+    font-size: 17px;
+    color: #333;
+  }
+
+  .badge-depto {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: #2b8a3e;
+    background: rgba(43, 138, 62, 0.1);
+    padding: 3px 10px;
+    border-radius: 12px;
+  }
+}
+
+.proyecto-section {
+  background: linear-gradient(135deg, #fff9ec 0%, #fbedcf 100%);
+  border-left: 3px solid #f0a400;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+
+  .proyecto-nombre {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    color: #b97e00;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .proyecto-descripcion {
+    margin: 6px 0 0;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.4;
+  }
+
+  .proyecto-tiempo {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: #8a5c00;
+    font-weight: 500;
+  }
+}
+
+.sin-proyecto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  color: #999;
+  font-size: 13px;
+  margin-bottom: 14px;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.empleados-section {
+  margin-bottom: 14px;
+
+  .empleados-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 6px;
+  }
+
+  .empleados-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+
+    .chip {
+      font-size: 12px;
+      background: #f0f4f0;
+      color: #333;
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+
+    .sin-datos {
+      font-size: 12px;
+      color: #bbb;
+    }
+  }
+}
+
+.grupo-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  button {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+  }
+
+  button[mat-icon-button] {
+    flex: 0 0 auto;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+
+  mat-icon {
+    font-size: 56px;
+    width: 56px;
+    height: 56px;
+    opacity: 0.4;
+    margin-bottom: 12px;
+  }
+
+  h3 {
+    margin: 0 0 6px;
+    color: #666;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .proyectos-container {
+    padding: 12px;
+  }
+
+  .grupos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header-section {
+    flex-direction: column;
+    align-items: stretch;
+
+    .btn-nuevo {
+      width: 100%;
+    }
+  }
+}

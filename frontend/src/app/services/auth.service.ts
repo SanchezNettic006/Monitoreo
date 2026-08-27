@@ -11,18 +11,20 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
-  usuario: {
-    id: number;
-    email: string;
-    rol: string;
-  };
+  usuario: Usuario;
 }
 
 export interface Usuario {
   id: number;
   email: string;
+  username?: string;
   rol: string;
   foto_perfil?: string;
+  nombre?: string;
+  apellido?: string;
+  cargo?: string;
+  telefono?: string;
+  departamento?: string;
 }
 
 @Injectable({
@@ -75,5 +77,43 @@ export class AuthService {
 
   getCurrentUser(): Usuario | null {
     return this.currentUserSubject.value;
+  }
+
+  esAdmin(): boolean {
+    return this.currentUserSubject.value?.rol === 'admin';
+  }
+
+  esLider(): boolean {
+    return this.currentUserSubject.value?.rol === 'lider';
+  }
+
+  /**
+   * Actualiza la foto de perfil del usuario logueado en memoria y localStorage
+   */
+  actualizarFotoPerfil(fotoUrl: string): void {
+    const usuarioActual = this.currentUserSubject.value;
+    if (!usuarioActual) return;
+
+    const usuarioActualizado = { ...usuarioActual, foto_perfil: fotoUrl };
+    localStorage.setItem('usuario', JSON.stringify(usuarioActualizado));
+    this.currentUserSubject.next(usuarioActualizado);
+  }
+
+  /**
+   * Sube una foto nueva como foto de perfil propia (funciona sin tener Empleado, ej. admin)
+   */
+  subirFotoPropia(archivo: File): Observable<{ mensaje: string; data: Usuario }> {
+    const formData = new FormData();
+    formData.append('foto', archivo);
+    return this.http.post<{ mensaje: string; data: Usuario }>(`${this.apiUrl}/perfil/foto`, formData).pipe(
+      tap((response) => this.actualizarFotoPerfil(response.data.foto_perfil || '')),
+    );
+  }
+
+  /**
+   * Obtiene el perfil completo (nombre, cargo, departamento, etc.) del usuario logueado
+   */
+  obtenerPerfil(): Observable<{ data: Usuario }> {
+    return this.http.get<{ data: Usuario }>(`${this.apiUrl}/perfil`);
   }
 }

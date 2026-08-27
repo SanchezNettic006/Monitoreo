@@ -1,0 +1,176 @@
+<div class="equipo-container">
+  <div class="header">
+    <h1>Mi Equipo</h1>
+    <p>{{ departamento ? 'Departamento: ' + departamento : 'Solicitudes, asistencias y empleados de tu departamento' }}</p>
+  </div>
+
+  <mat-tab-group class="tabs-section">
+    <!-- Solicitudes -->
+    <mat-tab label="Solicitudes">
+      <div class="tab-body">
+        <app-gestionar-solicitudes></app-gestionar-solicitudes>
+      </div>
+    </mat-tab>
+
+    <!-- Asistencias -->
+    <mat-tab label="Asistencias">
+      <div class="tab-body">
+        <div class="stats-grid">
+          <mat-card class="stat-card">
+            <mat-icon class="stat-icon horas">schedule</mat-icon>
+            <div>
+              <p class="stat-label">Horas Trabajadas</p>
+              <p class="stat-value">{{ formatearDuracion(totalHoras) }}</p>
+            </div>
+          </mat-card>
+          <mat-card class="stat-card">
+            <mat-icon class="stat-icon extras">bolt</mat-icon>
+            <div>
+              <p class="stat-label">Horas Extra</p>
+              <p class="stat-value">{{ formatearDuracion(totalExtras) }}</p>
+            </div>
+          </mat-card>
+          <mat-card class="stat-card">
+            <mat-icon class="stat-icon pausas">pause_circle</mat-icon>
+            <div>
+              <p class="stat-label">Pausas</p>
+              <p class="stat-value">{{ formatearDuracion(totalPausas) }}</p>
+            </div>
+          </mat-card>
+        </div>
+
+        <div class="filtros-section">
+          <mat-form-field appearance="fill">
+            <mat-label>Buscar empleado</mat-label>
+            <input matInput [(ngModel)]="filtroNombreAsistencia" placeholder="Nombre o apellido" />
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Fecha Inicio</mat-label>
+            <input matInput type="date" [(ngModel)]="fechaInicio" />
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Fecha Fin</mat-label>
+            <input matInput type="date" [(ngModel)]="fechaFin" />
+          </mat-form-field>
+          <button mat-raised-button color="primary" (click)="cargarAsistencias()">
+            <mat-icon>search</mat-icon> Aplicar
+          </button>
+          <button mat-stroked-button color="primary" (click)="exportarAsistencias()">
+            <mat-icon>file_download</mat-icon> Exportar a Excel
+          </button>
+        </div>
+
+        <div class="loading" *ngIf="cargandoAsistencias">Cargando...</div>
+
+        <table class="tabla-registros" *ngIf="!cargandoAsistencias && asistencias.length > 0">
+          <thead>
+            <tr>
+              <th>Empleado</th>
+              <th>Fecha</th>
+              <th>Proyecto</th>
+              <th>Entrada</th>
+              <th>Salida</th>
+              <th>Horas</th>
+              <th>Pausas</th>
+              <th>Extras</th>
+              <th>Reporte</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let registro of asistenciasPaginadas">
+              <td>{{ registro.empleado }}</td>
+              <td>{{ formatearFecha(registro.fecha) }}</td>
+              <td>{{ registro.proyecto || '-' }}</td>
+              <td>{{ formatearHora(registro.entrada) }}</td>
+              <td>{{ formatearHora(registro.salida) }}</td>
+              <td>{{ formatearDuracion(registro.horasTrabajadas) }}</td>
+              <td>{{ formatearDuracion(registro.totalPausas) }}</td>
+              <td>
+                {{ formatearDuracion(registro.horasExtras) }}
+                <span class="nota-pendiente" *ngIf="registro.horasExtrasPendiente">(pendiente)</span>
+              </td>
+              <td>
+                <button
+                  mat-icon-button
+                  (click)="verFotos(registro.fotos, registro.descripcionTrabajo)"
+                  [disabled]="!registro.fotos || registro.fotos.length === 0"
+                  title="Ver reporte de cierre"
+                >
+                  <mat-icon>image</mat-icon>
+                  {{ registro.fotos?.length || 0 }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <mat-paginator
+          *ngIf="!cargandoAsistencias && asistencias.length > 0"
+          [length]="asistencias.length"
+          [pageIndex]="paginaAsistencias"
+          [pageSize]="tamPaginaAsistencias"
+          [pageSizeOptions]="[10, 20, 50, 100]"
+          (page)="onPageAsistencias($event)">
+        </mat-paginator>
+
+        <div *ngIf="!cargandoAsistencias && asistencias.length === 0" class="sin-datos">
+          No hay registros en el rango seleccionado
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Horas Extra (solo lectura para el líder) -->
+    <mat-tab label="Horas Extra">
+      <div class="tab-body">
+        <app-horas-extras></app-horas-extras>
+      </div>
+    </mat-tab>
+
+    <!-- Empleados -->
+    <mat-tab label="Empleados">
+      <div class="tab-body">
+        <div class="filtros-section">
+          <mat-form-field appearance="fill">
+            <mat-label>Buscar empleado</mat-label>
+            <input matInput [(ngModel)]="filtroNombreEmpleadoLista" (ngModelChange)="filtrarEmpleadosLista()" placeholder="Nombre o apellido" />
+          </mat-form-field>
+          <button mat-stroked-button color="primary" (click)="exportarEmpleados()">
+            <mat-icon>file_download</mat-icon> Exportar a Excel
+          </button>
+        </div>
+
+        <div class="loading" *ngIf="cargandoEmpleados">Cargando...</div>
+
+        <table class="tabla-registros" *ngIf="!cargandoEmpleados && empleadosFiltrados.length > 0">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Cargo</th>
+              <th>Teléfono</th>
+              <th>Email</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let empleado of empleadosPaginados">
+              <td>{{ empleado.nombre }} {{ empleado.apellido }}</td>
+              <td>{{ empleado.cargo || '-' }}</td>
+              <td>{{ empleado.telefono || '-' }}</td>
+              <td>{{ empleado.usuario?.email || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <mat-paginator
+          *ngIf="!cargandoEmpleados && empleadosFiltrados.length > 0"
+          [length]="empleadosFiltrados.length"
+          [pageIndex]="paginaEmpleados"
+          [pageSize]="tamPaginaEmpleados"
+          [pageSizeOptions]="[10, 20, 50, 100]"
+          (page)="onPageEmpleados($event)">
+        </mat-paginator>
+
+        <div *ngIf="!cargandoEmpleados && empleadosFiltrados.length === 0" class="sin-datos">
+          {{ empleados.length === 0 ? 'No hay empleados en tu departamento' : 'Ningún empleado coincide con la búsqueda' }}
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

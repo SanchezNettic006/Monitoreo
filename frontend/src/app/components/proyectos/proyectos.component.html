@@ -1,0 +1,81 @@
+<div class="proyectos-container">
+  <div class="header-section">
+    <div class="header-content">
+      <h1>Gestión de Proyectos</h1>
+      <p class="subtitle">Grupos de trabajo y el proyecto en el que está cada uno actualmente</p>
+    </div>
+    <button mat-raised-button color="primary" (click)="abrirNuevoGrupo()" class="btn-nuevo">
+      <mat-icon>add_circle</mat-icon>
+      Nuevo Grupo
+    </button>
+  </div>
+
+  <div class="filtros-section">
+    <mat-form-field appearance="fill" class="filtro-depto" *ngIf="esAdmin">
+      <mat-label>Departamento</mat-label>
+      <mat-select [(ngModel)]="departamentoSeleccionado" (selectionChange)="cargarGrupos()">
+        <mat-option [value]="null">Todos</mat-option>
+        <mat-option *ngFor="let d of departamentos" [value]="d.id">{{ d.nombre }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="filtro-tecnico">
+      <mat-label>Buscar técnico</mat-label>
+      <input matInput [(ngModel)]="filtroTecnico" placeholder="Nombre o apellido" />
+    </mat-form-field>
+  </div>
+
+  <div class="loading" *ngIf="cargando">Cargando...</div>
+
+  <div class="grupos-grid" *ngIf="!cargando && gruposFiltrados.length > 0">
+    <mat-card class="grupo-card" *ngFor="let grupo of gruposFiltrados">
+      <div class="grupo-header">
+        <h3>{{ grupo.nombre }}</h3>
+        <span class="badge-depto" *ngIf="esAdmin && grupo.departamento">{{ grupo.departamento.nombre }}</span>
+      </div>
+
+      <div class="proyecto-section" *ngIf="grupo.proyectoActivo; else sinProyecto">
+        <div class="proyecto-nombre">
+          <mat-icon>engineering</mat-icon>
+          <span>{{ grupo.proyectoActivo.nombreProyecto }}</span>
+        </div>
+        <p class="proyecto-descripcion" *ngIf="grupo.proyectoActivo.descripcion">{{ grupo.proyectoActivo.descripcion }}</p>
+        <p class="proyecto-tiempo">{{ diasDesde(grupo.proyectoActivo.fechaInicio) }}</p>
+      </div>
+      <ng-template #sinProyecto>
+        <div class="sin-proyecto">
+          <mat-icon>hourglass_empty</mat-icon>
+          <span>Sin proyecto asignado</span>
+        </div>
+      </ng-template>
+
+      <div class="empleados-section">
+        <span class="empleados-label">Miembros ({{ grupo.empleados.length }})</span>
+        <div class="empleados-chips">
+          <span class="chip" *ngFor="let e of grupo.empleados">{{ e.nombre }} {{ e.apellido }}</span>
+          <span class="sin-datos" *ngIf="grupo.empleados.length === 0">Sin miembros</span>
+        </div>
+      </div>
+
+      <div class="grupo-actions">
+        <button mat-stroked-button color="primary" (click)="abrirAsignarProyecto(grupo)">
+          <mat-icon>sync_alt</mat-icon>
+          Cambiar proyecto
+        </button>
+        <button mat-stroked-button (click)="abrirGestionarMiembros(grupo)">
+          <mat-icon>group</mat-icon>
+          Miembros
+        </button>
+        <button mat-icon-button (click)="abrirHistorial(grupo)" title="Ver historial">
+          <mat-icon>history</mat-icon>
+        </button>
+      </div>
+    </mat-card>
+  </div>
+
+  <div class="empty-state" *ngIf="!cargando && gruposFiltrados.length === 0">
+    <mat-icon>groups</mat-icon>
+    <h3>{{ grupos.length === 0 ? 'Sin grupos registrados' : 'Ningún técnico coincide con la búsqueda' }}</h3>
+    <p *ngIf="grupos.length === 0">Crea un grupo para empezar a asignar proyectos</p>
+  </div>
+</div>

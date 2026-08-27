@@ -3,7 +3,8 @@ import { Empleado } from '@entities/Empleado';
 import { Usuario } from '@entities/Usuario';
 import { RecordAsistencia } from '@entities/RecordAsistencia';
 import { OperationalError } from '@middleware/errorHandler';
-import { generarUsernameUnico, generarEmailUnico, generarPasswordTemporal, hashPassword } from '@utils/credenciales';
+import { generarUsernameUnico, hashPassword } from '@utils/credenciales';
+import { hoyLocal } from '@utils/fecha.utils';
 
 export class EmpleadoService {
   private empleadoRepository = AppDataSource.getRepository(Empleado);
@@ -23,18 +24,20 @@ export class EmpleadoService {
     return empleado;
   }
 
-  async obtenerTodos() {
+  async obtenerTodos(departamentoId?: number) {
     return await this.empleadoRepository.find({
+      where: departamentoId !== undefined ? { departamento_id: departamentoId } : {},
       relations: ['usuario', 'departamento'],
     });
   }
 
-  async crearEmpleado(datos: Partial<Empleado>) {
-    // Generar credenciales automáticamente
+  async crearEmpleado(datos: Partial<Empleado>, email: string, password: string, rol: string = 'empleado') {
+    // Solo se permite asignar estos roles desde este formulario; 'admin' se otorga aparte
+    const rolValido = rol === 'lider' ? 'lider' : 'empleado';
+
+    // Generar username automáticamente (no visible para el admin)
     const username = await generarUsernameUnico(datos.nombre || '', datos.apellido || '');
-    const email = await generarEmailUnico(datos.nombre || '', datos.apellido || '');
-    const passwordTemporal = generarPasswordTemporal();
-    const passwordHasheado = await hashPassword(passwordTemporal);
+    const passwordHasheado = await hashPassword(password);
 
     // Verificar que el email no existe
     const usuarioExistente = await this.usuarioRepository.findOne({
@@ -50,7 +53,7 @@ export class EmpleadoService {
       username,
       email,
       password_hash: passwordHasheado,
-      rol: 'empleado', // Por defecto empleado
+      rol: rolValido,
     });
 
     const usuarioGuardado = await this.usuarioRepository.save(nuevoUsuario);
@@ -64,17 +67,17 @@ export class EmpleadoService {
     const nuevoEmpleado = this.empleadoRepository.create(datosEmpleado);
     const empleadoGuardado = await this.empleadoRepository.save(nuevoEmpleado);
 
-    // Retornar empleado con credenciales generadas
+    // Retornar empleado con las credenciales ingresadas por el admin
     return {
       empleado: empleadoGuardado,
       credenciales: {
         email,
-        password: passwordTemporal, // Sin hashear para mostrar al admin
+        password,
       },
     };
   }
 
-  async actualizarEmpleado(id: number, datos: Partial<Empleado>) {
+  async actualizarEmpleado(id: number, datos: Partial<Empleado>, rol?: string) {
     const empleado = await this.empleadoRepository.findOne({
       where: { id },
     });
@@ -84,7 +87,15 @@ export class EmpleadoService {
     }
 
     Object.assign(empleado, datos);
-    return await this.empleadoRepository.save(empleado);
+    const empleadoActualizado = await this.empleadoRepository.save(empleado);
+
+    if (rol !== undefined) {
+      // Solo se permite asignar estos roles desde este formulario; 'admin' se otorga aparte
+      const rolValido = rol === 'lider' ? 'lider' : 'empleado';
+      await this.usuarioRepository.update({ id: empleado.usuario_id }, { rol: rolValido });
+    }
+
+    return empleadoActualizado;
   }
 
   async eliminarEmpleado(id: number) {
@@ -94,13 +105,11 @@ export class EmpleadoService {
 
   async obtenerResumenEmpleado(id: number) {
     const empleado = await this.obtenerEmpleado(id);
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
 
     const recordHoy = await this.recordRepository.findOne({
       where: {
         empleado: { id },
-        fecha: hoy,
+        fecha: hoyLocal(),
       },
       relations: ['fotos', 'comentarios'],
     });

@@ -1,0 +1,393 @@
+<div class="horas-extras-container">
+  <!-- Loading overlay -->
+  <div *ngIf="cargando" class="loading-overlay">
+    <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
+  </div>
+
+  <!-- Header -->
+  <div class="header-section">
+    <div class="header-content">
+      <h1>Gestión de Horas Extras</h1>
+      <p class="subtitle">Control y seguimiento de horas extras registradas</p>
+    </div>
+  </div>
+
+  <!-- Stats Cards (irrelevante para el administrador, que gestiona aprobación, no creación) -->
+  <div class="stats-grid" *ngIf="!esAdmin">
+    <div class="stat-card active">
+      <div class="stat-value">{{ horasExtrasActivas.length }}</div>
+      <div class="stat-label">En Progreso</div>
+    </div>
+    <div class="stat-card completed">
+      <div class="stat-value">{{ horasExtrasFinalizadas.length }}</div>
+      <div class="stat-label">Completadas</div>
+    </div>
+  </div>
+
+  <!-- Hora Extra Activa del Usuario (Control) -->
+  <div *ngIf="horaExtraActualDelUsuario" class="active-hora-extra-card">
+    <div class="card-header">
+      <div class="header-info">
+        <h3>Trabajo en Progreso</h3>
+        <p class="ticket-info">{{ horaExtraActualDelUsuario.numero_ticket }}</p>
+      </div>
+      <div class="status-badge">ACTIVO</div>
+    </div>
+
+    <div class="card-content">
+      <div class="timer-section">
+        <p class="timer-label">Tiempo transcurrido</p>
+        <div class="timer-display">{{ tiempoTranscurrido }}</div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Inicio</span>
+          <span class="info-value">{{ formatearHora(horaExtraActualDelUsuario.hora_inicio) }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Ubicación</span>
+          <span class="info-value">{{ horaExtraActualDelUsuario.latitud_inicio | number: '1.4-4' }}, {{ horaExtraActualDelUsuario.longitud_inicio | number: '1.4-4' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-actions">
+      <button mat-raised-button color="warn" (click)="finalizarHoraExtraModal(horaExtraActualDelUsuario)" class="btn-finalizar">
+        Finalizar Trabajo
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabs Section -->
+  <mat-tab-group class="tabs-section">
+    <!-- ACTIVAS TAB -->
+    <mat-tab *ngIf="!esAdmin">
+      <ng-template mat-tab-label>
+        <span class="tab-label">En Progreso ({{ horasExtrasActivas.length }})</span>
+      </ng-template>
+
+      <div class="tab-content">
+        <!-- Filters Section -->
+        <div class="filters-section">
+          <div class="filters-grid filters-grid-he">
+            <mat-form-field class="filter-field">
+              <mat-label>Buscar Ticket/NET</mat-label>
+              <input matInput [(ngModel)]="filtroTicket" (ngModelChange)="filtrarPorTicket()" placeholder="NET-12345" />
+            </mat-form-field>
+
+            <mat-form-field class="filter-field">
+              <mat-label>Buscar empleado</mat-label>
+              <input matInput [(ngModel)]="filtroEmpleadoHE" (ngModelChange)="filtrarPorTicket()" placeholder="Nombre o apellido" />
+            </mat-form-field>
+
+            <mat-form-field class="filter-field">
+              <mat-label>Mes</mat-label>
+              <input matInput type="month" [(ngModel)]="filtroMesHE" (ngModelChange)="filtrarPorTicket()" />
+            </mat-form-field>
+
+            <button mat-stroked-button (click)="limpiarFiltros()" class="btn-clear">
+              Limpiar
+            </button>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="horasExtrasActivas.length === 0" class="empty-state">
+          <mat-icon>schedule</mat-icon>
+          <h3>Sin horas extras activas</h3>
+          <p>No hay horas extras en progreso en este momento</p>
+        </div>
+
+        <!-- Table -->
+        <div *ngIf="horasExtrasActivas.length > 0" class="table-wrapper">
+          <div class="table-toolbar">
+            <button mat-stroked-button color="primary" (click)="exportarActivas()">
+              <mat-icon>file_download</mat-icon> Exportar a Excel
+            </button>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Ticket/NET</th>
+                <th>Empleado</th>
+                <th>Departamento</th>
+                <th>Fecha</th>
+                <th>Hora Inicio</th>
+                <th>Duración</th>
+                <th>Fotos</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let extra of dataSourceActivas.data" class="table-row">
+                <td class="ticket-cell">
+                  <span class="badge badge-active">{{ extra.numero_ticket }}</span>
+                </td>
+                <td class="empleado-cell">
+                  {{ extra.empleado_nombre_completo || 'N/A' }}
+                </td>
+                <td class="depto-cell">
+                  {{ extra.departamento_nombre || 'N/A' }}
+                </td>
+                <td class="hora-cell">
+                  {{ formatearFecha(extra.hora_inicio) }}
+                </td>
+                <td class="hora-cell">
+                  {{ formatearHora(extra.hora_inicio) }}
+                </td>
+                <td class="duracion-cell">
+                  <span class="badge badge-duration">{{ formatearDuracion(extra.duracion) }}</span>
+                </td>
+                <td class="fotos-cell">
+                  <button 
+                    mat-icon-button 
+                    (click)="verFotos(extra.fotos)"
+                    [disabled]="!extra.fotos || extra.fotos.length === 0"
+                    title="Ver fotos"
+                    class="fotos-btn"
+                  >
+                    <mat-icon>image</mat-icon>
+                    {{ extra.fotos?.length || 0 }}
+                  </button>
+                </td>
+                <td class="acciones-cell">
+                  <button 
+                    mat-icon-button 
+                    (click)="verDetalles(extra)"
+                    title="Ver detalles"
+                  >
+                    <mat-icon>info</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <mat-paginator 
+            [length]="totalActivasRegistros"
+            [pageSize]="pageSize"
+            [pageSizeOptions]="[10, 20, 50, 100]"
+            (page)="onPageChangeActivas($event)"
+            class="paginator">
+          </mat-paginator>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- FINALIZADAS TAB -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <span class="tab-label">Completadas ({{ horasExtrasFinalizadas.length }})</span>
+      </ng-template>
+
+      <div class="tab-content">
+        <!-- Filters Section -->
+        <div class="filters-section">
+          <div class="filters-grid filters-grid-he">
+            <mat-form-field class="filter-field">
+              <mat-label>Buscar Ticket/NET</mat-label>
+              <input matInput [(ngModel)]="filtroTicket" (ngModelChange)="filtrarPorTicket()" placeholder="NET-12345" />
+            </mat-form-field>
+
+            <mat-form-field class="filter-field">
+              <mat-label>Buscar empleado</mat-label>
+              <input matInput [(ngModel)]="filtroEmpleadoHE" (ngModelChange)="filtrarPorTicket()" placeholder="Nombre o apellido" />
+            </mat-form-field>
+
+            <mat-form-field class="filter-field">
+              <mat-label>Mes</mat-label>
+              <input matInput type="month" [(ngModel)]="filtroMesHE" (ngModelChange)="filtrarPorTicket()" />
+            </mat-form-field>
+
+            <button mat-stroked-button (click)="limpiarFiltros()" class="btn-clear">
+              Limpiar
+            </button>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="horasExtrasFinalizadas.length === 0" class="empty-state">
+          <mat-icon>check_circle</mat-icon>
+          <h3>Sin horas extras completadas</h3>
+          <p>No hay horas extras completadas en este momento</p>
+        </div>
+
+        <!-- Table -->
+        <div *ngIf="horasExtrasFinalizadas.length > 0" class="table-wrapper">
+          <div class="table-toolbar">
+            <button mat-stroked-button color="primary" (click)="exportarFinalizadas()">
+              <mat-icon>file_download</mat-icon> Exportar a Excel
+            </button>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Ticket/NET</th>
+                <th>Empleado</th>
+                <th>Departamento</th>
+                <th>Fecha</th>
+                <th>Inicio</th>
+                <th>Fin</th>
+                <th>Duración Total</th>
+                <th>Aprobación</th>
+                <th>Fotos</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let extra of dataSourceFinalizadas.data" class="table-row">
+                <td class="ticket-cell">
+                  <span class="badge badge-completed">{{ extra.numero_ticket }}</span>
+                </td>
+                <td class="empleado-cell">
+                  {{ extra.empleado_nombre_completo || 'N/A' }}
+                </td>
+                <td class="depto-cell">
+                  {{ extra.departamento_nombre || 'N/A' }}
+                </td>
+                <td class="hora-cell">
+                  {{ formatearFecha(extra.hora_inicio) }}
+                </td>
+                <td class="hora-cell">
+                  {{ formatearHora(extra.hora_inicio) }}
+                </td>
+                <td class="hora-cell">
+                  {{ formatearHora(extra.hora_fin) }}
+                </td>
+                <td class="duracion-cell">
+                  <span class="badge badge-duration-complete">{{ formatearDuracion(extra.duracion) }}</span>
+                </td>
+                <td class="aprobacion-cell">
+                  <span
+                    class="badge"
+                    [ngClass]="{
+                      'badge-pendiente': extra.estado_aprobacion === 'pendiente',
+                      'badge-aprobada': extra.estado_aprobacion === 'aprobada',
+                      'badge-rechazada': extra.estado_aprobacion === 'rechazada'
+                    }"
+                  >
+                    {{ estadoAprobacionLabel(extra) }}
+                  </span>
+                  <div class="horas-aprobadas-info" *ngIf="extra.estado_aprobacion !== 'pendiente'">
+                    {{ formatearDuracion(extra.horas_aprobadas) }} de {{ formatearDuracion(extra.duracion) }}
+                  </div>
+                </td>
+                <td class="fotos-cell">
+                  <button
+                    mat-icon-button
+                    (click)="verFotos(extra.fotos)"
+                    [disabled]="!extra.fotos || extra.fotos.length === 0"
+                    title="Ver fotos"
+                    class="fotos-btn"
+                  >
+                    <mat-icon>image</mat-icon>
+                    {{ extra.fotos?.length || 0 }}
+                  </button>
+                </td>
+                <td class="acciones-cell">
+                  <button
+                    mat-icon-button
+                    *ngIf="esAdmin"
+                    (click)="abrirRevisarDialog(extra)"
+                    [title]="extra.estado_aprobacion === 'pendiente' ? 'Revisar horas' : 'Editar revisión'"
+                  >
+                    <mat-icon>fact_check</mat-icon>
+                  </button>
+                  <button
+                    mat-icon-button
+                    (click)="verDetalles(extra)"
+                    title="Ver detalles"
+                  >
+                    <mat-icon>info</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <mat-paginator 
+            [length]="totalFinalizadasRegistros"
+            [pageSize]="pageSize"
+            [pageSizeOptions]="[10, 20, 50, 100]"
+            (page)="onPageChangeFinalizadas($event)"
+            class="paginator">
+          </mat-paginator>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- HORAS APROBADAS TAB -->
+    <mat-tab label="Horas Aprobadas">
+      <div class="tab-content">
+        <div class="filters-section">
+          <div class="filters-grid filters-grid-horas-aprobadas">
+            <mat-form-field class="filter-field">
+              <mat-label>Mes</mat-label>
+              <mat-select [(ngModel)]="mesHorasAprobadas" (selectionChange)="cargarHorasAprobadas()">
+                <mat-option *ngFor="let opcion of opcionesMesHorasAprobadas" [value]="opcion.value">{{ opcion.label }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field class="filter-field">
+              <mat-label>Buscar técnico</mat-label>
+              <input matInput [(ngModel)]="filtroTecnico" (ngModelChange)="aplicarFiltroHorasAprobadas()" placeholder="Nombre del técnico" />
+            </mat-form-field>
+
+            <mat-form-field class="filter-field" *ngIf="departamentosHorasAprobadas.length > 1">
+              <mat-label>Departamento</mat-label>
+              <mat-select [(ngModel)]="filtroDepartamentoHorasAprobadas" (selectionChange)="aplicarFiltroHorasAprobadas()">
+                <mat-option value="">Todos</mat-option>
+                <mat-option *ngFor="let depto of departamentosHorasAprobadas" [value]="depto">{{ depto }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <button mat-stroked-button (click)="limpiarFiltroHorasAprobadas()" class="btn-clear">
+              Limpiar
+            </button>
+          </div>
+        </div>
+
+        <div class="total-aprobado-bar">
+          <span class="label">Total aprobado{{ filtroTecnico || filtroDepartamentoHorasAprobadas ? ' (filtrado)' : '' }}:</span>
+          <span class="value">{{ formatearDuracion(totalHorasAprobadas) }}</span>
+        </div>
+
+        <div *ngIf="cargandoHorasAprobadas" class="empty-state">
+          <mat-icon>hourglass_empty</mat-icon>
+          <p>Cargando...</p>
+        </div>
+
+        <div *ngIf="!cargandoHorasAprobadas && tecnicosHorasAprobadasFiltrados.length === 0" class="empty-state">
+          <mat-icon>bolt</mat-icon>
+          <h3>Sin horas extra aprobadas</h3>
+          <p>{{ tecnicosHorasAprobadas.length === 0 ? 'No hay horas extra aprobadas en este mes' : 'Ningún técnico coincide con el filtro' }}</p>
+        </div>
+
+        <div *ngIf="!cargandoHorasAprobadas && tecnicosHorasAprobadasFiltrados.length > 0" class="table-wrapper">
+          <div class="table-toolbar">
+            <button mat-stroked-button color="primary" (click)="exportarHorasAprobadas()">
+              <mat-icon>file_download</mat-icon> Exportar a Excel
+            </button>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Técnico</th>
+                <th>Departamento</th>
+                <th>Tickets Aprobados</th>
+                <th>Total Horas</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let tecnico of tecnicosHorasAprobadasFiltrados" class="table-row">
+                <td>{{ tecnico.nombre }}</td>
+                <td>{{ tecnico.departamento }}</td>
+                <td>{{ tecnico.totalTickets }}</td>
+                <td><span class="badge badge-duration-complete">{{ formatearDuracion(tecnico.totalHoras) }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

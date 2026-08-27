@@ -3,6 +3,8 @@ import app from './app';
 import { config } from './config/env';
 import { AppDataSource } from './config/database';
 import { inicializarColumnas } from './utils/initDb';
+import { inicializarTareasNotificaciones } from './scripts/notificationWorker';
+import { inicializarAlertasTelegram } from './scripts/alertasWorker';
 import fs from 'fs';
 import path from 'path';
 
@@ -24,6 +26,12 @@ async function bootstrap() {
 
     // Inicializar columnas faltantes
     await inicializarColumnas();
+
+    // Inicializar tareas de notificaciones
+    inicializarTareasNotificaciones();
+
+    // Inicializar alertas por Telegram
+    inicializarAlertasTelegram();
 
     // Iniciar servidor
     app.listen(PORT, () => {

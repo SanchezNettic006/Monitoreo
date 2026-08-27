@@ -1,0 +1,112 @@
+.equipo-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 20px;
+
+  h1 {
+    color: #2b8a3e;
+    margin-bottom: 4px;
+  }
+
+  p {
+    color: #666;
+  }
+}
+
+.nota-pendiente {
+  display: block;
+  font-size: 11px;
+  color: #f0a400;
+}
+
+.tabs-section {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tab-body {
+  padding: 24px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px !important;
+
+  .stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+
+    &.horas { background: linear-gradient(135deg, #2b8a3e 0%, #1a5a2a 100%); }
+    &.extras { background: linear-gradient(135deg, #f0a400 0%, #d98600 100%); }
+    &.pausas { background: linear-gradient(135deg, #9c27b0 0%, #6a1b9a 100%); }
+  }
+
+  .stat-label {
+    margin: 0;
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+  }
+
+  .stat-value {
+    margin: 2px 0 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+  }
+}
+
+.filtros-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.tabla-registros {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    text-align: left;
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+    padding: 10px 8px;
+    border-bottom: 2px solid #eee;
+  }
+
+  td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #f2f2f2;
+    font-size: 14px;
+  }
+}
+
+.loading,
+.sin-datos {
+  text-align: center;
+  color: #888;
+  padding: 30px 0;
+}

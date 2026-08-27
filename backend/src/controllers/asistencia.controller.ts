@@ -17,16 +17,16 @@ export class AsistenciaController {
       
       const fotaPath = req.file?.path || null;
 
-      if (!gps || !gps.latitud || !gps.longitud) {
-        return res.status(400).json({
-          mensaje: 'GPS (latitud y longitud) es requerido',
-        });
-      }
+      // El GPS es opcional: si el técnico no logró un fix a tiempo, puede
+      // continuar sin ubicación (ver "Continuar sin GPS" en el frontend)
+      // en vez de quedar bloqueado sin poder registrar su entrada.
+      const gpsValido = gps && gps.latitud !== undefined && gps.longitud !== undefined ? gps : null;
 
       const resultado = await asistenciaService.registrarEntrada(
         req.userId,
-        gps,
+        gpsValido,
         fotaPath,
+        req.body.capturadoEn,
       );
 
       return res.status(201).json(resultado);
@@ -46,19 +46,39 @@ export class AsistenciaController {
       
       const fotaPath = req.file?.path || null;
 
-      if (!gps || !gps.latitud || !gps.longitud) {
-        return res.status(400).json({
-          mensaje: 'GPS (latitud y longitud) es requerido',
-        });
-      }
+      // GPS opcional (ver nota en registrarEntrada)
+      const gpsValido = gps && gps.latitud !== undefined && gps.longitud !== undefined ? gps : null;
 
       const resultado = await asistenciaService.registrarSalida(
         req.userId,
-        gps,
+        gpsValido,
         fotaPath,
+        req.body.capturadoEn,
       );
 
       return res.status(200).json(resultado);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async guardarReporteCierre(req: any, res: Response, next: NextFunction) {
+    try {
+      const { recordId, descripcion } = req.body;
+      const fotoPaths = (req.files as Express.Multer.File[] | undefined)?.map((f) => f.path) || [];
+
+      if (!recordId) {
+        return res.status(400).json({ mensaje: 'recordId es requerido' });
+      }
+
+      const resultado = await asistenciaService.guardarReporteCierre(
+        req.userId,
+        parseInt(recordId, 10),
+        descripcion,
+        fotoPaths,
+      );
+
+      return res.status(201).json(resultado);
     } catch (error) {
       next(error);
     }
@@ -99,6 +119,54 @@ export class AsistenciaController {
   async obtenerResumen(req: any, res: Response, next: NextFunction) {
     try {
       const resultado = await asistenciaService.obtenerResumen(req.userId);
+
+      return res.status(200).json(resultado);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async iniciarPausa(req: any, res: Response, next: NextFunction) {
+    try {
+      const { recordId, tipoPausa } = req.body;
+
+      if (!recordId || !tipoPausa) {
+        return res.status(400).json({
+          mensaje: 'recordId y tipoPausa son requeridos',
+        });
+      }
+
+      const resultado = await asistenciaService.iniciarPausa(recordId, tipoPausa);
+
+      return res.status(201).json(resultado);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async finalizarPausa(req: any, res: Response, next: NextFunction) {
+    try {
+      const { recordId } = req.body;
+
+      if (!recordId) {
+        return res.status(400).json({
+          mensaje: 'recordId es requerido',
+        });
+      }
+
+      const resultado = await asistenciaService.finalizarPausa(recordId);
+
+      return res.status(200).json(resultado);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async obtenerPausas(req: any, res: Response, next: NextFunction) {
+    try {
+      const { recordId } = req.params;
+
+      const resultado = await asistenciaService.obtenerPausas(parseInt(recordId));
 
       return res.status(200).json(resultado);
     } catch (error) {

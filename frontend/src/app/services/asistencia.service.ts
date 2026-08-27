@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { PausaAsistencia, PausasResponse } from '../models/pausa.model';
 
 export interface GPS {
   latitud: number;
@@ -40,11 +41,16 @@ export class AsistenciaService {
   /**
    * Registrar entrada (check-in)
    */
-  registrarEntrada(gps: GPS, foto?: File): Observable<any> {
+  registrarEntrada(gps: GPS | null, foto?: File, capturadoEn?: string): Observable<any> {
     const formData = new FormData();
-    formData.append('gps', JSON.stringify(gps));
+    if (gps) {
+      formData.append('gps', JSON.stringify(gps));
+    }
     if (foto) {
       formData.append('foto', foto);
+    }
+    if (capturadoEn) {
+      formData.append('capturadoEn', capturadoEn);
     }
 
     return this.http.post(`${this.apiUrl}/entrada`, formData);
@@ -53,14 +59,32 @@ export class AsistenciaService {
   /**
    * Registrar salida (check-out)
    */
-  registrarSalida(gps: GPS, foto?: File): Observable<any> {
+  registrarSalida(gps: GPS | null, foto?: File, capturadoEn?: string): Observable<any> {
     const formData = new FormData();
-    formData.append('gps', JSON.stringify(gps));
+    if (gps) {
+      formData.append('gps', JSON.stringify(gps));
+    }
     if (foto) {
       formData.append('foto', foto);
     }
+    if (capturadoEn) {
+      formData.append('capturadoEn', capturadoEn);
+    }
 
     return this.http.post(`${this.apiUrl}/salida`, formData);
+  }
+
+  /**
+   * Enviar reporte de cierre (descripción + fotos del trabajo realizado),
+   * exigido a departamentos con requiere_reporte_cierre (p. ej. Taller)
+   */
+  enviarReporteCierre(recordId: number, descripcion: string, fotos: File[]): Observable<any> {
+    const formData = new FormData();
+    formData.append('recordId', String(recordId));
+    formData.append('descripcion', descripcion);
+    fotos.forEach((foto) => formData.append('fotos', foto));
+
+    return this.http.post(`${this.apiUrl}/reporte-cierre`, formData);
   }
 
   /**
@@ -85,7 +109,11 @@ export class AsistenciaService {
   }
 
   /**
-   * Obtener ubicación GPS actual
+   * Obtener ubicación GPS actual.
+   * `timeout`: no esperar más de 15s (evita bloquear el check-in indefinidamente
+   * si el dispositivo tarda en conseguir un fix, común en interiores/campo).
+   * `maximumAge`: acepta una posición ya conocida de hasta 10 minutos, para no
+   * forzar un fix nuevo cuando ya hay una ubicación reciente en caché.
    */
   obtenerGPS(): Promise<GPS> {
     return new Promise((resolve, reject) => {
@@ -103,8 +131,35 @@ export class AsistenciaService {
         },
         (error) => {
           reject(`Error al obtener GPS: ${error.message}`);
-        }
+        },
+        { timeout: 15000, maximumAge: 10 * 60 * 1000, enableHighAccuracy: true },
       );
     });
+  }
+
+  /**
+   * Iniciar pausa
+   */
+  iniciarPausa(recordId: number, tipoPausa: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/pausa/iniciar`, {
+      recordId,
+      tipoPausa,
+    });
+  }
+
+  /**
+   * Finalizar pausa
+   */
+  finalizarPausa(recordId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/pausa/finalizar`, {
+      recordId,
+    });
+  }
+
+  /**
+   * Obtener pausas de un registro
+   */
+  obtenerPausas(recordId: number): Observable<PausasResponse> {
+    return this.http.get<PausasResponse>(`${this.apiUrl}/${recordId}/pausas`);
   }
 }

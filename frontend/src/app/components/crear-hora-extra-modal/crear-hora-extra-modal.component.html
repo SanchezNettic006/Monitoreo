@@ -1,0 +1,85 @@
+<div class="modal-container">
+  <!-- Spinner de carga -->
+  <div *ngIf="cargando" class="loading-overlay">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Guardando hora extra...</p>
+  </div>
+
+  <!-- Contenido del modal -->
+  <h2 mat-dialog-title class="modal-title">
+    <mat-icon>add_circle</mat-icon>
+    Crear Hora Extra
+  </h2>
+
+  <mat-dialog-content>
+    <!-- Formulario -->
+    <form [formGroup]="form" class="hora-extra-form">
+      <!-- Ticket/NET -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Ticket / NET</mat-label>
+        <input matInput formControlName="numero_ticket" placeholder="Ej: HE-2024-001" autofocus>
+        <mat-icon matPrefix>confirmation_number</mat-icon>
+        <mat-error *ngIf="form.get('numero_ticket')?.hasError('required')">
+          El ticket es requerido
+        </mat-error>
+        <mat-error *ngIf="form.get('numero_ticket')?.hasError('minlength')">
+          Mínimo 3 caracteres
+        </mat-error>
+      </mat-form-field>
+
+      <!-- GPS Info (solo lectura) -->
+      <div class="gps-info">
+        <div class="gps-item">
+          <span class="label">Latitud:</span>
+          <span class="value">{{ form.value.latitud }}</span>
+          <mat-progress-bar *ngIf="capturandoGPS" mode="indeterminate" class="mini-progress"></mat-progress-bar>
+        </div>
+        <div class="gps-item">
+          <span class="label">Longitud:</span>
+          <span class="value">{{ form.value.longitud }}</span>
+        </div>
+      </div>
+
+      <!-- Video oculto para captura -->
+      <video #videoInput id="video-input" style="display: none;"></video>
+    </form>
+
+    <!-- Sección de Foto (Principal) -->
+    <div class="foto-section-main">
+      <div *ngIf="!fotoCapturada && videoStream" class="video-container">
+        <video id="video-input" autoplay playsinline></video>
+        <div class="video-overlay">
+          <mat-icon class="camera-icon">camera</mat-icon>
+        </div>
+      </div>
+
+      <div *ngIf="fotoCapturada" class="foto-preview">
+        <img [src]="fotoCapturada" alt="Foto capturada">
+        <button mat-icon-button color="warn" (click)="fotoCapturada = null; capturarFoto();" type="button" class="retry-btn" title="Retomar foto">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
+
+      <div *ngIf="!videoStream && !fotoCapturada" class="foto-placeholder">
+        <mat-icon>camera</mat-icon>
+        <p>Abriendo cámara...</p>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <!-- Botones -->
+  <mat-dialog-actions align="end" class="modal-actions">
+    <button mat-button (click)="cancelar()">
+      <mat-icon>close</mat-icon>
+      Cancelar
+    </button>
+    <button *ngIf="videoStream && !fotoCapturada" mat-raised-button color="primary" (click)="tomarCaptura()" type="button">
+      <mat-icon>camera</mat-icon>
+      Tomar Foto
+    </button>
+    <button *ngIf="fotoCapturada" mat-raised-button color="primary" (click)="guardar()" [disabled]="!form.valid || cargando">
+      <mat-icon>save</mat-icon>
+      Guardar y Activar
+    </button>
+  </mat-dialog-actions>
+</div>

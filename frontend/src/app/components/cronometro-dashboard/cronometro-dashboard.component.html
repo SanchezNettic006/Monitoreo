@@ -1,0 +1,177 @@
+<div class="dashboard-container">
+  <!-- Tarjeta de Jornada Normal -->
+  <mat-card class="cronometro-card" [class]="'status-' + getStatusColor()">
+    <mat-card-header>
+      <div class="header-content">
+        <h2>Mi Jornada Normal</h2>
+        <div class="status-badge" [class]="'badge-' + getStatusColor()">
+          {{ getStatusMessage() }}
+        </div>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="cronometro-container">
+        <!-- Tiempo transcurrido -->
+        <div class="tiempo-display">
+          <div class="tiempo-valor">
+            {{ tiempoTranscurrido }}
+          </div>
+          <div class="tiempo-label">Tiempo transcurrido</div>
+        </div>
+
+        <!-- Información de entrada -->
+        <div class="info-section" *ngIf="horaEntrada">
+          <div class="info-item">
+            <mat-icon>access_time</mat-icon>
+            <div class="info-text">
+              <span class="label">Hora de entrada:</span>
+              <span class="value">{{ horaEntrada | date: 'HH:mm:ss' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estado visual -->
+        <div class="estado-visual" [class]="'estado-' + estado">
+          <div class="indicator" *ngIf="estado === 'activo'"></div>
+          <span class="estado-text">{{ getStatusMessage() }}</span>
+        </div>
+
+        <!-- Botón de acción -->
+        <div class="action-section">
+          <button 
+            *ngIf="estado === 'inactivo'" 
+            mat-raised-button 
+            color="primary" 
+            (click)="irACheckIn()"
+            class="action-btn"
+          >
+            <mat-icon>fingerprint</mat-icon>
+            Registrar Entrada
+          </button>
+
+          <button 
+            *ngIf="estado === 'activo'" 
+            mat-raised-button 
+            color="accent" 
+            (click)="irACheckIn()"
+            class="action-btn active"
+            [disabled]="cargando"
+          >
+            <mat-icon>logout</mat-icon>
+            Registrar Salida
+          </button>
+
+          <div *ngIf="estado === 'salida'" class="completed-msg">
+            <mat-icon>check_circle</mat-icon>
+            <span>Jornada completada</span>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Tarjeta de Horas Extras -->
+  <mat-card class="cronometro-card hora-extra-card" [class.active]="horaExtraActiva">
+    <mat-card-header>
+      <div class="header-content">
+        <h2>
+          <mat-icon>build_circle</mat-icon>
+          Horas Extras
+        </h2>
+        <div class="status-badge" [class.badge-active]="horaExtraActiva" [class.badge-inactive]="!horaExtraActiva">
+          {{ horaExtraActiva ? 'ACTIVO' : 'INACTIVO' }}
+        </div>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Sin hora extra activa -->
+      <div *ngIf="!horaExtraActiva" class="cronometro-container">
+        <div class="empty-state">
+          <mat-icon>schedule</mat-icon>
+          <p>No tienes horas extras activas</p>
+        </div>
+
+        <div class="action-section">
+          <button 
+            mat-raised-button 
+            color="primary" 
+            (click)="abrirCrearHoraExtra()"
+            class="action-btn"
+          >
+            <mat-icon>add_circle</mat-icon>
+            Iniciar Hora Extra
+          </button>
+        </div>
+      </div>
+
+      <!-- Con hora extra activa -->
+      <div *ngIf="horaExtraActiva" class="cronometro-container">
+        <!-- Tiempo transcurrido -->
+        <div class="tiempo-display hora-extra">
+          <div class="tiempo-valor">
+            {{ tiempoHoraExtra }}
+          </div>
+          <div class="tiempo-label">Tiempo de hora extra</div>
+        </div>
+
+        <!-- Información de la hora extra -->
+        <div class="info-section">
+          <div class="info-item">
+            <mat-icon>confirmation_number</mat-icon>
+            <div class="info-text">
+              <span class="label">Ticket/NET:</span>
+              <span class="value">{{ horaExtraActiva.numero_ticket }}</span>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <mat-icon>access_time</mat-icon>
+            <div class="info-text">
+              <span class="label">Hora de inicio:</span>
+              <span class="value">{{ formatearHora(horaExtraActiva.hora_inicio) }}</span>
+            </div>
+          </div>
+
+          <div class="info-item" *ngIf="horaExtraActiva.latitud_inicio && horaExtraActiva.longitud_inicio">
+            <mat-icon>location_on</mat-icon>
+            <div class="info-text">
+              <span class="label">Ubicación:</span>
+              <span class="value">{{ horaExtraActiva.latitud_inicio | number: '1.4-4' }}, {{ horaExtraActiva.longitud_inicio | number: '1.4-4' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estado visual -->
+        <div class="estado-visual estado-activo">
+          <div class="indicator"></div>
+          <span class="estado-text">Hora extra en progreso</span>
+        </div>
+
+        <!-- Botón de finalizar -->
+        <div class="action-section">
+          <button 
+            mat-raised-button 
+            color="warn" 
+            (click)="finalizarHoraExtra()"
+            class="action-btn finalizar"
+          >
+            <mat-icon>stop_circle</mat-icon>
+            Finalizar Hora Extra
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Mensaje de advertencia -->
+  <div class="warning-message" *ngIf="estado === 'activo' || horaExtraActiva">
+    <mat-icon>info</mat-icon>
+    <p>
+      <strong>Recordatorio:</strong> 
+      No olvides cerrar todos los registros activos antes de finalizar tu jornada.
+      <span *ngIf="estado === 'activo' && horaExtraActiva">Tienes tanto jornada normal como hora extra activas.</span>
+    </p>
+  </div>
+</div>

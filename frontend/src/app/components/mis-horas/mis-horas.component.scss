@@ -1,0 +1,150 @@
+.mis-horas-container {
+  padding: 24px;
+}
+
+.header {
+  margin-bottom: 20px;
+
+  h1 {
+    color: #2B8A3E;
+    margin-bottom: 4px;
+  }
+
+  p {
+    color: #666;
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-nota {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #f0a400;
+}
+
+.nota-pendiente {
+  display: block;
+  font-size: 11px;
+  color: #f0a400;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px !important;
+
+  .stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+
+    &.horas { background: linear-gradient(135deg, #2B8A3E 0%, #1a5a2a 100%); }
+    &.extras { background: linear-gradient(135deg, #F0A400 0%, #d98600 100%); }
+    &.pausas { background: linear-gradient(135deg, #9C27B0 0%, #6A1B9A 100%); }
+  }
+
+  .stat-label {
+    margin: 0;
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+  }
+
+  .stat-value {
+    margin: 2px 0 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+  }
+}
+
+.filtros-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.tabla-section {
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 20px;
+
+  h3 {
+    margin-top: 0;
+    color: #333;
+  }
+}
+
+.tabla-registros {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    text-align: left;
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+    padding: 10px 8px;
+    border-bottom: 2px solid #eee;
+  }
+
+  td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #f2f2f2;
+    font-size: 14px;
+  }
+}
+
+.loading, .sin-datos {
+  text-align: center;
+  color: #888;
+  padding: 30px 0;
+}
+
+.tabs-section {
+  background: transparent;
+}
+
+.tab-body {
+  padding-top: 20px;
+}
+
+.badge-estado {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+
+  &.badge-pendiente {
+    background: #FFF4E6;
+    color: #F0A400;
+  }
+
+  &.badge-aprobada {
+    background: #E8F5E9;
+    color: #4CAF50;
+  }
+
+  &.badge-rechazada {
+    background: #FDECEA;
+    color: #D32F2F;
+  }
+}

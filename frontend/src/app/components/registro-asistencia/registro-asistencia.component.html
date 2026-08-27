@@ -1,179 +1,418 @@
-<div class="container">
-  <!-- Spinner de carga -->
-  <div *ngIf="cargando" class="spinner-overlay">
-    <mat-progress-spinner mode="indeterminate" diameter="40"></mat-progress-spinner>
+<div class="attendance-container">
+  <!-- Loading overlay -->
+  <div *ngIf="cargando" class="loading-overlay">
+    <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
   </div>
 
-  <!-- Contenedor principal -->
-  <mat-card class="registro-card">
-    <!-- Encabezado -->
-    <mat-card-header>
-      <div class="header-content">
-        <mat-card-title>Registro de Asistencia</mat-card-title>
-        <p class="fecha">
-          {{ (registroHoy?.fecha | date: 'dd/MM/yyyy') || 'Hoy' }}
-        </p>
+  <!-- ===== PESTAÑAS ===== -->
+  <div class="tabs-header">
+    <button type="button" class="tab-btn" [class.active]="tabActiva === 'asistencia'" (click)="irATab('asistencia')">
+      Asistencia
+    </button>
+    <button type="button" class="tab-btn tab-btn--amber" [class.active]="tabActiva === 'horaExtra'" (click)="irATab('horaExtra')">
+      Horas Extra
+    </button>
+  </div>
+
+  <!-- ===== CARRUSEL (deslizar para cambiar de página) ===== -->
+  <div class="swipe-track" #swipeTrack (scroll)="onSwipeScroll()">
+
+  <!-- ===== PÁGINA: ASISTENCIA ===== -->
+  <div class="swipe-page">
+  <div class="app-card">
+    <!-- Header -->
+    <div class="app-card-header">
+      <div>
+        <h1>Asistencia</h1>
+        <p class="subtitle">{{ (registroHoy?.fecha | date: 'EEEE, dd MMMM': '' : 'es-SV') || 'Hoy' }}</p>
       </div>
-    </mat-card-header>
+      <div class="status-pill" [ngClass]="{
+        'is-idle': estado === 'sin_registro',
+        'is-active': estado === 'activo' && registroHoy?.hora_entrada,
+        'is-pending': estado === 'activo' && !registroHoy?.hora_entrada,
+        'is-done': estado === 'finalizado'
+      }">
+        {{
+          estado === 'sin_registro' ? 'Sin registro' :
+          (estado === 'activo' && !registroHoy?.hora_entrada) ? 'En espera' :
+          estado === 'activo' ? 'Activa' : 'Completada'
+        }}
+      </div>
+    </div>
 
-    <!-- Contenido -->
-    <mat-card-content>
-      <!-- SIN REGISTRO - Mostrar botón check-in -->
-      <div *ngIf="estado === 'sin_registro'" class="section sin-registro">
-        <h2>Sin registro de entrada</h2>
-        <p>Comienza tu jornada laboral</p>
+    <!-- Mini-indicador: hora extra corriendo en segundo plano -->
+    <button
+      type="button"
+      class="mini-otro mini-otro--amber"
+      *ngIf="horaExtraActiva"
+      (click)="irATab('horaExtra')"
+    >
+      <span class="dot-live dot-live--amber"></span>
+      Hora extra activa · {{ tiempoHoraExtra }}
+    </button>
 
-        <!-- Captura de foto -->
-        <div class="foto-section">
-          <div *ngIf="previewFoto" class="foto-preview">
-            <img [src]="previewFoto" alt="Preview" class="preview-img" />
-            <button
-              type="button"
-              mat-icon-button
-              (click)="limpiarFoto()"
-              class="btn-limpiar"
-            >
-              <mat-icon>close</mat-icon>
-            </button>
+    <div class="app-card-body">
+      <!-- STATE: Sin Registro o pendiente check-in -->
+      <div *ngIf="estado === 'sin_registro' || (estado === 'activo' && !registroHoy?.hora_entrada)" class="ring-stage">
+        <div class="ring ring--idle">
+          <div class="ring-center">
+            <mat-icon class="ring-icon">wb_sunny</mat-icon>
+            <span class="ring-caption">Listo para iniciar</span>
+          </div>
+        </div>
+
+        <p class="stage-hint">
+          {{ estado === 'sin_registro'
+            ? 'Captura tu foto y haz check-in para iniciar tu jornada'
+            : 'Tienes un registro en espera. Complétalo con check-in' }}
+        </p>
+
+        <!-- Foto circular -->
+        <div class="photo-picker">
+          <div class="photo-circle" [class.has-photo]="previewFotoAsistencia">
+            <img *ngIf="previewFotoAsistencia" [src]="previewFotoAsistencia" alt="Foto capturada" />
+            <mat-icon *ngIf="!previewFotoAsistencia">person</mat-icon>
           </div>
           <button
             type="button"
-            mat-raised-button
-            color="accent"
-            (click)="capturarFoto()"
+            class="photo-fab"
+            (click)="capturarFoto('asistencia')"
             [disabled]="cargando"
-            class="btn-foto"
+            title="Capturar foto"
           >
             <mat-icon>photo_camera</mat-icon>
-            Capturar Foto
+          </button>
+          <button
+            *ngIf="previewFotoAsistencia"
+            type="button"
+            class="photo-clear"
+            (click)="limpiarFoto('asistencia')"
+            title="Quitar foto"
+          >
+            <mat-icon>close</mat-icon>
           </button>
         </div>
 
-        <!-- Botón Check-in -->
         <button
           type="button"
-          mat-raised-button
-          color="primary"
+          class="pill-btn pill-btn--green"
           (click)="realizarCheckIn()"
-          [disabled]="cargando || !fotoCapturada"
-          class="btn-checkin"
-          [title]="!fotoCapturada ? 'Debes capturar una foto primero' : ''"
+          [disabled]="cargando || !fotoCapturadaAsistencia"
+          [title]="!fotoCapturadaAsistencia ? 'Debes capturar una foto primero' : ''"
         >
           <mat-icon>login</mat-icon>
-          CHECK-IN
+          Iniciar Jornada
         </button>
       </div>
 
-      <!-- ACTIVO - Mostrar entrada y botón check-out -->
-      <div *ngIf="estado === 'activo'" class="section activo">
-        <div class="icon-large">✅</div>
-        <h2>Jornada Iniciada</h2>
-
-        <!-- Info de entrada -->
-        <div class="info-card">
-          <div class="info-item">
-            <span class="label">🕐 Hora Entrada:</span>
-            <span class="valor">{{ formatearHora(registroHoy?.hora_entrada) }}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">⏱️ Durando:</span>
-            <span class="valor duracion">{{ obtenerDuracion() }}</span>
-          </div>
-          <div class="info-item" *ngIf="gpsActual">
-            <span class="label">📍 GPS:</span>
-            <span class="valor gps"
-              >{{ gpsActual.latitud.toFixed(4) }} , {{ gpsActual.longitud.toFixed(4) }}</span
-            >
+      <!-- STATE: Activo -->
+      <div *ngIf="estado === 'activo' && registroHoy?.hora_entrada" class="ring-stage">
+        <div class="ring ring--active">
+          <div class="ring-center">
+            <span class="ring-time">{{ obtenerDuracion() }}</span>
+            <span class="ring-caption">Tiempo trabajado</span>
           </div>
         </div>
 
-        <!-- Captura de foto -->
-        <div class="foto-section">
-          <div *ngIf="previewFoto" class="foto-preview">
-            <img [src]="previewFoto" alt="Preview" class="preview-img" />
-            <button
-              type="button"
-              mat-icon-button
-              (click)="limpiarFoto()"
-              class="btn-limpiar"
-            >
-              <mat-icon>close</mat-icon>
-            </button>
+        <div class="chip-row">
+          <div class="chip">
+            <mat-icon>schedule</mat-icon>
+            <span>Entrada {{ formatearHora(registroHoy?.hora_entrada) }}</span>
+          </div>
+          <div class="chip" *ngIf="gpsActual">
+            <mat-icon>place</mat-icon>
+            <span>{{ gpsActual.latitud.toFixed(4) }}, {{ gpsActual.longitud.toFixed(4) }}</span>
+          </div>
+        </div>
+
+        <!-- Foto circular -->
+        <div class="photo-picker">
+          <div class="photo-circle" [class.has-photo]="previewFotoAsistencia">
+            <img *ngIf="previewFotoAsistencia" [src]="previewFotoAsistencia" alt="Foto capturada" />
+            <mat-icon *ngIf="!previewFotoAsistencia">person</mat-icon>
           </div>
           <button
             type="button"
-            mat-raised-button
-            color="accent"
-            (click)="capturarFoto()"
+            class="photo-fab"
+            (click)="capturarFoto('asistencia')"
             [disabled]="cargando"
-            class="btn-foto"
+            title="Capturar foto"
           >
             <mat-icon>photo_camera</mat-icon>
-            Capturar Foto
+          </button>
+          <button
+            *ngIf="previewFotoAsistencia"
+            type="button"
+            class="photo-clear"
+            (click)="limpiarFoto('asistencia')"
+            title="Quitar foto"
+          >
+            <mat-icon>close</mat-icon>
           </button>
         </div>
 
-        <!-- Botón Check-out -->
         <button
           type="button"
-          mat-raised-button
-          color="warn"
+          class="pill-btn pill-btn--red"
           (click)="realizarCheckOut()"
-          [disabled]="cargando || !fotoCapturada"
-          class="btn-checkout"
-          [title]="!fotoCapturada ? 'Debes capturar una foto primero' : ''"
+          [disabled]="cargando || !fotoCapturadaAsistencia"
+          [title]="!fotoCapturadaAsistencia ? 'Debes capturar una foto primero' : ''"
         >
           <mat-icon>logout</mat-icon>
-          CHECK-OUT
+          Terminar Jornada
         </button>
+
+        <!-- PAUSAS -->
+        <div class="pausas-block">
+          <div class="pausas-block-header">
+            <span>Pausas</span>
+            <span class="pausas-total" *ngIf="totalPausas > 0">{{ formatearDuracion(totalPausas) }}</span>
+          </div>
+
+          <div *ngIf="pausaActiva" class="pausa-activa-chip">
+            <mat-icon>pause_circle</mat-icon>
+            <span>Pausa activa: <strong>{{ pausaActiva.tipo_pausa }}</strong></span>
+            <button type="button" (click)="finalizarPausa()" [disabled]="cargando" class="pausa-resume" title="Reanudar">
+              <mat-icon>play_arrow</mat-icon>
+            </button>
+          </div>
+
+          <button
+            *ngIf="!pausaActiva"
+            type="button"
+            class="outline-btn"
+            [matMenuTriggerFor]="menuPausas"
+            [disabled]="cargando"
+          >
+            <mat-icon>pause</mat-icon>
+            Iniciar Pausa
+          </button>
+
+          <mat-menu #menuPausas="matMenu">
+            <button mat-menu-item *ngFor="let tipo of tiposPausa" (click)="iniciarPausa(tipo)" [disabled]="cargando">
+              <mat-icon>schedule</mat-icon>
+              <span>Pausa {{ tipo | titlecase }}</span>
+            </button>
+          </mat-menu>
+
+          <div *ngIf="pausas.length > 0" class="pausa-list">
+            <div class="pausa-list-item" *ngFor="let pausa of pausas">
+              <span class="dot" [ngClass]="'dot-' + pausa.tipo_pausa"></span>
+              <span class="pausa-tipo">{{ pausa.tipo_pausa | titlecase }}</span>
+              <span class="pausa-horas">
+                {{ formatearHora(pausa.hora_inicio) }}
+                <ng-container *ngIf="pausa.hora_fin"> → {{ formatearHora(pausa.hora_fin) }}</ng-container>
+                <span *ngIf="!pausa.hora_fin" class="activa-tag">activa</span>
+              </span>
+              <span class="pausa-dur" *ngIf="pausa.duracion">{{ formatearDuracion(pausa.duracion) }}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- FINALIZADO - Mostrar resumen -->
-      <div *ngIf="estado === 'finalizado'" class="section finalizado">
-        <div class="icon-large">🏁</div>
-        <h2>Jornada Completada</h2>
-
-        <!-- Info completa -->
-        <div class="info-card">
-          <div class="info-item">
-            <span class="label">🕐 Entrada:</span>
-            <span class="valor">{{ formatearHora(registroHoy?.hora_entrada) }}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">🕐 Salida:</span>
-            <span class="valor">{{ formatearHora(registroHoy?.hora_salida) }}</span>
-          </div>
-          <div class="info-item highlight">
-            <span class="label">⏱️ Total trabajado:</span>
-            <span class="valor horas">{{ obtenerDuracion() }}</span>
+      <!-- STATE: Finalizado -->
+      <div *ngIf="estado === 'finalizado'" class="ring-stage">
+        <div class="ring ring--done">
+          <div class="ring-center">
+            <mat-icon class="ring-icon">check_circle</mat-icon>
+            <span class="ring-time">{{ obtenerDuracion() }}</span>
+            <span class="ring-caption">Total trabajado</span>
           </div>
         </div>
 
-        <button
-          type="button"
-          mat-stroked-button
-          (click)="cargarRegistroHoy()"
-          class="btn-refresh"
-        >
+        <div class="chip-row">
+          <div class="chip">
+            <mat-icon>login</mat-icon>
+            <span>{{ formatearHora(registroHoy?.hora_entrada) }}</span>
+          </div>
+          <div class="chip">
+            <mat-icon>logout</mat-icon>
+            <span>{{ formatearHora(registroHoy?.hora_salida) }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="pausas.length > 0" class="pausas-block">
+          <div class="pausas-block-header">
+            <span>Pausas realizadas</span>
+            <span class="pausas-total" *ngIf="totalPausas > 0">{{ formatearDuracion(totalPausas) }}</span>
+          </div>
+          <div class="pausa-list">
+            <div class="pausa-list-item" *ngFor="let pausa of pausas">
+              <span class="dot" [ngClass]="'dot-' + pausa.tipo_pausa"></span>
+              <span class="pausa-tipo">{{ pausa.tipo_pausa | titlecase }}</span>
+              <span class="pausa-horas">
+                {{ formatearHora(pausa.hora_inicio) }}
+                <ng-container *ngIf="pausa.hora_fin"> → {{ formatearHora(pausa.hora_fin) }}</ng-container>
+              </span>
+              <span class="pausa-dur" *ngIf="pausa.duracion">{{ formatearDuracion(pausa.duracion) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="outline-btn" (click)="cargarRegistroHoy()">
           <mat-icon>refresh</mat-icon>
           Actualizar
         </button>
       </div>
-    </mat-card-content>
-  </mat-card>
+    </div>
 
-  <!-- Tarjeta de estado GPS -->
-  <mat-card class="gps-status-card">
-    <mat-card-content>
-      <div class="gps-status">
-        <mat-icon>location_on</mat-icon>
-        <span class="status-text">
-          {{ gpsActual ? '✅ GPS Habilitado' : '❌ GPS No Disponible' }}
-        </span>
+    <!-- GPS Status -->
+    <div class="gps-strip" [ngClass]="gpsActual ? 'is-on' : 'is-off'">
+      <mat-icon>location_on</mat-icon>
+      <span>{{ gpsActual ? 'GPS habilitado' : 'GPS no disponible — activa ubicación en tu dispositivo' }}</span>
+    </div>
+  </div>
+  </div>
+  <!-- fin página Asistencia -->
+
+  <!-- ===== PÁGINA: HORAS EXTRA ===== -->
+  <div class="swipe-page">
+  <div class="app-card app-card--amber">
+    <div class="app-card-header">
+      <div>
+        <h1><mat-icon>build_circle</mat-icon> Horas Extras</h1>
+        <p class="subtitle">Gestión de trabajos adicionales</p>
       </div>
-      <p class="gps-info">
-        Asegúrate de habilitar los servicios de ubicación en tu dispositivo
+      <div class="status-pill" [ngClass]="horaExtraActiva ? 'is-active' : 'is-idle'">
+        {{ horaExtraActiva ? 'Activo' : 'Inactivo' }}
+      </div>
+    </div>
+
+    <!-- Mini-indicador: jornada corriendo en segundo plano -->
+    <button
+      type="button"
+      class="mini-otro"
+      *ngIf="estado === 'activo' && registroHoy?.hora_entrada"
+      (click)="irATab('asistencia')"
+    >
+      <span class="dot-live"></span>
+      Jornada activa · {{ tiempoTranscurrido }}
+    </button>
+
+    <div class="app-card-body">
+      <!-- Sin hora extra activa -->
+      <div *ngIf="!horaExtraActiva" class="ring-stage">
+        <div class="ring ring--idle ring--amber">
+          <div class="ring-center">
+            <mat-icon class="ring-icon">schedule</mat-icon>
+            <span class="ring-caption">Sin hora extra activa</span>
+          </div>
+        </div>
+
+        <button
+          *ngIf="!mostrarFormHoraExtra"
+          type="button"
+          class="pill-btn pill-btn--amber"
+          (click)="toggleFormHoraExtra()"
+        >
+          <mat-icon>add_circle</mat-icon>
+          Iniciar Hora Extra
+        </button>
+
+        <!-- Formulario -->
+        <div *ngIf="mostrarFormHoraExtra" class="hora-extra-form">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Número de Ticket/NET</mat-label>
+            <input matInput [(ngModel)]="numeroTicket" placeholder="Ej: NET-12345" [disabled]="cargando" />
+            <mat-icon matPrefix>confirmation_number</mat-icon>
+          </mat-form-field>
+
+          <div class="photo-picker">
+            <div class="photo-circle photo-circle--amber" [class.has-photo]="previewFotoHoraExtra">
+              <img *ngIf="previewFotoHoraExtra" [src]="previewFotoHoraExtra" alt="Foto capturada" />
+              <mat-icon *ngIf="!previewFotoHoraExtra">person</mat-icon>
+            </div>
+            <button type="button" class="photo-fab photo-fab--amber" (click)="capturarFoto('horaExtra')" [disabled]="cargando" title="Capturar foto">
+              <mat-icon>photo_camera</mat-icon>
+            </button>
+            <button *ngIf="previewFotoHoraExtra" type="button" class="photo-clear" (click)="limpiarFoto('horaExtra')" title="Quitar foto">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              class="pill-btn pill-btn--amber"
+              (click)="iniciarHoraExtra()"
+              [disabled]="cargando || !fotoCapturadaHoraExtra || !numeroTicket.trim()"
+            >
+              <mat-icon>play_arrow</mat-icon>
+              Confirmar Inicio
+            </button>
+            <button type="button" class="outline-btn" (click)="toggleFormHoraExtra()" [disabled]="cargando">
+              <mat-icon>close</mat-icon>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Con hora extra activa -->
+      <div *ngIf="horaExtraActiva" class="ring-stage">
+        <div class="ring ring--active ring--amber">
+          <div class="ring-center">
+            <span class="ring-time">{{ tiempoHoraExtra }}</span>
+            <span class="ring-caption">Hora extra</span>
+          </div>
+        </div>
+
+        <div class="chip-row">
+          <div class="chip chip--amber">
+            <mat-icon>confirmation_number</mat-icon>
+            <span>{{ horaExtraActiva.numero_ticket }}</span>
+          </div>
+          <div class="chip">
+            <mat-icon>schedule</mat-icon>
+            <span>{{ formatearHora(horaExtraActiva.hora_inicio) }}</span>
+          </div>
+          <div class="chip" *ngIf="horaExtraActiva.latitud_inicio && horaExtraActiva.longitud_inicio">
+            <mat-icon>place</mat-icon>
+            <span>{{ horaExtraActiva.latitud_inicio | number: '1.4-4' }}, {{ horaExtraActiva.longitud_inicio | number: '1.4-4' }}</span>
+          </div>
+        </div>
+
+        <div class="photo-picker">
+          <div class="photo-circle photo-circle--amber" [class.has-photo]="previewFotoHoraExtra">
+            <img *ngIf="previewFotoHoraExtra" [src]="previewFotoHoraExtra" alt="Foto capturada" />
+            <mat-icon *ngIf="!previewFotoHoraExtra">person</mat-icon>
+          </div>
+          <button type="button" class="photo-fab photo-fab--amber" (click)="capturarFoto('horaExtra')" [disabled]="cargando" title="Capturar foto">
+            <mat-icon>photo_camera</mat-icon>
+          </button>
+          <button *ngIf="previewFotoHoraExtra" type="button" class="photo-clear" (click)="limpiarFoto('horaExtra')" title="Quitar foto">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <button
+          type="button"
+          class="pill-btn pill-btn--red"
+          (click)="finalizarHoraExtraActiva()"
+          [disabled]="cargando || !fotoCapturadaHoraExtra"
+          [title]="!fotoCapturadaHoraExtra ? 'Debes capturar una foto primero' : ''"
+        >
+          <mat-icon>stop_circle</mat-icon>
+          Finalizar Hora Extra
+        </button>
+      </div>
+    </div>
+  </div>
+  </div>
+  <!-- fin página Horas Extra -->
+
+  </div>
+  <!-- fin swipe-track -->
+
+  <!-- Advertencia de registros activos -->
+  <div class="warning-strip" *ngIf="estado === 'activo' || horaExtraActiva">
+    <mat-icon>info</mat-icon>
+    <div>
+      <strong>Recordatorio importante</strong>
+      <p>No olvides cerrar todos los registros activos antes de finalizar tu jornada.</p>
+      <p *ngIf="estado === 'activo' && horaExtraActiva" class="warning-strong">
+        Tienes tanto jornada normal como hora extra activas.
       </p>
-    </mat-card-content>
-  </mat-card>
+    </div>
+  </div>
 </div>

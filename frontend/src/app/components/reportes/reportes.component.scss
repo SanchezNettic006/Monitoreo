@@ -1,0 +1,537 @@
+// ============= CONTAINER =============
+.reports-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+// ============= HEADER =============
+.reports-header {
+  margin-bottom: 32px;
+
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #2B8A3E;
+    margin: 0 0 8px 0;
+  }
+
+  p {
+    font-size: 16px;
+    color: #666;
+    margin: 0;
+  }
+}
+
+// ============= STATS GRID =============
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    color: white;
+
+    mat-icon {
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+    }
+
+    &.presente {
+      background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+    }
+
+    &.empleados {
+      background: linear-gradient(135deg, #2196F3 0%, #1565C0 100%);
+    }
+
+    &.extras {
+      background: linear-gradient(135deg, #FF9800 0%, #E65100 100%);
+    }
+
+    &.pausas {
+      background: linear-gradient(135deg, #9C27B0 0%, #6A1B9A 100%);
+    }
+  }
+
+  .stat-content {
+    display: flex;
+    flex-direction: column;
+
+    .stat-label {
+      font-size: 13px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2B8A3E;
+    }
+  }
+}
+
+// ============= FILTERS SECTION =============
+.filters-section {
+  margin-bottom: 32px;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2B8A3E;
+    margin: 0 0 16px 0;
+  }
+
+  .filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+
+    .filter-field {
+      width: 100%;
+
+      ::ng-deep {
+        .mdc-text-field--filled {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  .filter-actions {
+    display: flex;
+    gap: 12px;
+
+    .btn-apply {
+      background: linear-gradient(135deg, #2B8A3E 0%, #1a5a2a 100%) !important;
+      color: white !important;
+      font-weight: 600 !important;
+
+      mat-icon {
+        margin-right: 8px;
+      }
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(43, 138, 62, 0.3);
+      }
+    }
+
+    .btn-clear {
+      border: 2px solid #ddd !important;
+      color: #666 !important;
+
+      mat-icon {
+        margin-right: 8px;
+      }
+    }
+  }
+}
+
+// ============= TABLE SECTION =============
+.table-section {
+  margin-bottom: 32px;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2B8A3E;
+    margin: 0 0 16px 0;
+  }
+
+  .table-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    h3 {
+      margin: 0;
+    }
+
+    button mat-icon {
+      margin-right: 6px;
+    }
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    margin-bottom: 16px;
+
+    .table-asistencias {
+      width: 100%;
+      border-collapse: collapse;
+
+      th {
+        background: #f8f9fa;
+        padding: 16px;
+        text-align: left;
+        font-weight: 600;
+        color: #2B8A3E;
+        border-bottom: 2px solid #e0e0e0;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+
+      td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 14px;
+        color: #333;
+
+        .badge {
+          display: inline-block;
+          padding: 6px 12px;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+
+          &.badge-horas {
+            background: rgba(43, 138, 62, 0.1);
+            color: #2B8A3E;
+          }
+
+          &.badge-pausas {
+            background: rgba(156, 39, 176, 0.1);
+            color: #6A1B9A;
+          }
+
+          &.badge-netas {
+            background: rgba(76, 175, 80, 0.1);
+            color: #2E7D32;
+            font-weight: 600;
+          }
+
+          &.badge-extras {
+            background: rgba(255, 152, 0, 0.1);
+            color: #E65100;
+          }
+
+          &.badge-motivo {
+            background: rgba(25, 113, 194, 0.1);
+            color: #1971C2;
+            text-transform: none;
+            white-space: normal;
+          }
+
+          &.badge-proyecto {
+            background: rgba(240, 164, 0, 0.12);
+            color: #b97e00;
+            text-transform: none;
+            white-space: normal;
+          }
+        }
+      }
+
+      tr:hover {
+        background: #f8f9fa;
+      }
+    }
+  }
+
+  ::ng-deep {
+    .mat-mdc-paginator {
+      background: #f8f9fa;
+      border-top: 1px solid #e0e0e0;
+
+      .mat-mdc-paginator-container {
+        padding: 0;
+        min-height: 56px;
+      }
+    }
+  }
+}
+
+// ============= DEPARTAMENTOS SECTION =============
+.departamentos-section {
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2B8A3E;
+    margin: 0 0 16px 0;
+  }
+
+  .departamentos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+
+    .depto-card {
+      padding: 16px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #f0f0f0 100%);
+      border-radius: 8px;
+      border-left: 4px solid #2B8A3E;
+
+      h4 {
+        font-size: 15px;
+        font-weight: 600;
+        color: #2B8A3E;
+        margin: 0 0 12px 0;
+      }
+
+      .depto-stat {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        font-size: 13px;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .label {
+          color: #666;
+          font-weight: 500;
+        }
+
+        .value {
+          color: #2B8A3E;
+          font-weight: 700;
+        }
+      }
+    }
+  }
+}
+
+// ============= CUMPLIMIENTO DE REPORTES =============
+.cumplimiento-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.cumplimiento-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  h3 {
+    margin: 0 0 4px;
+    color: #2b8a3e;
+    font-size: 17px;
+  }
+
+  .subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: #777;
+  }
+
+  .mes-selector {
+    width: 200px;
+  }
+}
+
+.leyenda-cumplimiento {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: #666;
+
+  .item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .punto {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+
+    &.reportado { background: #2b8a3e; }
+    &.pendiente { background: #f0a400; }
+  }
+}
+
+.btn-volver {
+  color: #2b8a3e !important;
+  margin-bottom: 8px;
+
+  mat-icon {
+    margin-right: 4px;
+  }
+}
+
+.barras-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.barra-fila {
+  display: grid;
+  grid-template-columns: 160px 1fr 72px 20px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: #f6f8f6;
+  }
+
+  .fila-nombre {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .fila-porcentaje {
+    font-size: 13px;
+    font-weight: 700;
+    color: #333;
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fila-icono {
+    color: #ccc;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.barra-cumplimiento {
+  display: flex;
+  height: 18px;
+  border-radius: 9px;
+  overflow: hidden;
+  background: #eee;
+
+  .segmento {
+    height: 100%;
+
+    &.reportado {
+      background: #2b8a3e;
+      border-right: 2px solid white;
+    }
+
+    &.pendiente {
+      background: #f0a400;
+    }
+  }
+}
+
+.cumplimiento-section .sin-datos {
+  text-align: center;
+  padding: 24px;
+  color: #999;
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .barra-fila {
+    grid-template-columns: 100px 1fr 60px 18px;
+  }
+}
+
+// ============= RESPONSIVE =============
+@media (max-width: 768px) {
+  .reports-container {
+    padding: 16px 12px;
+  }
+
+  .reports-header {
+    h1 {
+      font-size: 24px;
+    }
+
+    p {
+      font-size: 14px;
+    }
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .filters-section {
+    .filters-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .filter-actions {
+      flex-direction: column;
+    }
+  }
+
+  .table-section {
+    .table-asistencias {
+      font-size: 12px;
+
+      th,
+      td {
+        padding: 8px 12px;
+      }
+    }
+  }
+
+  .departamentos-section {
+    .departamentos-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}
