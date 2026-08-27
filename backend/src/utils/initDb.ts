@@ -307,6 +307,18 @@ export async function inicializarColumnas() {
       }
     }
 
+    console.log('🔧 Verificando columna proyecto_trabajado en record_asistencia...');
+    if (tablaRecordAsistenciaExiste) {
+      const columnaProyectoTrabajadoExiste = await queryRunner.hasColumn('record_asistencia', 'proyecto_trabajado');
+      if (!columnaProyectoTrabajadoExiste) {
+        console.log('🏗️ Agregando columna proyecto_trabajado...');
+        await queryRunner.query(`ALTER TABLE record_asistencia ADD COLUMN proyecto_trabajado VARCHAR(255) NULL`);
+        console.log('✅ Columna proyecto_trabajado agregada exitosamente');
+      } else {
+        console.log('✅ Columna proyecto_trabajado ya existe');
+      }
+    }
+
     // Liberar queryRunner
     await queryRunner.release();
   } catch (error) {

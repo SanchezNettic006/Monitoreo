@@ -14,6 +14,13 @@
       Tu departamento requiere describir el trabajo realizado y adjuntar al menos {{ fotosMinimas }} fotos como evidencia.
     </p>
 
+    <mat-form-field appearance="fill" class="full-width" *ngIf="proyectos.length > 0">
+      <mat-label>¿En qué proyecto trabajaste hoy?</mat-label>
+      <mat-select [(ngModel)]="proyectoSeleccionado" [disabled]="enviando">
+        <mat-option *ngFor="let proyecto of proyectos" [value]="proyecto">{{ proyecto }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
     <mat-form-field appearance="fill" class="full-width">
       <mat-label>¿Qué hiciste hoy?</mat-label>
       <textarea

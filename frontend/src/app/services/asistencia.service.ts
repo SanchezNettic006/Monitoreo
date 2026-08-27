@@ -78,13 +78,20 @@ export class AsistenciaService {
    * Enviar reporte de cierre (descripción + fotos del trabajo realizado),
    * exigido a departamentos con requiere_reporte_cierre (p. ej. Taller)
    */
-  enviarReporteCierre(recordId: number, descripcion: string, fotos: File[]): Observable<any> {
+  enviarReporteCierre(recordId: number, descripcion: string, fotos: File[], proyectoTrabajado?: string): Observable<any> {
     const formData = new FormData();
     formData.append('recordId', String(recordId));
     formData.append('descripcion', descripcion);
+    if (proyectoTrabajado) {
+      formData.append('proyectoTrabajado', proyectoTrabajado);
+    }
     fotos.forEach((foto) => formData.append('fotos', foto));
 
     return this.http.post(`${this.apiUrl}/reporte-cierre`, formData);
+  }
+
+  obtenerMisProyectos(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/mis-proyectos`);
   }
 
   /**

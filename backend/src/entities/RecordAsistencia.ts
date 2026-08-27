@@ -60,6 +60,11 @@ export class RecordAsistencia {
   @Column({ name: 'descripcion_trabajo', type: 'text', nullable: true })
   descripcion_trabajo?: string;
 
+  // Proyecto que el propio técnico indicó haber trabajado ese día (puede diferir
+  // del proyecto activo asignado a su grupo, ya que a veces rota entre proyectos).
+  @Column({ name: 'proyecto_trabajado', nullable: true })
+  proyecto_trabajado?: string;
+
   // Evitan reenviar las alertas de Telegram de "jornada sin cerrar" (primero al
   // propio técnico, y si sigue sin cerrar, escalado al líder/admin) más de una
   // vez por registro.

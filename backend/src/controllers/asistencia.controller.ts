@@ -1,9 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { AsistenciaService } from '@services/asistencia.service';
 import { EmpleadoService } from '@services/empleado.service';
+import { GrupoService } from '@services/grupo.service';
 
 const asistenciaService = new AsistenciaService();
 const empleadoService = new EmpleadoService();
+const grupoService = new GrupoService();
 
 export class AsistenciaController {
   async registrarEntrada(req: any, res: Response, next: NextFunction) {
@@ -64,7 +66,7 @@ export class AsistenciaController {
 
   async guardarReporteCierre(req: any, res: Response, next: NextFunction) {
     try {
-      const { recordId, descripcion } = req.body;
+      const { recordId, descripcion, proyectoTrabajado } = req.body;
       const fotoPaths = (req.files as Express.Multer.File[] | undefined)?.map((f) => f.path) || [];
 
       if (!recordId) {
@@ -76,9 +78,19 @@ export class AsistenciaController {
         parseInt(recordId, 10),
         descripcion,
         fotoPaths,
+        proyectoTrabajado,
       );
 
       return res.status(201).json(resultado);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async obtenerMisProyectos(req: any, res: Response, next: NextFunction) {
+    try {
+      const proyectos = await grupoService.obtenerProyectosDeMiGrupo(req.userId);
+      return res.status(200).json({ data: proyectos });
     } catch (error) {
       next(error);
     }

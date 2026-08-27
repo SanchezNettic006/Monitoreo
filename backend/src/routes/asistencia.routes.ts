@@ -24,6 +24,11 @@ router.post('/reporte-cierre', uploadFoto.array('fotos', 10), (req, res, next) =
   controller.guardarReporteCierre(req, res, next),
 );
 
+// Proyectos del grupo del propio empleado, para elegir en cuál trabajó al cerrar jornada
+router.get('/mis-proyectos', (req, res, next) =>
+  controller.obtenerMisProyectos(req, res, next),
+);
+
 // Obtener registro de hoy
 router.get('/hoy', (req, res, next) =>
   controller.obtenerRegistroHoy(req, res, next),

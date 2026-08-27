@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AsistenciaService } from '../../../services/asistencia.service';
 
@@ -22,17 +23,21 @@ const FOTOS_MINIMAS = 3;
     MatIconModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     MatSnackBarModule,
   ],
   templateUrl: './reporte-cierre-dialog.component.html',
   styleUrl: './reporte-cierre-dialog.component.scss',
 })
-export class ReporteCierreDialogComponent {
+export class ReporteCierreDialogComponent implements OnInit {
   descripcion = '';
   fotos: File[] = [];
   previews: string[] = [];
   enviando = false;
   fotosMinimas = FOTOS_MINIMAS;
+  proyectos: string[] = [];
+  proyectoSeleccionado = '';
+  cargandoProyectos = true;
 
   constructor(
     public dialogRef: MatDialogRef<ReporteCierreDialogComponent>,
@@ -43,8 +48,25 @@ export class ReporteCierreDialogComponent {
     dialogRef.disableClose = true;
   }
 
+  ngOnInit(): void {
+    this.asistenciaService.obtenerMisProyectos().subscribe({
+      next: (respuesta) => {
+        this.proyectos = respuesta.data || [];
+        this.cargandoProyectos = false;
+      },
+      error: () => {
+        this.cargandoProyectos = false;
+      },
+    });
+  }
+
   get puedeEnviar(): boolean {
-    return this.descripcion.trim().length > 0 && this.fotos.length >= FOTOS_MINIMAS && !this.enviando;
+    return (
+      this.descripcion.trim().length > 0 &&
+      this.fotos.length >= FOTOS_MINIMAS &&
+      (this.proyectos.length === 0 || !!this.proyectoSeleccionado) &&
+      !this.enviando
+    );
   }
 
   capturarFoto(): void {
@@ -107,7 +129,9 @@ export class ReporteCierreDialogComponent {
     if (!this.puedeEnviar) return;
 
     this.enviando = true;
-    this.asistenciaService.enviarReporteCierre(this.data.recordId, this.descripcion.trim(), this.fotos).subscribe({
+    this.asistenciaService
+      .enviarReporteCierre(this.data.recordId, this.descripcion.trim(), this.fotos, this.proyectoSeleccionado)
+      .subscribe({
       next: () => {
         this.snackBar.open('✅ Reporte de cierre enviado', 'Cerrar', { duration: 3000 });
         this.dialogRef.close(true);

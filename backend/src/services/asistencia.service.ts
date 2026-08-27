@@ -168,6 +168,7 @@ export class AsistenciaService {
     recordId: number,
     descripcion: string,
     fotoPaths: string[],
+    proyectoTrabajado?: string,
   ) {
     const empleado = await this.empleadoRepository.findOne({
       where: { usuario_id: usuarioId },
@@ -198,6 +199,9 @@ export class AsistenciaService {
     }
 
     record.descripcion_trabajo = descripcion.trim();
+    if (proyectoTrabajado?.trim()) {
+      record.proyecto_trabajado = proyectoTrabajado.trim();
+    }
     await this.recordRepository.save(record);
 
     const fotos = fotoPaths.map((ruta) =>

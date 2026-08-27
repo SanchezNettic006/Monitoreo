@@ -127,6 +127,26 @@ export class GrupoService {
     return this.asignacionRepository.save(nueva);
   }
 
+  /**
+   * Nombres de proyecto (activo + historial, sin duplicados) del grupo al que
+   * pertenece el empleado dueño de usuarioId. Se usa para que el propio técnico
+   * elija en qué proyecto trabajó ese día al cerrar su jornada, ya que a veces
+   * rota de proyecto sin que el líder actualice la asignación del grupo.
+   */
+  async obtenerProyectosDeMiGrupo(usuarioId: number): Promise<string[]> {
+    const empleado = await this.empleadoRepository.findOne({ where: { usuario_id: usuarioId } });
+    if (!empleado?.grupo_id) {
+      return [];
+    }
+
+    const asignaciones = await this.asignacionRepository.find({
+      where: { grupo_id: empleado.grupo_id },
+      order: { fecha_inicio: 'DESC' },
+    });
+
+    return [...new Set(asignaciones.map((a) => a.nombre_proyecto))];
+  }
+
   async obtenerHistorial(grupoId: number, departamentoIdRestringido?: number) {
     await this.validarAccesoGrupo(grupoId, departamentoIdRestringido);
 
