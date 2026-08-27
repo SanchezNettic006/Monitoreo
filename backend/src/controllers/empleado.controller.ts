@@ -25,7 +25,7 @@ export class EmpleadoController {
   async obtenerPorId(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const empleado = await empleadoService.obtenerEmpleado(parseInt(id));
+      const empleado = await empleadoService.obtenerEmpleado(parseInt(String(id)));
 
       if (req.departamentoId !== undefined && empleado.departamento_id !== req.departamentoId) {
         throw new OperationalError(403, 'No tienes permisos para ver empleados de otro departamento');
@@ -92,7 +92,7 @@ export class EmpleadoController {
       if (fecha_ingreso !== undefined) datosActualizar.fecha_ingreso = fecha_ingreso || undefined;
       if (dias_vacaciones_anuales !== undefined) datosActualizar.dias_vacaciones_anuales = parseInt(dias_vacaciones_anuales, 10);
 
-      const empleadoActualizado = await empleadoService.actualizarEmpleado(parseInt(id), datosActualizar, rol);
+      const empleadoActualizado = await empleadoService.actualizarEmpleado(parseInt(String(id)), datosActualizar, rol);
 
       return res.status(200).json({
         mensaje: 'Empleado actualizado exitosamente',
@@ -108,11 +108,11 @@ export class EmpleadoController {
     try {
       const { id } = req.params;
       
-      await empleadoService.eliminarEmpleado(parseInt(id));
-      
+      await empleadoService.eliminarEmpleado(parseInt(String(id)));
+
       return res.status(200).json({
         mensaje: 'Empleado eliminado exitosamente',
-        data: { id: parseInt(id) },
+        data: { id: parseInt(String(id)) },
       });
     } catch (error) {
       next(error);
@@ -130,7 +130,7 @@ export class EmpleadoController {
       }
 
       const rutaFoto = `/uploads/${file.filename}`;
-      const empleadoActualizado = await empleadoService.actualizarFoto(parseInt(id), rutaFoto);
+      const empleadoActualizado = await empleadoService.actualizarFoto(parseInt(String(id)), rutaFoto);
 
       return res.status(200).json({
         mensaje: 'Foto de perfil actualizada exitosamente',

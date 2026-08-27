@@ -121,7 +121,7 @@ export class HoraExtraController {
    */
   async obtenerActivas(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const recordAsistenciaId = parseInt(req.params.recordAsistenciaId);
+      const recordAsistenciaId = parseInt(String(req.params.recordAsistenciaId));
 
       if (!recordAsistenciaId) {
         return res.status(400).json({
@@ -148,7 +148,7 @@ export class HoraExtraController {
    */
   async obtenerHistorial(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const recordAsistenciaId = parseInt(req.params.recordAsistenciaId);
+      const recordAsistenciaId = parseInt(String(req.params.recordAsistenciaId));
 
       if (!recordAsistenciaId) {
         return res.status(400).json({

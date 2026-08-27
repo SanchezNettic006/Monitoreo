@@ -115,7 +115,7 @@ export class ReportesController {
       const meses = req.query.meses ? parseInt(req.query.meses as string) : 3;
 
       const historial = await reportesService.obtenerHistorialEmpleado(
-        parseInt(id),
+        parseInt(String(id)),
         meses,
       );
 

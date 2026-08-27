@@ -38,7 +38,7 @@ export class AsistenciaService {
 
     // Verificar si ya hay un registro de hoy sin salida
     const recordExistente = await this.recordRepository.findOne({
-      where: { empleado: { id: empleado.id }, fecha: hoyStr, hora_salida: null },
+      where: { empleado: { id: empleado.id }, fecha: hoyStr, hora_salida: IsNull() },
     });
 
     if (recordExistente) {

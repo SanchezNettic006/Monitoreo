@@ -59,9 +59,9 @@ export class CalendarioController {
   async eliminar(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      await calendarioService.eliminarDia(parseInt(id));
+      await calendarioService.eliminarDia(parseInt(String(id)));
 
-      return res.status(200).json({ mensaje: 'Día especial eliminado exitosamente', data: { id: parseInt(id) } });
+      return res.status(200).json({ mensaje: 'Día especial eliminado exitosamente', data: { id: parseInt(String(id)) } });
     } catch (error) {
       next(error);
     }
