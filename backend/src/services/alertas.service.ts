@@ -32,6 +32,48 @@ export class AlertasService {
     await this.escalarLiderJornadaLarga();
   }
 
+  /**
+   * Cierre automático de jornadas olvidadas: si ya pasó la medianoche del día en
+   * que se marcó entrada y el técnico nunca hizo check-out, se cierra solo a las
+   * 23:59:59 de ese mismo día (marcado con `cierre_automatico`) para que no se
+   * quede "atascado" sin poder volver a marcar entrada al día siguiente.
+   * Las horas extra NO se tocan aquí: esas las sigue cerrando el técnico, porque
+   * es normal que crucen la medianoche (ej. trabajar de 11pm a 2am).
+   */
+  async cerrarJornadasOlvidadas(): Promise<void> {
+    const hoyStr = hoyLocal();
+
+    const records = await this.recordRepository
+      .createQueryBuilder('record')
+      .leftJoinAndSelect('record.empleado', 'empleado')
+      .leftJoinAndSelect('empleado.usuario', 'usuario')
+      .where('record.hora_salida IS NULL')
+      .andWhere('record.fecha_asistencia < :hoy', { hoy: hoyStr })
+      .getMany();
+
+    for (const record of records) {
+      const cierre = new Date(`${record.fecha}T23:59:59`);
+
+      record.hora_salida = cierre;
+      record.cierre_automatico = true;
+
+      const msEntrada = new Date(record.hora_entrada).getTime();
+      const diffMs = cierre.getTime() - msEntrada;
+      record.horas_trabajadas = Math.max(0, parseFloat((diffMs / (1000 * 60 * 60)).toFixed(2)));
+
+      await this.recordRepository.save(record);
+
+      const chatId = record.empleado?.usuario?.telegram_chat_id;
+      if (chatId) {
+        await telegramService.enviarMensaje(
+          chatId,
+          `🔒 Se te olvidó hacer CHECK-OUT el ${record.fecha} y el sistema cerró tu jornada automáticamente a las 11:59pm. ` +
+            `Si tus horas reales fueron distintas, avisa a tu líder para que las corrija.`,
+        );
+      }
+    }
+  }
+
   private async avisarTecnicoJornadaLarga(): Promise<void> {
     const limite = new Date(Date.now() - UMBRAL_HORAS_JORNADA_TECNICO * 60 * 60 * 1000);
 

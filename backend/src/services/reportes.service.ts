@@ -169,6 +169,7 @@ export class ReportesService {
         entrada: r.hora_entrada,
         salida: r.hora_salida,
         horasTrabajadas: r.horas_trabajadas,
+        cierreAutomatico: r.cierre_automatico,
         totalPausas: r.total_pausas,
         horasExtras,
         horasExtrasPendiente,

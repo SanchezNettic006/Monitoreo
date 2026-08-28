@@ -74,6 +74,12 @@ export class RecordAsistencia {
   @Column({ name: 'alerta_jornada_larga_lider_enviada', default: false })
   alerta_jornada_larga_lider_enviada!: boolean;
 
+  // true cuando el check-out no lo hizo el técnico sino el cierre automático de
+  // medianoche (se le olvidó marcar salida). Sirve para que reportes y líderes
+  // sepan que esa hora de salida (23:59) no es real, sino un cierre de sistema.
+  @Column({ name: 'cierre_automatico', default: false })
+  cierre_automatico!: boolean;
+
   @OneToMany(() => FotoAsistencia, (foto) => foto.record)
   fotos!: FotoAsistencia[];
 

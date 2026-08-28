@@ -13,6 +13,7 @@ export interface AsistenciaReporte {
   entrada: string | null;
   salida: string | null;
   horasTrabajadas: number | null;
+  cierreAutomatico?: boolean;
   totalPausas: number | null;
   horasExtras: number | null;
   horasExtrasPendiente?: boolean;

@@ -281,6 +281,17 @@ export async function inicializarColumnas() {
       } else {
         console.log('✅ Columna alerta_jornada_larga_lider_enviada ya existe');
       }
+
+      const columnaCierreAutomaticoExiste = await queryRunner.hasColumn('record_asistencia', 'cierre_automatico');
+      if (!columnaCierreAutomaticoExiste) {
+        console.log('⚠️ Agregando columna cierre_automatico...');
+        await queryRunner.query(
+          `ALTER TABLE record_asistencia ADD COLUMN cierre_automatico BOOLEAN NOT NULL DEFAULT false`,
+        );
+        console.log('✅ Columna cierre_automatico agregada exitosamente');
+      } else {
+        console.log('✅ Columna cierre_automatico ya existe');
+      }
     }
 
     console.log('🔧 Verificando columnas de recordatorio de no-inicio en empleado...');

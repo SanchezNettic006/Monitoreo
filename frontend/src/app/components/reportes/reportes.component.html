@@ -150,6 +150,7 @@
             <!-- Horas trabajadas -->
             <td>
               <span *ngIf="element.tipo === 'asistencia'" class="badge badge-horas">{{ formatearDuracion(element.horasTrabajadas) }}</span>
+              <span *ngIf="element.tipo === 'asistencia' && element.cierreAutomatico" title="El técnico no marcó salida; el sistema cerró la jornada solo a las 11:59pm">🔒</span>
               <span *ngIf="element.tipo !== 'asistencia'" style="color: #999;">-</span>
             </td>
             <!-- Pausas -->

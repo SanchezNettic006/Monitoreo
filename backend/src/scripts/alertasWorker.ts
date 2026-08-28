@@ -3,10 +3,19 @@ import { alertasService } from '@services/alertas.service';
 import { config } from '@config/env';
 
 /**
- * Tareas programadas (CRON) para las alertas por Telegram:
- * jornada sin cerrar y recordatorio de check-in.
+ * Tareas programadas (CRON): alertas por Telegram (jornada sin cerrar,
+ * recordatorio de check-in) y el cierre automático de jornadas olvidadas.
  */
 export function inicializarAlertasTelegram() {
+  // El cierre automático de jornadas olvidadas no depende de Telegram: debe
+  // correr siempre, aunque el bot no esté configurado (el aviso al técnico
+  // simplemente se omite si no tiene chat vinculado).
+  setInterval(() => {
+    alertasService.cerrarJornadasOlvidadas().catch((error) => {
+      console.error('Error al cerrar jornadas olvidadas:', error);
+    });
+  }, 15 * 60 * 1000);
+
   if (!config.telegram.botToken) {
     console.warn(
       '⚠️ Telegram no está configurado (TELEGRAM_BOT_TOKEN). Las alertas por Telegram no se enviarán.',
