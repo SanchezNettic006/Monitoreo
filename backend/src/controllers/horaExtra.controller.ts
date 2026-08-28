@@ -14,7 +14,7 @@ export class HoraExtraController {
     try {
       // Desde FormData, los campos vienen en req.body como strings
       const { recordAsistenciaId, numeroTicket, latitud, longitud, capturadoEn } = req.body;
-      const fotoPath = req.file?.path; // Ruta del archivo subido
+      const fotoPath = req.file ? `/uploads/${req.file.filename}` : undefined; // Ruta pública del archivo subido
 
       // Validar campos requeridos (sin recordAsistenciaId, usaremos usuarioId del token)
       // GPS es opcional: si el técnico no logró un fix a tiempo, puede continuar sin ubicación.
@@ -74,7 +74,7 @@ export class HoraExtraController {
     try {
       // Desde FormData, los campos vienen en req.body como strings
       const { horaExtraId, latitud, longitud, capturadoEn } = req.body;
-      const fotoPath = req.file?.path; // Ruta del archivo subido
+      const fotoPath = req.file ? `/uploads/${req.file.filename}` : undefined; // Ruta pública del archivo subido
 
       // Validar campos requeridos (GPS es opcional, ver nota en iniciar())
       if (!horaExtraId) {

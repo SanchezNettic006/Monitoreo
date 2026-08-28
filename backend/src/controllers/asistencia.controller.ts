@@ -17,7 +17,7 @@ export class AsistenciaController {
         gps = JSON.parse(gps);
       }
       
-      const fotaPath = req.file?.path || null;
+      const fotaPath = req.file ? `/uploads/${req.file.filename}` : undefined;
 
       // El GPS es opcional: si el técnico no logró un fix a tiempo, puede
       // continuar sin ubicación (ver "Continuar sin GPS" en el frontend)
@@ -46,7 +46,7 @@ export class AsistenciaController {
         gps = JSON.parse(gps);
       }
       
-      const fotaPath = req.file?.path || null;
+      const fotaPath = req.file ? `/uploads/${req.file.filename}` : undefined;
 
       // GPS opcional (ver nota en registrarEntrada)
       const gpsValido = gps && gps.latitud !== undefined && gps.longitud !== undefined ? gps : null;
@@ -67,7 +67,7 @@ export class AsistenciaController {
   async guardarReporteCierre(req: any, res: Response, next: NextFunction) {
     try {
       const { recordId, descripcion, proyectoTrabajado } = req.body;
-      const fotoPaths = (req.files as Express.Multer.File[] | undefined)?.map((f) => f.path) || [];
+      const fotoPaths = (req.files as Express.Multer.File[] | undefined)?.map((f) => `/uploads/${f.filename}`) || [];
 
       if (!recordId) {
         return res.status(400).json({ mensaje: 'recordId es requerido' });
