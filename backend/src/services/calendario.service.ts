@@ -81,7 +81,10 @@ export class CalendarioService {
 
     const eventosTramites = tramitesAprobados.flatMap((t) => {
       const titulo = `${nombreTipoTramite[t.tipo] || t.tipo} - ${t.empleado?.nombre} ${t.empleado?.apellido}`;
-      return this.enumerarDias(t.fecha_inicio, t.fecha_fin || t.fecha_inicio).map((fecha) => ({
+      // El inicio del rango a enumerar nunca es antes de hoy: un trámite que ya
+      // empezó no debe mostrar los días que ya pasaron.
+      const inicioVisible = t.fecha_inicio < hoy ? hoy : t.fecha_inicio;
+      return this.enumerarDias(inicioVisible, t.fecha_fin || t.fecha_inicio).map((fecha) => ({
         fecha,
         tipo: t.tipo as string,
         titulo,

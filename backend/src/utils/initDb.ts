@@ -319,6 +319,28 @@ export async function inicializarColumnas() {
       }
     }
 
+    console.log('🔧 Verificando columna departamento_id en asignacion_proyecto...');
+    const tablaAsignacionProyectoExiste = await queryRunner.hasTable('asignacion_proyecto');
+    if (tablaAsignacionProyectoExiste) {
+      const columnaDeptoProyectoExiste = await queryRunner.hasColumn('asignacion_proyecto', 'departamento_id');
+      if (!columnaDeptoProyectoExiste) {
+        console.log('🏗️ Agregando columna departamento_id y liberando grupo_id...');
+        await queryRunner.query(`ALTER TABLE asignacion_proyecto ADD COLUMN departamento_id INTEGER NULL`);
+        // Rellena el departamento de los proyectos existentes a partir del grupo al que pertenecían
+        await queryRunner.query(`
+          UPDATE asignacion_proyecto ap
+          SET departamento_id = gt.departamento_id
+          FROM grupo_trabajo gt
+          WHERE ap.grupo_id = gt.id AND ap.departamento_id IS NULL
+        `);
+        // grupo_id deja de ser obligatorio: los proyectos nuevos ya no dependen de un grupo
+        await queryRunner.query(`ALTER TABLE asignacion_proyecto ALTER COLUMN grupo_id DROP NOT NULL`);
+        console.log('✅ Columna departamento_id agregada y proyectos existentes migrados');
+      } else {
+        console.log('✅ Columna departamento_id ya existe');
+      }
+    }
+
     // Liberar queryRunner
     await queryRunner.release();
   } catch (error) {

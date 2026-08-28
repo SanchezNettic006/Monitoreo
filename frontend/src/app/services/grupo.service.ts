@@ -27,6 +27,16 @@ export interface AsignacionProyectoResponse {
   created_at: string;
 }
 
+export interface ProyectoResponse {
+  id: number;
+  nombreProyecto: string;
+  descripcion: string | null;
+  fechaInicio: string;
+  fechaFin: string | null;
+  activo: boolean;
+  departamento: { id: number; nombre: string } | null;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -62,5 +72,25 @@ export class GrupoService {
 
   finalizarProyecto(grupoId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${grupoId}/proyecto`);
+  }
+
+  // ==================== Proyectos directos por departamento (sin grupo) ====================
+
+  obtenerProyectosDirectos(departamentoId?: number): Observable<{ data: ProyectoResponse[] }> {
+    let url = `${this.apiUrl}/proyectos-directos`;
+    if (departamentoId) url += `?departamentoId=${departamentoId}`;
+    return this.http.get<{ data: ProyectoResponse[] }>(url);
+  }
+
+  crearProyectoDirecto(nombreProyecto: string, descripcion?: string, departamentoId?: number): Observable<{ data: AsignacionProyectoResponse }> {
+    return this.http.post<{ data: AsignacionProyectoResponse }>(`${this.apiUrl}/proyectos-directos`, {
+      nombreProyecto,
+      descripcion,
+      departamentoId,
+    });
+  }
+
+  finalizarProyectoDirecto(proyectoId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/proyectos-directos/${proyectoId}`);
   }
 }

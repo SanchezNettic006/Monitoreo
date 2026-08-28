@@ -1,3 +1,4 @@
+import { IsNull } from 'typeorm';
 import { AppDataSource } from '@config/database';
 import { Grupo } from '@entities/Grupo';
 import { AsignacionProyecto } from '@entities/AsignacionProyecto';
@@ -128,11 +129,11 @@ export class GrupoService {
   }
 
   /**
-   * Nombres de proyecto (activos + historial, sin duplicados) de TODOS los grupos
-   * del departamento del empleado dueño de usuarioId — no solo del grupo al que
-   * esté asignado. Se usa para que el propio técnico elija en qué proyecto
-   * trabajó ese día al cerrar su jornada, sin depender de que el líder lo tenga
-   * asignado manualmente a un grupo (a veces rota de proyecto de un día a otro).
+   * Nombres de proyecto actualmente abiertos (fecha_fin IS NULL) en el
+   * departamento del empleado dueño de usuarioId. Se usa para que el propio
+   * técnico elija en qué proyecto trabajó ese día al cerrar su jornada — ya no
+   * depende de que esté asignado a ningún grupo, ve todo lo abierto en su
+   * departamento, porque a veces rota de proyecto de un día a otro.
    */
   async obtenerProyectosDeMiDepartamento(usuarioId: number): Promise<string[]> {
     const empleado = await this.empleadoRepository.findOne({ where: { usuario_id: usuarioId } });
@@ -140,45 +141,84 @@ export class GrupoService {
       return [];
     }
 
-    const grupos = await this.grupoRepository.find({ where: { departamento_id: empleado.departamento_id } });
-    const grupoIds = grupos.map((g) => g.id);
-    if (grupoIds.length === 0) {
-      return [];
-    }
-
-    const asignaciones = await this.asignacionRepository
-      .createQueryBuilder('a')
-      .where('a.grupo_id IN (:...grupoIds)', { grupoIds })
-      .orderBy('a.fecha_inicio', 'DESC')
-      .getMany();
+    const asignaciones = await this.asignacionRepository.find({
+      where: { departamento_id: empleado.departamento_id, fecha_fin: IsNull() },
+      order: { fecha_inicio: 'DESC' },
+    });
 
     return [...new Set(asignaciones.map((a) => a.nombre_proyecto))];
   }
 
-  /** Cierra el proyecto activo del grupo (sin abrir uno nuevo), ej. cuando ya terminó */
-  async finalizarProyecto(grupoId: number, departamentoIdRestringido?: number) {
-    await this.validarAccesoGrupo(grupoId, departamentoIdRestringido);
+  // ==================== Proyectos directos por departamento (sin grupo) ====================
 
-    const resultado = await this.asignacionRepository
-      .createQueryBuilder()
-      .update(AsignacionProyecto)
-      .set({ fecha_fin: hoyLocal() })
-      .where('grupo_id = :grupoId AND fecha_fin IS NULL', { grupoId })
-      .execute();
-
-    if (!resultado.affected) {
-      throw new OperationalError(400, 'Este grupo no tiene un proyecto activo');
+  /** Crea un proyecto nuevo, ligado directo al departamento (sin pasar por un grupo) */
+  async crearProyecto(
+    departamentoId: number,
+    nombreProyecto: string,
+    descripcion: string | undefined,
+    usuarioId: number,
+  ) {
+    if (!nombreProyecto?.trim()) {
+      throw new OperationalError(400, 'El nombre del proyecto es obligatorio');
+    }
+    if (!departamentoId) {
+      throw new OperationalError(400, 'El departamento es obligatorio');
     }
 
-    return { mensaje: '✅ Proyecto finalizado exitosamente' };
+    const nuevo = this.asignacionRepository.create({
+      departamento_id: departamentoId,
+      nombre_proyecto: nombreProyecto.trim(),
+      descripcion: descripcion?.trim() || undefined,
+      fecha_inicio: hoyLocal(),
+      fecha_fin: null,
+      creado_por_usuario_id: usuarioId,
+    });
+
+    return this.asignacionRepository.save(nuevo);
   }
 
-  async obtenerHistorial(grupoId: number, departamentoIdRestringido?: number) {
-    await this.validarAccesoGrupo(grupoId, departamentoIdRestringido);
+  /** Lista los proyectos (activos e historial) del departamento indicado, o de todos si no se pasa */
+  async obtenerProyectos(departamentoId?: number) {
+    const query = this.asignacionRepository
+      .createQueryBuilder('a')
+      .leftJoinAndSelect('a.departamento', 'departamento')
+      .orderBy('a.fecha_fin', 'ASC', 'NULLS FIRST')
+      .addOrderBy('a.fecha_inicio', 'DESC');
 
-    return this.asignacionRepository.find({
-      where: { grupo_id: grupoId },
-      order: { fecha_inicio: 'DESC' },
-    });
+    if (departamentoId) {
+      query.andWhere('a.departamento_id = :departamentoId', { departamentoId });
+    } else {
+      query.andWhere('a.departamento_id IS NOT NULL');
+    }
+
+    const proyectos = await query.getMany();
+
+    return proyectos.map((p) => ({
+      id: p.id,
+      nombreProyecto: p.nombre_proyecto,
+      descripcion: p.descripcion || null,
+      fechaInicio: p.fecha_inicio,
+      fechaFin: p.fecha_fin,
+      activo: !p.fecha_fin,
+      departamento: p.departamento ? { id: p.departamento.id, nombre: p.departamento.nombre } : null,
+    }));
+  }
+
+  /** Marca un proyecto como finalizado por su propio id */
+  async finalizarProyectoPorId(proyectoId: number, departamentoIdRestringido?: number) {
+    const proyecto = await this.asignacionRepository.findOne({ where: { id: proyectoId } });
+    if (!proyecto) {
+      throw new OperationalError(404, 'Proyecto no encontrado');
+    }
+    if (departamentoIdRestringido && proyecto.departamento_id !== departamentoIdRestringido) {
+      throw new OperationalError(403, 'No tienes acceso a este proyecto');
+    }
+    if (proyecto.fecha_fin) {
+      throw new OperationalError(400, 'Este proyecto ya está finalizado');
+    }
+
+    proyecto.fecha_fin = hoyLocal();
+    await this.asignacionRepository.save(proyecto);
+    return { mensaje: '✅ Proyecto finalizado exitosamente' };
   }
 }

@@ -2,72 +2,64 @@
   <div class="header-section">
     <div class="header-content">
       <h1>Gestión de Proyectos</h1>
-      <p class="subtitle">Grupos de trabajo y el proyecto en el que está cada uno actualmente</p>
+      <p class="subtitle">Proyectos abiertos por departamento — el técnico elige en cuál trabajó al cerrar jornada</p>
     </div>
-    <button mat-raised-button color="primary" (click)="abrirNuevoGrupo()" class="btn-nuevo">
+    <button mat-raised-button color="primary" (click)="abrirNuevoProyecto()" class="btn-nuevo">
       <mat-icon>add_circle</mat-icon>
-      Nuevo Grupo
+      Nuevo Proyecto
     </button>
   </div>
 
   <div class="filtros-section">
     <mat-form-field appearance="fill" class="filtro-depto" *ngIf="esAdmin">
       <mat-label>Departamento</mat-label>
-      <mat-select [(ngModel)]="departamentoSeleccionado" (selectionChange)="cargarGrupos()">
+      <mat-select [(ngModel)]="departamentoSeleccionado" (selectionChange)="cargarProyectos()">
         <mat-option [value]="null">Todos</mat-option>
         <mat-option *ngFor="let d of departamentos" [value]="d.id">{{ d.nombre }}</mat-option>
       </mat-select>
     </mat-form-field>
 
     <mat-form-field appearance="fill" class="filtro-tecnico">
-      <mat-label>Buscar técnico</mat-label>
-      <input matInput [(ngModel)]="filtroTecnico" placeholder="Nombre o apellido" />
+      <mat-label>Buscar proyecto</mat-label>
+      <input matInput [(ngModel)]="filtroNombre" placeholder="Nombre del proyecto" />
     </mat-form-field>
+
+    <label class="toggle-finalizados">
+      <input type="checkbox" [(ngModel)]="mostrarFinalizados" />
+      Mostrar finalizados
+    </label>
   </div>
 
   <div class="loading" *ngIf="cargando">Cargando...</div>
 
-  <div class="grupos-grid" *ngIf="!cargando && gruposFiltrados.length > 0">
-    <mat-card class="grupo-card" *ngFor="let grupo of gruposFiltrados">
+  <div class="grupos-grid" *ngIf="!cargando && proyectosFiltrados.length > 0">
+    <mat-card class="grupo-card" *ngFor="let proyecto of proyectosFiltrados" [class.finalizado]="!proyecto.activo">
       <div class="grupo-header">
-        <h3>{{ grupo.nombre }}</h3>
-        <span class="badge-depto" *ngIf="esAdmin && grupo.departamento">{{ grupo.departamento.nombre }}</span>
+        <h3>{{ proyecto.nombreProyecto }}</h3>
+        <span class="badge-depto" *ngIf="esAdmin && proyecto.departamento">{{ proyecto.departamento.nombre }}</span>
       </div>
 
-      <div class="proyecto-section" *ngIf="grupo.proyectoActivo; else sinProyecto">
+      <div class="proyecto-section">
         <div class="proyecto-nombre">
-          <mat-icon>engineering</mat-icon>
-          <span>{{ grupo.proyectoActivo.nombreProyecto }}</span>
+          <mat-icon>{{ proyecto.activo ? 'engineering' : 'check_circle' }}</mat-icon>
+          <span>{{ proyecto.activo ? 'Activo' : 'Finalizado' }}</span>
         </div>
-        <p class="proyecto-descripcion" *ngIf="grupo.proyectoActivo.descripcion">{{ grupo.proyectoActivo.descripcion }}</p>
-        <p class="proyecto-tiempo">{{ diasDesde(grupo.proyectoActivo.fechaInicio) }}</p>
+        <p class="proyecto-descripcion" *ngIf="proyecto.descripcion">{{ proyecto.descripcion }}</p>
+        <p class="proyecto-tiempo">{{ diasDesde(proyecto.fechaInicio) }}</p>
       </div>
-      <ng-template #sinProyecto>
-        <div class="sin-proyecto">
-          <mat-icon>hourglass_empty</mat-icon>
-          <span>Sin proyecto asignado</span>
-        </div>
-      </ng-template>
 
       <div class="grupo-actions">
-        <button mat-stroked-button color="primary" (click)="abrirAsignarProyecto(grupo)">
-          <mat-icon>sync_alt</mat-icon>
-          {{ grupo.proyectoActivo ? 'Cambiar proyecto' : 'Asignar proyecto' }}
-        </button>
-        <button mat-stroked-button color="warn" *ngIf="grupo.proyectoActivo" (click)="finalizarProyecto(grupo)">
+        <button mat-stroked-button color="warn" *ngIf="proyecto.activo" (click)="finalizarProyecto(proyecto)">
           <mat-icon>check_circle</mat-icon>
           Finalizar proyecto
-        </button>
-        <button mat-icon-button (click)="abrirHistorial(grupo)" title="Ver historial">
-          <mat-icon>history</mat-icon>
         </button>
       </div>
     </mat-card>
   </div>
 
-  <div class="empty-state" *ngIf="!cargando && gruposFiltrados.length === 0">
+  <div class="empty-state" *ngIf="!cargando && proyectosFiltrados.length === 0">
     <mat-icon>groups</mat-icon>
-    <h3>{{ grupos.length === 0 ? 'Sin grupos registrados' : 'Ningún técnico coincide con la búsqueda' }}</h3>
-    <p *ngIf="grupos.length === 0">Crea un grupo para empezar a asignar proyectos</p>
+    <h3>{{ proyectos.length === 0 ? 'Sin proyectos registrados' : 'Ningún proyecto coincide con la búsqueda' }}</h3>
+    <p *ngIf="proyectos.length === 0">Crea un proyecto para que los técnicos puedan elegirlo al cerrar jornada</p>
   </div>
 </div>

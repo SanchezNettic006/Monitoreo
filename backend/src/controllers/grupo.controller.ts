@@ -47,39 +47,39 @@ export class GrupoController {
     }
   }
 
-  async asignarProyecto(req: AuthRequest, res: Response, next: NextFunction) {
-    try {
-      const grupoId = parseInt(String(req.params.grupoId), 10);
-      const { nombreProyecto, descripcion } = req.body;
+  // ==================== Proyectos directos por departamento (sin grupo) ====================
 
-      const asignacion = await grupoService.asignarProyecto(
-        grupoId,
-        nombreProyecto,
-        descripcion,
-        req.userId!,
-        req.departamentoId,
-      );
-      return res.status(201).json({ data: asignacion });
+  async crearProyectoDirecto(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { nombreProyecto, descripcion, departamentoId } = req.body;
+      const departamentoFinal = req.departamentoId ?? departamentoId;
+
+      if (!departamentoFinal) {
+        return res.status(400).json({ mensaje: 'departamentoId es requerido' });
+      }
+
+      const proyecto = await grupoService.crearProyecto(departamentoFinal, nombreProyecto, descripcion, req.userId!);
+      return res.status(201).json({ data: proyecto });
     } catch (error) {
       next(error);
     }
   }
 
-  async finalizarProyecto(req: AuthRequest, res: Response, next: NextFunction) {
+  async obtenerProyectosDirectos(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const grupoId = parseInt(String(req.params.grupoId), 10);
-      const resultado = await grupoService.finalizarProyecto(grupoId, req.departamentoId);
+      const departamentoId = req.departamentoId ?? (req.query.departamentoId ? parseInt(String(req.query.departamentoId), 10) : undefined);
+      const proyectos = await grupoService.obtenerProyectos(departamentoId);
+      return res.status(200).json({ data: proyectos });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async finalizarProyectoDirecto(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const proyectoId = parseInt(String(req.params.proyectoId), 10);
+      const resultado = await grupoService.finalizarProyectoPorId(proyectoId, req.departamentoId);
       return res.status(200).json(resultado);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async obtenerHistorial(req: AuthRequest, res: Response, next: NextFunction) {
-    try {
-      const grupoId = parseInt(String(req.params.grupoId), 10);
-      const historial = await grupoService.obtenerHistorial(grupoId, req.departamentoId);
-      return res.status(200).json({ data: historial });
     } catch (error) {
       next(error);
     }
