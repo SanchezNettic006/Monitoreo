@@ -155,6 +155,24 @@ export class GrupoService {
     return [...new Set(asignaciones.map((a) => a.nombre_proyecto))];
   }
 
+  /** Cierra el proyecto activo del grupo (sin abrir uno nuevo), ej. cuando ya terminó */
+  async finalizarProyecto(grupoId: number, departamentoIdRestringido?: number) {
+    await this.validarAccesoGrupo(grupoId, departamentoIdRestringido);
+
+    const resultado = await this.asignacionRepository
+      .createQueryBuilder()
+      .update(AsignacionProyecto)
+      .set({ fecha_fin: hoyLocal() })
+      .where('grupo_id = :grupoId AND fecha_fin IS NULL', { grupoId })
+      .execute();
+
+    if (!resultado.affected) {
+      throw new OperationalError(400, 'Este grupo no tiene un proyecto activo');
+    }
+
+    return { mensaje: '✅ Proyecto finalizado exitosamente' };
+  }
+
   async obtenerHistorial(grupoId: number, departamentoIdRestringido?: number) {
     await this.validarAccesoGrupo(grupoId, departamentoIdRestringido);
 

@@ -59,4 +59,8 @@ export class GrupoService {
   obtenerHistorial(grupoId: number): Observable<{ data: AsignacionProyectoResponse[] }> {
     return this.http.get<{ data: AsignacionProyectoResponse[] }>(`${this.apiUrl}/${grupoId}/historial`);
   }
+
+  finalizarProyecto(grupoId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${grupoId}/proyecto`);
+  }
 }

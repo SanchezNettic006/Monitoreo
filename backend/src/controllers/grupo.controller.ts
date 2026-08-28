@@ -65,6 +65,16 @@ export class GrupoController {
     }
   }
 
+  async finalizarProyecto(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const grupoId = parseInt(String(req.params.grupoId), 10);
+      const resultado = await grupoService.finalizarProyecto(grupoId, req.departamentoId);
+      return res.status(200).json(resultado);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async obtenerHistorial(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const grupoId = parseInt(String(req.params.grupoId), 10);

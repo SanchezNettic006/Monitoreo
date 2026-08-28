@@ -1,7 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { firstValueFrom } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,11 +8,9 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog, MatDialogModule, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { GrupoService, GrupoResponse, AsignacionProyectoResponse } from '../../services/grupo.service';
-import { EmpleadoService, Empleado } from '../../services/empleado.service';
 import { AuthService } from '../../services/auth.service';
 
 const DEPARTAMENTOS = [
@@ -53,7 +50,6 @@ export class ProyectosComponent implements OnInit {
 
   constructor(
     private grupoService: GrupoService,
-    private empleadoService: EmpleadoService,
     private authService: AuthService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
@@ -146,38 +142,16 @@ export class ProyectosComponent implements OnInit {
     });
   }
 
-  abrirGestionarMiembros(grupo: GrupoResponse): void {
-    this.empleadoService.obtenerTodos().subscribe({
-      next: (response) => {
-        const todos = Array.isArray(response.data) ? response.data : [response.data];
-        const delDepartamento = todos.filter((e) => e.departamento_id === grupo.departamento?.id);
+  finalizarProyecto(grupo: GrupoResponse): void {
+    if (!confirm(`¿Marcar "${grupo.proyectoActivo?.nombreProyecto}" como finalizado?`)) return;
 
-        const ref = this.dialog.open(GestionarMiembrosDialogComponent, {
-          width: '420px',
-          data: { grupo, empleadosDelDepartamento: delDepartamento },
-        });
-
-        ref.afterClosed().subscribe((cambios: { empleadoId: number; enGrupo: boolean }[] | undefined) => {
-          if (!cambios || cambios.length === 0) return;
-
-          const peticiones = cambios.map((c) =>
-            firstValueFrom(this.grupoService.asignarEmpleado(c.empleadoId, c.enGrupo ? grupo.id : null)),
-          );
-
-          Promise.all(peticiones).then(
-            () => {
-              this.snackBar.open('✅ Miembros actualizados exitosamente', 'Cerrar', { duration: 3000 });
-              this.cargarGrupos();
-            },
-            (error) => {
-              this.snackBar.open(error.error?.mensaje || 'Error al actualizar miembros', 'Cerrar', { duration: 3000 });
-              this.cargarGrupos();
-            },
-          );
-        });
+    this.grupoService.finalizarProyecto(grupo.id).subscribe({
+      next: () => {
+        this.snackBar.open('✅ Proyecto finalizado exitosamente', 'Cerrar', { duration: 3000 });
+        this.cargarGrupos();
       },
-      error: () => {
-        this.snackBar.open('Error al cargar empleados', 'Cerrar', { duration: 3000 });
+      error: (error) => {
+        this.snackBar.open(error.error?.mensaje || 'Error al finalizar proyecto', 'Cerrar', { duration: 3000 });
       },
     });
   }
@@ -361,57 +335,5 @@ export class HistorialDialogComponent implements OnInit {
 
   formatearFecha(fecha: string): string {
     return new Date(`${fecha}T00:00:00`).toLocaleDateString('es-SV', { day: '2-digit', month: 'short', year: 'numeric' });
-  }
-}
-
-/** Dialog: gestionar qué empleados pertenecen a un grupo */
-@Component({
-  selector: 'app-gestionar-miembros-dialog',
-  standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatButtonModule, MatCheckboxModule],
-  template: `
-    <h2 mat-dialog-title>Miembros — {{ data.grupo.nombre }}</h2>
-    <mat-dialog-content>
-      <p class="hint">Selecciona los empleados que pertenecen a este grupo. Si estaban en otro grupo, se moverán aquí.</p>
-      <div class="empleado-item" *ngFor="let e of data.empleadosDelDepartamento">
-        <mat-checkbox [(ngModel)]="seleccion[e.id]">{{ e.nombre }} {{ e.apellido }}</mat-checkbox>
-      </div>
-      <div class="sin-datos" *ngIf="data.empleadosDelDepartamento.length === 0">
-        No hay empleados en este departamento
-      </div>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="dialogRef.close()">Cancelar</button>
-      <button mat-raised-button color="primary" (click)="confirmar()">Guardar</button>
-    </mat-dialog-actions>
-  `,
-  styles: [`
-    .hint { font-size: 13px; color: #666; margin-bottom: 12px; }
-    .empleado-item { padding: 6px 0; }
-    .sin-datos { text-align: center; padding: 20px; color: #999; }
-  `],
-})
-export class GestionarMiembrosDialogComponent {
-  seleccion: Record<number, boolean> = {};
-  private seleccionOriginal: Record<number, boolean> = {};
-
-  constructor(
-    public dialogRef: MatDialogRef<GestionarMiembrosDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { grupo: GrupoResponse; empleadosDelDepartamento: Empleado[] },
-  ) {
-    const idsEnGrupo = new Set(data.grupo.empleados.map((e) => e.id));
-    for (const empleado of data.empleadosDelDepartamento) {
-      this.seleccion[empleado.id] = idsEnGrupo.has(empleado.id);
-      this.seleccionOriginal[empleado.id] = idsEnGrupo.has(empleado.id);
-    }
-  }
-
-  confirmar(): void {
-    const cambios = Object.keys(this.seleccion)
-      .map((id) => parseInt(id, 10))
-      .filter((id) => this.seleccion[id] !== this.seleccionOriginal[id])
-      .map((id) => ({ empleadoId: id, enGrupo: this.seleccion[id] }));
-
-    this.dialogRef.close(cambios);
   }
 }

@@ -49,22 +49,14 @@
         </div>
       </ng-template>
 
-      <div class="empleados-section">
-        <span class="empleados-label">Miembros ({{ grupo.empleados.length }})</span>
-        <div class="empleados-chips">
-          <span class="chip" *ngFor="let e of grupo.empleados">{{ e.nombre }} {{ e.apellido }}</span>
-          <span class="sin-datos" *ngIf="grupo.empleados.length === 0">Sin miembros</span>
-        </div>
-      </div>
-
       <div class="grupo-actions">
         <button mat-stroked-button color="primary" (click)="abrirAsignarProyecto(grupo)">
           <mat-icon>sync_alt</mat-icon>
-          Cambiar proyecto
+          {{ grupo.proyectoActivo ? 'Cambiar proyecto' : 'Asignar proyecto' }}
         </button>
-        <button mat-stroked-button (click)="abrirGestionarMiembros(grupo)">
-          <mat-icon>group</mat-icon>
-          Miembros
+        <button mat-stroked-button color="warn" *ngIf="grupo.proyectoActivo" (click)="finalizarProyecto(grupo)">
+          <mat-icon>check_circle</mat-icon>
+          Finalizar proyecto
         </button>
         <button mat-icon-button (click)="abrirHistorial(grupo)" title="Ver historial">
           <mat-icon>history</mat-icon>

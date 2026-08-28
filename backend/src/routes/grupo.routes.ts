@@ -11,6 +11,7 @@ router.get('/', (req, res, next) => controller.obtenerTodos(req, res, next));
 router.post('/', (req, res, next) => controller.crear(req, res, next));
 router.patch('/empleados/:empleadoId', (req, res, next) => controller.asignarEmpleado(req, res, next));
 router.post('/:grupoId/proyecto', (req, res, next) => controller.asignarProyecto(req, res, next));
+router.delete('/:grupoId/proyecto', (req, res, next) => controller.finalizarProyecto(req, res, next));
 router.get('/:grupoId/historial', (req, res, next) => controller.obtenerHistorial(req, res, next));
 
 export default router;
