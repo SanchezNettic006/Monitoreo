@@ -89,7 +89,7 @@ export class AsistenciaController {
 
   async obtenerMisProyectos(req: any, res: Response, next: NextFunction) {
     try {
-      const proyectos = await grupoService.obtenerProyectosDeMiGrupo(req.userId);
+      const proyectos = await grupoService.obtenerProyectosDeMiDepartamento(req.userId);
       return res.status(200).json({ data: proyectos });
     } catch (error) {
       next(error);

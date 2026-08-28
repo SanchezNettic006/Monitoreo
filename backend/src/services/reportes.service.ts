@@ -175,7 +175,10 @@ export class ReportesService {
         duracionHoraExtra: null,
         estado: r.estado,
         descripcionTrabajo: r.descripcion_trabajo || null,
-        proyecto: proyectoDelDia(r.empleado.grupo_id, r.fecha),
+        // Prioriza el proyecto que el propio técnico reportó ese día al cerrar
+        // jornada; si el registro es anterior a esa función, se usa el cálculo
+        // viejo basado en el grupo asignado (menos preciso, pero mejor que nada).
+        proyecto: r.proyecto_trabajado || proyectoDelDia(r.empleado.grupo_id, r.fecha),
         fotos: [
           ...(r.fotos || []).map(f => ({
             id: f.id,

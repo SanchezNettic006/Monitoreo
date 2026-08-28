@@ -128,21 +128,29 @@ export class GrupoService {
   }
 
   /**
-   * Nombres de proyecto (activo + historial, sin duplicados) del grupo al que
-   * pertenece el empleado dueño de usuarioId. Se usa para que el propio técnico
-   * elija en qué proyecto trabajó ese día al cerrar su jornada, ya que a veces
-   * rota de proyecto sin que el líder actualice la asignación del grupo.
+   * Nombres de proyecto (activos + historial, sin duplicados) de TODOS los grupos
+   * del departamento del empleado dueño de usuarioId — no solo del grupo al que
+   * esté asignado. Se usa para que el propio técnico elija en qué proyecto
+   * trabajó ese día al cerrar su jornada, sin depender de que el líder lo tenga
+   * asignado manualmente a un grupo (a veces rota de proyecto de un día a otro).
    */
-  async obtenerProyectosDeMiGrupo(usuarioId: number): Promise<string[]> {
+  async obtenerProyectosDeMiDepartamento(usuarioId: number): Promise<string[]> {
     const empleado = await this.empleadoRepository.findOne({ where: { usuario_id: usuarioId } });
-    if (!empleado?.grupo_id) {
+    if (!empleado?.departamento_id) {
       return [];
     }
 
-    const asignaciones = await this.asignacionRepository.find({
-      where: { grupo_id: empleado.grupo_id },
-      order: { fecha_inicio: 'DESC' },
-    });
+    const grupos = await this.grupoRepository.find({ where: { departamento_id: empleado.departamento_id } });
+    const grupoIds = grupos.map((g) => g.id);
+    if (grupoIds.length === 0) {
+      return [];
+    }
+
+    const asignaciones = await this.asignacionRepository
+      .createQueryBuilder('a')
+      .where('a.grupo_id IN (:...grupoIds)', { grupoIds })
+      .orderBy('a.fecha_inicio', 'DESC')
+      .getMany();
 
     return [...new Set(asignaciones.map((a) => a.nombre_proyecto))];
   }
