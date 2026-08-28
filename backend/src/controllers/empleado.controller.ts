@@ -80,7 +80,7 @@ export class EmpleadoController {
   async actualizar(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const { nombre, apellido, cargo, telefono, departamento_id, rol, fecha_ingreso, dias_vacaciones_anuales } = req.body;
+      const { nombre, apellido, cargo, telefono, departamento_id, rol, fecha_ingreso, dias_vacaciones_anuales, nuevaPassword } = req.body;
 
       const datosActualizar: Partial<Empleado> = {};
 
@@ -92,7 +92,7 @@ export class EmpleadoController {
       if (fecha_ingreso !== undefined) datosActualizar.fecha_ingreso = fecha_ingreso || undefined;
       if (dias_vacaciones_anuales !== undefined) datosActualizar.dias_vacaciones_anuales = parseInt(dias_vacaciones_anuales, 10);
 
-      const empleadoActualizado = await empleadoService.actualizarEmpleado(parseInt(String(id)), datosActualizar, rol);
+      const empleadoActualizado = await empleadoService.actualizarEmpleado(parseInt(String(id)), datosActualizar, rol, nuevaPassword);
 
       return res.status(200).json({
         mensaje: 'Empleado actualizado exitosamente',

@@ -136,6 +136,22 @@
         </mat-error>
       </mat-form-field>
     </ng-container>
+
+    <!-- Cambiar contraseña (solo al editar, solo admin) -->
+    <ng-container *ngIf="editando && esAdmin">
+      <h3 class="credenciales-titulo">Cambiar contraseña</h3>
+
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Nueva contraseña (opcional)</mat-label>
+        <input matInput [type]="mostrarPassword ? 'text' : 'password'" formControlName="nuevaPassword" placeholder="Dejar vacío para no cambiarla" />
+        <button mat-icon-button matSuffix type="button" (click)="mostrarPassword = !mostrarPassword">
+          <mat-icon>{{ mostrarPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-error *ngIf="nuevaPassword?.hasError('minlength')">
+          Mínimo 6 caracteres
+        </mat-error>
+      </mat-form-field>
+    </ng-container>
   </form>
 
   <!-- Spinner de carga -->

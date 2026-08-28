@@ -77,7 +77,7 @@ export class EmpleadoService {
     };
   }
 
-  async actualizarEmpleado(id: number, datos: Partial<Empleado>, rol?: string) {
+  async actualizarEmpleado(id: number, datos: Partial<Empleado>, rol?: string, nuevaPassword?: string) {
     const empleado = await this.empleadoRepository.findOne({
       where: { id },
     });
@@ -93,6 +93,15 @@ export class EmpleadoService {
       // Solo se permite asignar estos roles desde este formulario; 'admin' se otorga aparte
       const rolValido = rol === 'lider' ? 'lider' : 'empleado';
       await this.usuarioRepository.update({ id: empleado.usuario_id }, { rol: rolValido });
+    }
+
+    // Cambio de contraseña: esta ruta ya es exclusiva de admin (ver empleados.routes.ts)
+    if (nuevaPassword?.trim()) {
+      if (nuevaPassword.trim().length < 6) {
+        throw new OperationalError(400, 'La nueva contraseña debe tener al menos 6 caracteres');
+      }
+      const passwordHasheado = await hashPassword(nuevaPassword.trim());
+      await this.usuarioRepository.update({ id: empleado.usuario_id }, { password_hash: passwordHasheado });
     }
 
     return empleadoActualizado;

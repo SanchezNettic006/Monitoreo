@@ -82,8 +82,14 @@ export class FormularioEmpleadoComponent {
       fecha_ingreso: [this.data?.fecha_ingreso ? this.data.fecha_ingreso.slice(0, 10) : ''],
       dias_vacaciones_anuales: [this.data?.dias_vacaciones_anuales ?? 15, [Validators.required, Validators.min(0)]],
       email: ['', this.editando ? [] : [Validators.required, Validators.email]],
-      password: ['', this.editando ? [] : [Validators.required, Validators.minLength(6)]]
+      password: ['', this.editando ? [] : [Validators.required, Validators.minLength(6)]],
+      // Solo aplica al editar, y solo el admin la ve (ver plantilla); vacío = no cambiar
+      nuevaPassword: ['', this.editando ? [Validators.minLength(6)] : []],
     });
+  }
+
+  get esAdmin(): boolean {
+    return this.authService.esAdmin();
   }
 
   get nombre() {
@@ -108,6 +114,10 @@ export class FormularioEmpleadoComponent {
 
   get password() {
     return this.form.get('password');
+  }
+
+  get nuevaPassword() {
+    return this.form.get('nuevaPassword');
   }
 
   // Manejar selección de archivo
@@ -146,10 +156,16 @@ export class FormularioEmpleadoComponent {
     this.cargando = true;
     const datos = this.form.value;
 
-    // En edición no se envían credenciales, esos campos ni siquiera existen en el form
+    // En edición no se envían credenciales de creación; la contraseña nueva
+    // solo se manda si el admin efectivamente escribió una (si no, no se toca)
     if (this.editando) {
       delete datos.email;
       delete datos.password;
+      if (!datos.nuevaPassword?.trim()) {
+        delete datos.nuevaPassword;
+      }
+    } else {
+      delete datos.nuevaPassword;
     }
 
     const operacion = this.editando
