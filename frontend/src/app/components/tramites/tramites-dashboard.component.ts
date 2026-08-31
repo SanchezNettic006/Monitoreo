@@ -330,6 +330,35 @@ interface Resumen {
           transform: scale(1.1);
         }
       }
+
+      @media (max-width: 600px) {
+        .tramites-container {
+          padding: 12px;
+        }
+
+        .header-section {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+
+          h1 {
+            font-size: 22px;
+          }
+        }
+
+        .mi-saldo-card {
+          padding: 14px;
+        }
+
+        ::ng-deep .mat-mdc-tab-body-wrapper {
+          padding: 12px;
+        }
+
+        ::ng-deep .mat-mdc-tab-label-content {
+          padding: 0 8px;
+          font-size: 13px;
+        }
+      }
     `,
   ],
 })

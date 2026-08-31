@@ -64,7 +64,8 @@
 
     <div *ngIf="cargando" class="loading">Cargando...</div>
 
-    <table class="tabla-registros" *ngIf="!cargando && registros.length > 0">
+    <div class="tabla-scroll" *ngIf="!cargando && registros.length > 0">
+    <table class="tabla-registros">
       <thead>
         <tr>
           <th>Fecha</th>
@@ -89,6 +90,7 @@
         </tr>
       </tbody>
     </table>
+    </div>
     <mat-paginator
       *ngIf="!cargando && registros.length > 0"
       [length]="registros.length"
@@ -111,7 +113,8 @@
       <div class="tab-body">
         <div *ngIf="cargandoHorasExtra" class="loading">Cargando...</div>
 
-        <table class="tabla-registros" *ngIf="!cargandoHorasExtra && horasExtra.length > 0">
+        <div class="tabla-scroll" *ngIf="!cargandoHorasExtra && horasExtra.length > 0">
+        <table class="tabla-registros">
           <thead>
             <tr>
               <th>Ticket</th>
@@ -151,6 +154,7 @@
             </tr>
           </tbody>
         </table>
+        </div>
         <mat-paginator
           *ngIf="!cargandoHorasExtra && horasExtra.length > 0"
           [length]="horasExtra.length"

@@ -90,8 +90,15 @@
   }
 }
 
+.tabla-scroll {
+  overflow-x: auto;
+  // Evita que la tabla angosta con pocas columnas encoja el ancho del scroll
+  -webkit-overflow-scrolling: touch;
+}
+
 .tabla-registros {
   width: 100%;
+  min-width: 560px;
   border-collapse: collapse;
 
   th {
@@ -146,5 +153,28 @@
   &.badge-rechazada {
     background: #FDECEA;
     color: #D32F2F;
+  }
+}
+
+@media (max-width: 600px) {
+  .mis-horas-container {
+    padding: 12px;
+  }
+
+  .filtros-section {
+    flex-direction: column;
+    align-items: stretch;
+
+    mat-form-field {
+      width: 100%;
+    }
+
+    button {
+      width: 100%;
+    }
+  }
+
+  .tabla-section {
+    padding: 12px;
   }
 }
