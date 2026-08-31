@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, FormGroupDirective, NgForm, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ErrorStateMatcher } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -12,6 +13,18 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { SolicitudService, SaldoVacaciones } from '../../../services/solicitud.service';
+
+// Por defecto Material marca un campo en rojo apenas se toca (blur) aunque el
+// usuario nunca haya intentado enviar el formulario, lo que en este formulario
+// se sentía como si ya estuviera "mal" desde el inicio. Con este matcher solo
+// se muestra el error después de un intento de envío fallido.
+class MostrarErrorAlEnviar implements ErrorStateMatcher {
+  constructor(private intentoEnvio: () => boolean) {}
+
+  isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
+    return !!(control && control.invalid && this.intentoEnvio());
+  }
+}
 
 @Component({
   selector: 'app-crear-solicitud',
@@ -47,8 +60,8 @@ import { SolicitudService, SaldoVacaciones } from '../../../services/solicitud.s
             
             <div class="form-grid-2">
               <mat-form-field appearance="fill" class="full-width">
-                <mat-label>Tipo de Solicitud *</mat-label>
-                <mat-select formControlName="tipo" required (selectionChange)="onTipoChange($event.value)">
+                <mat-label>Tipo de Solicitud</mat-label>
+                <mat-select formControlName="tipo" required [errorStateMatcher]="matcher" (selectionChange)="onTipoChange($event.value)">
                   <mat-option value="vacaciones">Vacaciones</mat-option>
                   <mat-option value="ausencia">Ausencia</mat-option>
                   <mat-option value="cambio_jornada">Cambio de Jornada</mat-option>
@@ -68,8 +81,8 @@ import { SolicitudService, SaldoVacaciones } from '../../../services/solicitud.s
 
             <div class="form-grid-2">
               <mat-form-field appearance="fill" class="full-width">
-                <mat-label>Fecha de Inicio *</mat-label>
-                <input matInput [matDatepicker]="picker1" formControlName="fecha_inicio" required />
+                <mat-label>Fecha de Inicio</mat-label>
+                <input matInput [matDatepicker]="picker1" formControlName="fecha_inicio" required [errorStateMatcher]="matcher" />
                 <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
                 <mat-datepicker #picker1></mat-datepicker>
                 <mat-error>Selecciona una fecha de inicio</mat-error>
@@ -272,6 +285,8 @@ export class CrearSolicitudComponent {
   formulario: FormGroup;
   loading = false;
   saldoVacaciones: SaldoVacaciones | null = null;
+  intentoEnvio = false;
+  matcher = new MostrarErrorAlEnviar(() => this.intentoEnvio);
 
   constructor(
     private fb: FormBuilder,
@@ -298,6 +313,7 @@ export class CrearSolicitudComponent {
   }
 
   onSubmit() {
+    this.intentoEnvio = true;
     if (!this.formulario.valid) {
       this.snackBar.open('Por favor completa todos los campos requeridos', 'Cerrar', {
         duration: 3000,
@@ -322,6 +338,7 @@ export class CrearSolicitudComponent {
         });
 
         this.formulario.reset();
+        this.intentoEnvio = false;
         this.loading = false;
       },
       error: (error) => {
@@ -344,9 +361,11 @@ export class CrearSolicitudComponent {
     if (this.formulario.dirty) {
       if (confirm('Estás seguro? Se perderán los cambios')) {
         this.formulario.reset();
+        this.intentoEnvio = false;
       }
     } else {
       this.formulario.reset();
+      this.intentoEnvio = false;
     }
   }
 }
