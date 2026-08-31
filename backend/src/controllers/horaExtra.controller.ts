@@ -247,6 +247,7 @@ export class HoraExtraController {
         req.userId!,
         parseFloat(horas_aprobadas),
         motivo,
+        req.departamentoId,
       );
 
       return res.status(200).json({

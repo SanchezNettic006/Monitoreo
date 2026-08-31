@@ -24,7 +24,7 @@ export const routes: Routes = [
   { path: 'mis-horas', component: MisHorasComponent, canActivate: [authGuard] },
   { path: 'mi-equipo', component: MiEquipoComponent, canActivate: [authGuard, liderGuard] },
   { path: 'proyectos', component: ProyectosComponent, canActivate: [authGuard, adminOLiderGuard] },
-  { path: 'horas-extras', component: HorasExtrasComponent, canActivate: [authGuard, adminGuard] },
+  { path: 'horas-extras', component: HorasExtrasComponent, canActivate: [authGuard, adminOLiderGuard] },
   { path: 'reportes', component: ReportesComponent, canActivate: [authGuard, adminGuard] },
   { path: 'tramites', component: TramitesDashboardComponent, canActivate: [authGuard] },
   { path: 'calendario', component: CalendarioLaboralComponent, canActivate: [authGuard, adminGuard] },

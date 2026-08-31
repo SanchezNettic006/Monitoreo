@@ -2,7 +2,6 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { HoraExtraController } from '@controllers/horaExtra.controller';
 import {
   authMiddleware,
-  adminMiddleware,
   liderOAdminMiddleware,
   cargarDepartamentoLider,
 } from '@middleware/auth.middleware';
@@ -67,10 +66,14 @@ router.get(
 
 /**
  * PATCH /asistencia/hora-extra/:id/revisar
- * Aprobar (total/parcial) o rechazar las horas de un ticket finalizado (admin)
+ * Aprobar (total/parcial) o rechazar las horas de un ticket finalizado
+ * (admin: cualquiera; líder: solo de empleados de su propio departamento)
  */
-router.patch('/:id/revisar', adminMiddleware, (req: Request, res: Response, next: NextFunction) =>
-  controller.revisar(req, res, next),
+router.patch(
+  '/:id/revisar',
+  liderOAdminMiddleware,
+  cargarDepartamentoLider,
+  (req: Request, res: Response, next: NextFunction) => controller.revisar(req, res, next),
 );
 
 /**

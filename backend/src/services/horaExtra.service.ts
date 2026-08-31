@@ -272,11 +272,23 @@ export class HoraExtraService {
     adminUsuarioId: number,
     horasAprobadas: number,
     motivo?: string,
+    departamentoIdRestringido?: number,
   ): Promise<HoraExtra> {
-    const horaExtra = await this.horaExtraRepository.findOne({ where: { id: horaExtraId } });
+    const horaExtra = await this.horaExtraRepository.findOne({
+      where: { id: horaExtraId },
+      relations: ['usuario', 'usuario.empleado'],
+    });
 
     if (!horaExtra) {
       throw new OperationalError(404, 'Hora extra no encontrada');
+    }
+
+    // Un líder solo puede revisar horas extra de empleados de su propio departamento
+    if (
+      departamentoIdRestringido !== undefined &&
+      horaExtra.usuario?.empleado?.departamento_id !== departamentoIdRestringido
+    ) {
+      throw new OperationalError(403, 'No tienes permisos para revisar horas extra de otro departamento');
     }
 
     if (horaExtra.estado !== 'finalizada') {

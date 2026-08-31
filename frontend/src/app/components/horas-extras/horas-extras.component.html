@@ -287,7 +287,7 @@
                 <td class="acciones-cell">
                   <button
                     mat-icon-button
-                    *ngIf="esAdmin"
+                    *ngIf="puedeRevisar"
                     (click)="abrirRevisarDialog(extra)"
                     [title]="extra.estado_aprobacion === 'pendiente' ? 'Revisar horas' : 'Editar revisión'"
                   >

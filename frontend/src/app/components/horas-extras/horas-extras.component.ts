@@ -159,6 +159,12 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
     return this.authService.esAdmin();
   }
 
+  // Admin y líder gestionan (revisan/aprueban) horas extra; el líder solo ve
+  // las de su propio departamento (ya filtrado por el backend).
+  get puedeRevisar(): boolean {
+    return this.authService.esAdmin() || this.authService.esLider();
+  }
+
   ngOnDestroy(): void {
     // Limpiar intervalo al destruir componente
     if (this.intervalId) {
