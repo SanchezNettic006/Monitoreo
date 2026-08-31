@@ -351,7 +351,9 @@ interface Resumen {
         }
 
         ::ng-deep .mat-mdc-tab-body-wrapper {
-          padding: 12px;
+          // Cada tab (Mis Solicitudes, Crear Solicitud) maneja su propio
+          // espaciado interno; sumarle padding aquí las dejaba muy angostas.
+          padding: 0;
         }
 
         ::ng-deep .mat-mdc-tab-label-content {

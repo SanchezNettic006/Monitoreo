@@ -269,6 +269,20 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
       }
     }
     @media (max-width: 600px) {
+      .crear-solicitud-container {
+        padding: 0;
+      }
+      .form-wrapper {
+        max-width: none;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .form-header {
+        padding: 20px 16px;
+      }
+      .solicitud-form {
+        padding: 16px;
+      }
       .form-grid-2 {
         grid-template-columns: 1fr;
       }

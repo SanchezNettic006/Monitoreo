@@ -168,6 +168,7 @@ import { SolicitudService, Solicitud } from '../../../services/solicitud.service
 
       .table-container {
         overflow-x: auto;
+        padding: 0 8px;
       }
 
       .solicitudes-table {
