@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,6 +9,12 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SolicitudService } from '../../../services/solicitud.service';
+
+interface MesComparacion {
+  mes: string;
+  label: string;
+  cantidad: number;
+}
 
 @Component({
   selector: 'app-solicitudes-aprobadas',
@@ -24,6 +31,20 @@ import { SolicitudService } from '../../../services/solicitud.service';
   ],
   template: `
     <div class="solicitudes-aprobadas-container">
+      <!-- Comparación de los últimos 3 meses -->
+      <div class="comparacion-section" *ngIf="!cargandoComparacion">
+        <h3 class="comparacion-titulo">Aprobados por mes</h3>
+        <div class="comparacion-chart" role="img" [attr.aria-label]="descripcionComparacion">
+          <div class="comparacion-barra" *ngFor="let m of mesesComparacion" [title]="m.cantidad + ' trámite(s) aprobado(s) en ' + m.label">
+            <span class="comparacion-valor">{{ m.cantidad }}</span>
+            <div class="comparacion-columna">
+              <div class="comparacion-fill" [style.height.%]="maxComparacion > 0 ? (m.cantidad / maxComparacion) * 100 : 0"></div>
+            </div>
+            <span class="comparacion-mes">{{ m.label }}</span>
+          </div>
+        </div>
+      </div>
+
       <div class="filtros-section">
         <mat-form-field appearance="fill" class="filter-field">
           <mat-label>Mes</mat-label>
@@ -103,6 +124,67 @@ import { SolicitudService } from '../../../services/solicitud.service';
     `
       .solicitudes-aprobadas-container {
         width: 100%;
+      }
+
+      .comparacion-section {
+        background: white;
+        border: 1px solid #eee;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .comparacion-titulo {
+        margin: 0 0 16px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #333;
+      }
+
+      .comparacion-chart {
+        display: flex;
+        align-items: flex-end;
+        gap: 24px;
+        height: 160px;
+        padding: 0 8px;
+      }
+
+      .comparacion-barra {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        max-width: 96px;
+        height: 100%;
+      }
+
+      .comparacion-valor {
+        font-size: 13px;
+        font-weight: 700;
+        color: #2b8a3e;
+        margin-bottom: 6px;
+      }
+
+      .comparacion-columna {
+        flex: 1;
+        width: 100%;
+        display: flex;
+        align-items: flex-end;
+      }
+
+      .comparacion-fill {
+        width: 100%;
+        min-height: 4px;
+        background: #2b8a3e;
+        border-radius: 4px 4px 0 0;
+        transition: height 0.3s ease;
+      }
+
+      .comparacion-mes {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #666;
+        text-align: center;
       }
 
       .filtros-section {
@@ -210,11 +292,24 @@ export class SolicitudesAprobadasComponent implements OnInit {
   mesSeleccionado = new Date().toISOString().slice(0, 7);
   opcionesMes: { value: string; label: string }[] = [];
 
+  // Comparación de los últimos 3 meses, independiente del filtro de la tabla
+  mesesComparacion: MesComparacion[] = [];
+  maxComparacion = 0;
+  cargandoComparacion = true;
+
   constructor(private solicitudService: SolicitudService) {}
+
+  get descripcionComparacion(): string {
+    return (
+      'Trámites aprobados por mes: ' +
+      this.mesesComparacion.map((m) => `${m.label} ${m.cantidad}`).join(', ')
+    );
+  }
 
   ngOnInit() {
     this.opcionesMes = this.generarOpcionesMes();
     this.cargar();
+    this.cargarComparacionTresMeses();
   }
 
   private generarOpcionesMes(): { value: string; label: string }[] {
@@ -240,6 +335,28 @@ export class SolicitudesAprobadasComponent implements OnInit {
       error: (error) => {
         console.error('Error al cargar solicitudes aprobadas:', error);
         this.loading = false;
+      },
+    });
+  }
+
+  /** Cuenta trámites aprobados de cada uno de los últimos 3 meses, para comparar */
+  private cargarComparacionTresMeses() {
+    this.cargandoComparacion = true;
+    const meses = this.generarOpcionesMes().slice(0, 3).reverse(); // más viejo -> más nuevo
+
+    forkJoin(meses.map((m) => this.solicitudService.obtenerSolicitudesAprobadas(m.value))).subscribe({
+      next: (resultados) => {
+        this.mesesComparacion = meses.map((m, i) => ({
+          mes: m.value,
+          label: m.label.split(' ')[0], // solo el nombre del mes, sin el año
+          cantidad: resultados[i].length,
+        }));
+        this.maxComparacion = Math.max(...this.mesesComparacion.map((m) => m.cantidad), 0);
+        this.cargandoComparacion = false;
+      },
+      error: (error) => {
+        console.error('Error al cargar comparación de meses:', error);
+        this.cargandoComparacion = false;
       },
     });
   }
