@@ -217,6 +217,43 @@ export class SolicitudService {
   }
 
   /**
+   * Obtener solicitudes aprobadas, opcionalmente filtradas por mes de inicio
+   * ('YYYY-MM'). Admin: todas; líder: solo su departamento.
+   */
+  async obtenerSolicitudesAprobadas(departamentoId?: number, mes?: string) {
+    try {
+      const where: any = { estado: 'aprobada' };
+      if (departamentoId !== undefined) {
+        where.empleado = { departamento_id: departamentoId };
+      }
+
+      const solicitudes = await this.solicitudRepository
+        .createQueryBuilder('s')
+        .leftJoinAndSelect('s.empleado', 'empleado')
+        .leftJoinAndSelect('empleado.departamento', 'departamento')
+        .leftJoinAndSelect('empleado.usuario', 'usuario')
+        .where('s.estado = :estado', { estado: 'aprobada' })
+        .andWhere(departamentoId !== undefined ? 'empleado.departamento_id = :departamentoId' : '1=1', {
+          departamentoId,
+        })
+        .andWhere(mes ? "to_char(s.fecha_inicio, 'YYYY-MM') = :mes" : '1=1', { mes })
+        .orderBy('s.fecha_inicio', 'DESC')
+        .getMany();
+
+      return solicitudes.map((s) => ({
+        ...s,
+        empleado_nombre_completo: s.empleado
+          ? `${s.empleado.nombre} ${s.empleado.apellido}`
+          : '-',
+        departamento_nombre: s.empleado?.departamento?.nombre || '-',
+      }));
+    } catch (error) {
+      console.error('Error al obtener solicitudes aprobadas:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Obtener resumen de solicitudes
    */
   async obtenerResumen() {

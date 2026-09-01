@@ -26,6 +26,11 @@ router.get('/pendientes', liderOAdminMiddleware, cargarDepartamentoLider, (req, 
   controller.obtenerPendientes(req, res, next),
 );
 
+// Solicitudes aprobadas, filtrables por mes (?mes=YYYY-MM) (admin: todas; líder: solo su departamento)
+router.get('/aprobadas', liderOAdminMiddleware, cargarDepartamentoLider, (req, res, next) =>
+  controller.obtenerAprobadas(req, res, next),
+);
+
 // Resumen de solicitudes (admin)
 router.get('/resumen', adminMiddleware, (req, res, next) => controller.resumen(req, res, next));
 

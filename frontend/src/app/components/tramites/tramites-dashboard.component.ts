@@ -11,6 +11,7 @@ import { takeUntil } from 'rxjs/operators';
 import { MisSolicitudesComponent } from './mis-solicitudes/mis-solicitudes.component';
 import { CrearSolicitudComponent } from './crear-solicitud/crear-solicitud.component';
 import { GestionarSolicitudesComponent } from './gestionar-solicitudes/gestionar-solicitudes.component';
+import { SolicitudesAprobadasComponent } from './solicitudes-aprobadas/solicitudes-aprobadas.component';
 import { SolicitudService, SaldoVacaciones } from '../../services/solicitud.service';
 import { AuthService } from '../../services/auth.service';
 
@@ -36,6 +37,7 @@ interface Resumen {
     MisSolicitudesComponent,
     CrearSolicitudComponent,
     GestionarSolicitudesComponent,
+    SolicitudesAprobadasComponent,
   ],
   changeDetection: ChangeDetectionStrategy.Default,
   template: `
@@ -122,6 +124,10 @@ interface Resumen {
             </span>
           </ng-template>
           <app-gestionar-solicitudes></app-gestionar-solicitudes>
+        </mat-tab>
+
+        <mat-tab label="Aprobados" *ngIf="esAdmin">
+          <app-solicitudes-aprobadas></app-solicitudes-aprobadas>
         </mat-tab>
       </mat-tab-group>
     </div>

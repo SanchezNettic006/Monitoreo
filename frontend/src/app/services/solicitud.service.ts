@@ -114,6 +114,19 @@ export class SolicitudService {
   }
 
   /**
+   * Obtener solicitudes aprobadas, opcionalmente filtradas por mes ('YYYY-MM')
+   * (admin: todas; líder: solo su departamento)
+   */
+  obtenerSolicitudesAprobadas(mes?: string): Observable<any[]> {
+    let url = `${this.apiUrl}/aprobadas`;
+    if (mes) url += `?mes=${mes}`;
+    return this.http.get<{ exitoso: boolean; data: any[] }>(url)
+      .pipe(
+        map(response => response.data || [])
+      );
+  }
+
+  /**
    * Cambiar estado de una solicitud
    */
   cambiarEstado(
