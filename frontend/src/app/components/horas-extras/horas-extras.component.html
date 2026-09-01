@@ -83,7 +83,10 @@
 
             <mat-form-field class="filter-field">
               <mat-label>Mes</mat-label>
-              <input matInput type="month" [(ngModel)]="filtroMesHE" (ngModelChange)="filtrarPorTicket()" />
+              <mat-select [(ngModel)]="filtroMesHE" (selectionChange)="filtrarPorTicket()">
+                <mat-option value="">Todos los meses</mat-option>
+                <mat-option *ngFor="let opcion of opcionesMesHE" [value]="opcion.value">{{ opcion.label }}</mat-option>
+              </mat-select>
             </mat-form-field>
 
             <button mat-stroked-button (click)="limpiarFiltros()" class="btn-clear">
@@ -197,7 +200,10 @@
 
             <mat-form-field class="filter-field">
               <mat-label>Mes</mat-label>
-              <input matInput type="month" [(ngModel)]="filtroMesHE" (ngModelChange)="filtrarPorTicket()" />
+              <mat-select [(ngModel)]="filtroMesHE" (selectionChange)="filtrarPorTicket()">
+                <mat-option value="">Todos los meses</mat-option>
+                <mat-option *ngFor="let opcion of opcionesMesHE" [value]="opcion.value">{{ opcion.label }}</mat-option>
+              </mat-select>
             </mat-form-field>
 
             <button mat-stroked-button (click)="limpiarFiltros()" class="btn-clear">

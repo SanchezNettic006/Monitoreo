@@ -65,6 +65,7 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
   filtroEmpleado = '';
   filtroEmpleadoHE = '';
   filtroMesHE = '';
+  opcionesMesHE: { value: string; label: string }[] = [];
   
   // Paginación
   totalActivasRegistros = 0;
@@ -97,6 +98,7 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
     this.cargarHorasExtras();
     this.cargarHoraExtraActual();
     this.opcionesMesHorasAprobadas = this.generarOpcionesMes();
+    this.opcionesMesHE = this.generarOpcionesMes();
     this.cargarHorasAprobadas();
   }
 
