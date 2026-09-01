@@ -48,24 +48,27 @@ export class EmpleadoService {
       throw new OperationalError(400, `El email ${email} ya está registrado`);
     }
 
-    // Crear Usuario
-    const nuevoUsuario = this.usuarioRepository.create({
-      username,
-      email,
-      password_hash: passwordHasheado,
-      rol: rolValido,
+    // Usuario + Empleado se crean en una sola transacción: si la creación del
+    // empleado falla (ej. departamento inválido), el usuario recién creado se
+    // revierte también, en vez de quedar una cuenta huérfana sin empleado.
+    const empleadoGuardado = await AppDataSource.transaction(async (manager) => {
+      const nuevoUsuario = manager.create(Usuario, {
+        username,
+        email,
+        password_hash: passwordHasheado,
+        rol: rolValido,
+      });
+
+      const usuarioGuardado = await manager.save(nuevoUsuario);
+
+      const datosEmpleado = {
+        ...datos,
+        usuario_id: usuarioGuardado.id,
+      };
+
+      const nuevoEmpleado = manager.create(Empleado, datosEmpleado);
+      return manager.save(nuevoEmpleado);
     });
-
-    const usuarioGuardado = await this.usuarioRepository.save(nuevoUsuario);
-
-    // Crear Empleado con referencia al Usuario
-    const datosEmpleado = {
-      ...datos,
-      usuario_id: usuarioGuardado.id,
-    };
-
-    const nuevoEmpleado = this.empleadoRepository.create(datosEmpleado);
-    const empleadoGuardado = await this.empleadoRepository.save(nuevoEmpleado);
 
     // Retornar empleado con las credenciales ingresadas por el admin
     return {
