@@ -267,8 +267,12 @@
       >
         <span class="fila-nombre">{{ depto.departamento }}</span>
         <div class="barra-cumplimiento" [title]="depto.diasReportados + ' de ' + depto.diasLaborables + ' días laborables reportados'">
-          <div class="segmento reportado" [style.width.%]="depto.porcentaje"></div>
-          <div class="segmento pendiente" [style.width.%]="100 - depto.porcentaje"></div>
+          <div class="segmento reportado" [style.width.%]="depto.porcentaje">
+            <span class="segmento-texto" *ngIf="depto.porcentaje >= 12">{{ depto.porcentaje }}%</span>
+          </div>
+          <div class="segmento pendiente" [style.width.%]="100 - depto.porcentaje">
+            <span class="segmento-texto" *ngIf="100 - depto.porcentaje >= 12">{{ 100 - depto.porcentaje }}%</span>
+          </div>
         </div>
         <span class="fila-porcentaje">{{ depto.porcentaje }}%</span>
         <mat-icon class="fila-icono">chevron_right</mat-icon>
@@ -290,8 +294,12 @@
       >
         <span class="fila-nombre">{{ empleado.nombre }}</span>
         <div class="barra-cumplimiento" [title]="empleado.diasReportados + ' de ' + empleado.diasLaborables + ' días laborables reportados'">
-          <div class="segmento reportado" [style.width.%]="empleado.porcentaje"></div>
-          <div class="segmento pendiente" [style.width.%]="100 - empleado.porcentaje"></div>
+          <div class="segmento reportado" [style.width.%]="empleado.porcentaje">
+            <span class="segmento-texto" *ngIf="empleado.porcentaje >= 12">{{ empleado.porcentaje }}%</span>
+          </div>
+          <div class="segmento pendiente" [style.width.%]="100 - empleado.porcentaje">
+            <span class="segmento-texto" *ngIf="100 - empleado.porcentaje >= 12">{{ 100 - empleado.porcentaje }}%</span>
+          </div>
         </div>
         <span class="fila-porcentaje">{{ empleado.diasReportados }}/{{ empleado.diasLaborables }} días</span>
         <mat-icon class="fila-icono">info</mat-icon>
