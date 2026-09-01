@@ -65,6 +65,14 @@ export class ReportesComponent implements OnInit {
   filtroFechaFin: Date | null = null;
   filtroNombreEmpleado = '';
   filtroDepartamentoId: number | null = null;
+  listaDepartamentos = [
+    { id: 1, nombre: 'Taller' },
+    { id: 2, nombre: 'PLEX' },
+    { id: 3, nombre: 'Administración' },
+    { id: 4, nombre: 'Troncal' },
+    { id: 5, nombre: 'Ventas' },
+    { id: 6, nombre: 'SAC' },
+  ];
 
   // Cumplimiento de reportes (gráfica)
   cumplimiento: CumplimientoResponse | null = null;

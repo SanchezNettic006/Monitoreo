@@ -82,8 +82,11 @@
       </mat-form-field>
 
       <mat-form-field class="filter-field">
-        <mat-label>Departamento ID</mat-label>
-        <input matInput [(ngModel)]="filtroDepartamentoId" type="number" placeholder="ID" />
+        <mat-label>Departamento</mat-label>
+        <mat-select [(ngModel)]="filtroDepartamentoId">
+          <mat-option [value]="null">Todos los departamentos</mat-option>
+          <mat-option *ngFor="let depto of listaDepartamentos" [value]="depto.id">{{ depto.nombre }}</mat-option>
+        </mat-select>
       </mat-form-field>
     </div>
 
