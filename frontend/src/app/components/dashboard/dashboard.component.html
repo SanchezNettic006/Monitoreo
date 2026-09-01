@@ -283,7 +283,12 @@
           <div class="card-icon vacations">
             <mat-icon>beach_access</mat-icon>
           </div>
-          <div class="card-badge">Disponible</div>
+          <div class="card-badge pendiente" *ngIf="(esAdmin || esLider) && tramitesPendientes > 0">
+            {{ tramitesPendientes }} por revisar
+          </div>
+          <div class="card-badge" *ngIf="!(esAdmin || esLider) || tramitesPendientes === 0">
+            {{ (esAdmin || esLider) ? 'Al día' : 'Disponible' }}
+          </div>
         </div>
         <div class="card-content">
           <h3>Trámites</h3>

@@ -11,6 +11,7 @@ import { ReportesService, ResumenReportes, DepartamentoStats, AsistenciaReporte 
 import { CalendarioService, EventoProximo } from '../../services/calendario.service';
 import { EmpleadoService } from '../../services/empleado.service';
 import { HoraExtraService } from '../../services/hora-extra.service';
+import { SolicitudService } from '../../services/solicitud.service';
 import { MiPerfilComponent } from '../mi-perfil/mi-perfil.component';
 import { environment } from '../../../environments/environment';
 
@@ -42,6 +43,7 @@ import { environment } from '../../../environments/environment';
   totalEmpleadosEquipo = 0;
 
   horasExtraPendientes = 0;
+  tramitesPendientes = 0;
 
   constructor(
     private authService: AuthService,
@@ -49,6 +51,7 @@ import { environment } from '../../../environments/environment';
     private calendarioService: CalendarioService,
     private empleadoService: EmpleadoService,
     private horaExtraService: HoraExtraService,
+    private solicitudService: SolicitudService,
     private dialog: MatDialog,
     private router: Router
   ) {}
@@ -61,7 +64,11 @@ import { environment } from '../../../environments/environment';
       this.cargarResumen();
       this.cargarDepartamentos();
       this.cargarProximosEventos();
+    }
+    if (this.esAdmin || this.esLider) {
+      // Admin ve todo; líder solo lo de su departamento (scoped por el backend)
       this.cargarHorasExtraPendientes();
+      this.cargarTramitesPendientes();
     }
     if (this.esLider) {
       this.cargarResumenEquipoHoy();
@@ -78,6 +85,17 @@ import { environment } from '../../../environments/environment';
       },
       error: () => {
         this.horasExtraPendientes = 0;
+      },
+    });
+  }
+
+  cargarTramitesPendientes(): void {
+    this.solicitudService.obtenerSolicitudesPendientes().subscribe({
+      next: (solicitudes) => {
+        this.tramitesPendientes = solicitudes.length;
+      },
+      error: () => {
+        this.tramitesPendientes = 0;
       },
     });
   }
