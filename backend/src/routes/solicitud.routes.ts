@@ -47,6 +47,11 @@ router.get('/saldo-vacaciones/:empleadoId', liderOAdminMiddleware, cargarDeparta
   controller.obtenerSaldoVacaciones(req, res, next),
 );
 
+// Reprogramar (cambiar fecha de) una solicitud ya aprobada (admin: cualquiera; líder: solo su departamento)
+router.patch('/:id/reprogramar', liderOAdminMiddleware, cargarDepartamentoLider, (req, res, next) =>
+  controller.reprogramar(req, res, next),
+);
+
 // Cambiar estado de solicitud (admin: cualquiera; líder: solo su departamento) - debe ir al final porque usa :id
 router.patch('/:id/estado', liderOAdminMiddleware, cargarDepartamentoLider, (req, res, next) =>
   controller.cambiarEstado(req, res, next),

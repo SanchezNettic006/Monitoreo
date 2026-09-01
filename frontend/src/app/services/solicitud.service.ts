@@ -114,6 +114,30 @@ export class SolicitudService {
   }
 
   /**
+   * Reprogramar (cambiar fecha de) una solicitud ya aprobada
+   */
+  reprogramarSolicitud(
+    solicitudId: number,
+    nuevaFechaInicio: string,
+    nuevaFechaFin?: string,
+    motivo?: string,
+  ): Observable<Solicitud> {
+    return this.http.patch<{ exitoso: boolean; data: Solicitud }>(`${this.apiUrl}/${solicitudId}/reprogramar`, {
+      nueva_fecha_inicio: nuevaFechaInicio,
+      nueva_fecha_fin: nuevaFechaFin,
+      motivo,
+    }).pipe(
+      tap(() => {
+        this.solicitudActualizada$.next({
+          type: 'updated',
+          message: 'Solicitud reprogramada correctamente',
+        });
+      }),
+      map((response) => response.data),
+    );
+  }
+
+  /**
    * Obtener solicitudes aprobadas, opcionalmente filtradas por mes ('YYYY-MM')
    * (admin: todas; líder: solo su departamento)
    */

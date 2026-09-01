@@ -93,6 +93,41 @@ export class SolicitudController {
   }
 
   /**
+   * PATCH /api/solicitudes/:id/reprogramar
+   * Mover la fecha de una solicitud YA APROBADA (ej. vacación que se corre
+   * por una emergencia). Admin: cualquiera; líder: solo su departamento.
+   */
+  async reprogramar(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      const { nueva_fecha_inicio, nueva_fecha_fin, motivo } = req.body;
+
+      if (!nueva_fecha_inicio) {
+        return res.status(400).json({
+          exitoso: false,
+          mensaje: 'Falta el campo: nueva_fecha_inicio',
+        });
+      }
+
+      const solicitud = await solicitudService.reprogramarSolicitud(
+        parseInt(id, 10),
+        nueva_fecha_inicio,
+        nueva_fecha_fin,
+        motivo,
+        req.userId,
+        req.departamentoId,
+      );
+
+      return res.status(200).json({
+        exitoso: true,
+        data: solicitud,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * PATCH /api/solicitudes/:id/estado
    * Cambiar estado de una solicitud (admin: cualquiera; líder: solo su departamento)
    */

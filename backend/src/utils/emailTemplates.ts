@@ -144,6 +144,68 @@ export const emailTemplates = {
   },
 
   /**
+   * Email cuando se reprograma (cambia de fecha) una solicitud ya aprobada
+   */
+  solicitudReprogramada: (
+    empleado: { nombre: string; apellido: string },
+    solicitud: any,
+    fechaAnteriorInicio: string,
+    fechaAnteriorFin: string | null,
+    motivo?: string,
+  ) => {
+    const tipoSolicitud = solicitud.tipo || 'Solicitud';
+
+    return {
+      asunto: `Tu solicitud de ${tipoSolicitud} cambió de fecha`,
+      cuerpo: `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #2c3e50; max-width: 600px; margin: 0 auto;">
+          <div style="background: #f0a400; padding: 30px; color: white; border-radius: 8px 8px 0 0; text-align: center;">
+            <h1 style="margin: 0; font-size: 24px; font-weight: 300;">Solicitud Reprogramada</h1>
+            <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">Tu solicitud ya aprobada cambió de fecha</p>
+          </div>
+
+          <div style="border: 1px solid #ecf0f1; border-top: none; padding: 30px; background: #ffffff;">
+            <p style="margin-top: 0; font-size: 14px;">Hola ${empleado.nombre},</p>
+
+            <div style="background: #fff4e6; padding: 20px; border-left: 3px solid #f0a400; margin: 20px 0; border-radius: 3px;">
+              <p style="margin: 0; font-size: 16px; font-weight: 500; color: #d98600;">
+                Tu ${tipoSolicitud} ya aprobada fue movida a una nueva fecha
+              </p>
+            </div>
+
+            <table style="width: 100%; margin: 25px 0; border-collapse: collapse;">
+              <tr style="border-bottom: 1px solid #ecf0f1;">
+                <td style="padding: 12px 0; color: #7f8c8d; font-size: 13px;">Fecha anterior</td>
+                <td style="padding: 12px 0; font-weight: 500; text-align: right; text-decoration: line-through; color: #999;">
+                  ${formatFechaDisplay(fechaAnteriorInicio)}${fechaAnteriorFin ? ' - ' + formatFechaDisplay(fechaAnteriorFin) : ''}
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid #ecf0f1;">
+                <td style="padding: 12px 0; color: #7f8c8d; font-size: 13px;">Nueva fecha</td>
+                <td style="padding: 12px 0; font-weight: 700; text-align: right; color: #2b8a3e;">
+                  ${formatFechaDisplay(solicitud.fecha_inicio)}${solicitud.fecha_fin ? ' - ' + formatFechaDisplay(solicitud.fecha_fin) : ''}
+                </td>
+              </tr>
+              ${motivo ? `
+              <tr>
+                <td style="padding: 12px 0; color: #7f8c8d; font-size: 13px;">Motivo</td>
+                <td style="padding: 12px 0; text-align: right;">${motivo}</td>
+              </tr>
+              ` : ''}
+            </table>
+
+            <hr style="border: none; border-top: 1px solid #ecf0f1; margin: 30px 0;">
+            <p style="color: #95a5a6; font-size: 12px; margin: 0; text-align: center;">
+              Sistema NETTIC - Gestión de Asistencias<br>
+              Este es un mensaje automático. Por favor, no responda a este correo.
+            </p>
+          </div>
+        </div>
+      `,
+    };
+  },
+
+  /**
    * Email cuando se rechaza una solicitud (enviar al empleado)
    */
   solicitudRechazada: (empleado: {

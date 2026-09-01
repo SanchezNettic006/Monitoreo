@@ -8,7 +8,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { SolicitudService } from '../../../services/solicitud.service';
+import { ReprogramarDialogComponent } from './reprogramar-dialog/reprogramar-dialog.component';
 
 interface MesComparacion {
   mes: string;
@@ -28,6 +33,10 @@ interface MesComparacion {
     MatSelectModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    MatButtonModule,
+    MatTooltipModule,
+    MatDialogModule,
+    MatSnackBarModule,
   ],
   template: `
     <div class="solicitudes-aprobadas-container">
@@ -103,6 +112,15 @@ interface MesComparacion {
             <th mat-header-cell *matHeaderCellDef>Motivo</th>
             <td mat-cell *matCellDef="let element">
               <span [title]="element.motivo">{{ element.motivo || '-' }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef>Acciones</th>
+            <td mat-cell *matCellDef="let element">
+              <button mat-icon-button matTooltip="Reprogramar fecha" (click)="reprogramar(element)">
+                <mat-icon>event_repeat</mat-icon>
+              </button>
             </td>
           </ng-container>
 
@@ -287,7 +305,7 @@ interface MesComparacion {
 export class SolicitudesAprobadasComponent implements OnInit {
   solicitudes: any[] = [];
   dataSource = new MatTableDataSource<any>();
-  displayedColumns: string[] = ['empleado', 'tipo', 'fechas', 'dias', 'motivo'];
+  displayedColumns: string[] = ['empleado', 'tipo', 'fechas', 'dias', 'motivo', 'acciones'];
   loading = true;
   mesSeleccionado = new Date().toISOString().slice(0, 7);
   opcionesMes: { value: string; label: string }[] = [];
@@ -297,7 +315,11 @@ export class SolicitudesAprobadasComponent implements OnInit {
   maxComparacion = 0;
   cargandoComparacion = true;
 
-  constructor(private solicitudService: SolicitudService) {}
+  constructor(
+    private solicitudService: SolicitudService,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar,
+  ) {}
 
   get descripcionComparacion(): string {
     return (
@@ -358,6 +380,39 @@ export class SolicitudesAprobadasComponent implements OnInit {
         console.error('Error al cargar comparación de meses:', error);
         this.cargandoComparacion = false;
       },
+    });
+  }
+
+  reprogramar(solicitud: any) {
+    const dialogRef = this.dialog.open(ReprogramarDialogComponent, {
+      data: { solicitud },
+      width: '450px',
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (!result) return;
+
+      this.solicitudService
+        .reprogramarSolicitud(solicitud.id, result.nuevaFechaInicio, result.nuevaFechaFin, result.motivo)
+        .subscribe({
+          next: () => {
+            this.snackBar.open('Solicitud reprogramada correctamente', 'Cerrar', {
+              duration: 3000,
+              horizontalPosition: 'end',
+              verticalPosition: 'bottom',
+              panelClass: ['success-snackbar'],
+            });
+            this.cargar();
+            this.cargarComparacionTresMeses();
+          },
+          error: (error) => {
+            this.snackBar.open(
+              error.error?.mensaje || 'Error al reprogramar la solicitud',
+              'Cerrar',
+              { duration: 3000, horizontalPosition: 'end', verticalPosition: 'bottom' },
+            );
+          },
+        });
     });
   }
 

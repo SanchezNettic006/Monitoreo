@@ -6,6 +6,7 @@ import { Empleado } from '@entities/Empleado';
 import { emailTemplates } from '@utils/emailTemplates';
 import { config } from '@config/env';
 import { OperationalError } from '@middleware/errorHandler';
+import { telegramService } from '@services/telegram.service';
 
 interface CrearSolicitudDTO {
   empleado_id: number;
@@ -155,6 +156,78 @@ export class SolicitudService {
       return solicitudActualizada;
     } catch (error) {
       console.error('Error al cambiar estado:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Reprogramar una solicitud YA APROBADA a una nueva fecha (ej. una vacación
+   * que se aprobó para el día 5 pero, por una emergencia, se corre al día 8).
+   * No crea una solicitud nueva ni pasa por "pendiente" de nuevo: mantiene el
+   * mismo registro (y su historial), solo le cambia la fecha.
+   */
+  async reprogramarSolicitud(
+    solicitudId: number,
+    nuevaFechaInicio: string,
+    nuevaFechaFin: string | undefined,
+    motivo: string | undefined,
+    usuarioId?: number,
+    departamentoIdRestringido?: number,
+  ): Promise<SolicitudTramite> {
+    try {
+      const solicitud = await this.solicitudRepository.findOne({
+        where: { id: solicitudId },
+        relations: ['empleado', 'empleado.usuario', 'empleado.departamento'],
+      });
+
+      if (!solicitud) {
+        throw new OperationalError(404, 'Solicitud no encontrada');
+      }
+
+      if (
+        departamentoIdRestringido !== undefined &&
+        solicitud.empleado?.departamento_id !== departamentoIdRestringido
+      ) {
+        throw new OperationalError(403, 'No tienes permisos para reprogramar solicitudes de otro departamento');
+      }
+
+      if (solicitud.estado !== 'aprobada') {
+        throw new OperationalError(400, 'Solo se pueden reprogramar solicitudes ya aprobadas');
+      }
+
+      if (!nuevaFechaInicio) {
+        throw new OperationalError(400, 'Falta la nueva fecha de inicio');
+      }
+
+      const fechaAnteriorInicio = solicitud.fecha_inicio;
+      const fechaAnteriorFin = solicitud.fecha_fin || null;
+
+      solicitud.fecha_inicio = nuevaFechaInicio;
+      solicitud.fecha_fin = nuevaFechaFin || undefined;
+      solicitud.updated_at = new Date();
+
+      const solicitudActualizada = await this.solicitudRepository.save(solicitud);
+
+      // Historial: no cambia el estado real (sigue 'aprobada'), solo se deja
+      // constancia del movimiento de fecha para auditoría.
+      const historial = new SolicitudHistorial();
+      historial.solicitud_id = solicitudActualizada.id;
+      historial.estado_anterior = 'aprobada';
+      historial.estado_nuevo = 'reprogramada';
+      historial.comentario =
+        `Fecha movida de ${fechaAnteriorInicio}${fechaAnteriorFin ? ' - ' + fechaAnteriorFin : ''} a ` +
+        `${nuevaFechaInicio}${nuevaFechaFin ? ' - ' + nuevaFechaFin : ''}` +
+        (motivo?.trim() ? `: ${motivo.trim()}` : '');
+      historial.usuario_id = usuarioId;
+
+      await this.historialRepository.save(historial);
+
+      await this.notificarReprogramacion(solicitudActualizada, fechaAnteriorInicio, fechaAnteriorFin, motivo);
+
+      console.log('Solicitud reprogramada:', solicitudActualizada.id);
+      return solicitudActualizada;
+    } catch (error) {
+      console.error('Error al reprogramar solicitud:', error);
       throw error;
     }
   }
@@ -451,6 +524,55 @@ export class SolicitudService {
   /**
    * Crear notificación: cambio de estado
    */
+  private async notificarReprogramacion(
+    solicitud: SolicitudTramite,
+    fechaAnteriorInicio: string,
+    fechaAnteriorFin: string | null,
+    motivo?: string,
+  ): Promise<void> {
+    const empleado = solicitud.empleado;
+
+    try {
+      const emailEmpleado = empleado?.usuario?.email || 'empleado@nettic.com';
+      const template = emailTemplates.solicitudReprogramada(
+        { nombre: empleado?.nombre || 'Empleado', apellido: empleado?.apellido || '' },
+        solicitud,
+        fechaAnteriorInicio,
+        fechaAnteriorFin,
+        motivo,
+      );
+
+      const notificacion = new NotificacionEmail();
+      notificacion.solicitud_id = solicitud.id;
+      notificacion.tipo = 'aprobada'; // reutiliza la categoría; sigue siendo una solicitud aprobada
+      notificacion.destinatario = emailEmpleado;
+      notificacion.asunto = template.asunto;
+      notificacion.cuerpo = template.cuerpo;
+      notificacion.estado = 'pendiente';
+
+      await this.notificacionRepository.save(notificacion);
+    } catch (error) {
+      console.error('❌ Error al crear notificación de reprogramación:', error);
+    }
+
+    // Aviso inmediato por Telegram, si el empleado tiene su cuenta vinculada
+    try {
+      const chatId = empleado?.usuario?.telegram_chat_id;
+      if (chatId) {
+        const nuevaFecha = solicitud.fecha_fin
+          ? `${solicitud.fecha_inicio} a ${solicitud.fecha_fin}`
+          : solicitud.fecha_inicio;
+        await telegramService.enviarMensaje(
+          chatId,
+          `📅 Tu solicitud de ${solicitud.tipo} (ya aprobada) cambió de fecha: ahora es ${nuevaFecha}.` +
+            (motivo?.trim() ? ` Motivo: ${motivo.trim()}` : ''),
+        );
+      }
+    } catch (error) {
+      console.error('❌ Error al enviar Telegram de reprogramación:', error);
+    }
+  }
+
   private async crearNotificacionCambioEstado(
     solicitud: SolicitudTramite,
     estadoAnterior: string,
