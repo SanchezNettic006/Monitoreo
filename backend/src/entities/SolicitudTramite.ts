@@ -14,7 +14,8 @@ export type TipoTramite =
   | 'ausencia'
   | 'cambio_jornada' // ya no se ofrece al crear; se deja por compatibilidad con solicitudes históricas
   | 'cita_medica_programada'
-  | 'cita_medica_emergencia';
+  | 'cita_medica_emergencia'
+  | 'cumpleanos'; // beneficio de la empresa: no descuenta del cupo de vacaciones
 export type EstadoSolicitud = 'pendiente' | 'aprobada' | 'rechazada' | 'cancelada';
 
 @Entity('solicitud_tramite')

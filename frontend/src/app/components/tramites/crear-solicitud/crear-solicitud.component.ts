@@ -68,10 +68,14 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
                   <mat-option value="ausencia">Ausencia</mat-option>
                   <mat-option value="cita_medica_programada">Cita Médica Programada</mat-option>
                   <mat-option value="cita_medica_emergencia">Cita Médica de Emergencia</mat-option>
+                  <mat-option value="cumpleanos">Cumpleaños</mat-option>
                 </mat-select>
                 <mat-error>Selecciona un tipo de solicitud</mat-error>
                 <mat-hint *ngIf="formulario.get('tipo')?.value === 'vacaciones' && saldoVacaciones">
                   Te quedan {{ saldoVacaciones.diasDisponibles }} de {{ saldoVacaciones.cupoAnual }} días este {{ saldoVacaciones.anio }}
+                </mat-hint>
+                <mat-hint *ngIf="formulario.get('tipo')?.value === 'cumpleanos'">
+                  Beneficio de la empresa: no se descuenta de tus días de vacaciones
                 </mat-hint>
               </mat-form-field>
 

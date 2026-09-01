@@ -6,6 +6,7 @@ const ETIQUETAS: Record<string, string> = {
   cambio_jornada: 'Cambio de Jornada',
   cita_medica_programada: 'Cita Médica Programada',
   cita_medica_emergencia: 'Cita Médica de Emergencia',
+  cumpleanos: 'Cumpleaños',
 };
 
 /** Traduce el tipo de trámite (valor guardado en BD) a un nombre legible */
