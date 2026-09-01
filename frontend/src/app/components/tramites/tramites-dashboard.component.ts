@@ -46,7 +46,7 @@ interface Resumen {
       <div class="header-section">
         <div>
           <h1>Gestión de Trámites</h1>
-          <p>Vacaciones, ausencias y cambios de jornada</p>
+          <p>Vacaciones, ausencias y citas médicas</p>
         </div>
       </div>
 

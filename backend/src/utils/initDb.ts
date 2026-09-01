@@ -296,6 +296,18 @@ export async function inicializarColumnas() {
         }
       }
 
+      const tablaSolicitudExiste = await queryRunner.hasTable('solicitud_tramite');
+      if (tablaSolicitudExiste) {
+        const columnaFotoSolicitudExiste = await queryRunner.hasColumn('solicitud_tramite', 'url_foto');
+        if (!columnaFotoSolicitudExiste) {
+          console.log('⚠️ Agregando columna url_foto a solicitud_tramite...');
+          await queryRunner.query(`ALTER TABLE solicitud_tramite ADD COLUMN url_foto VARCHAR(255) NULL`);
+          console.log('✅ Columna url_foto agregada exitosamente');
+        } else {
+          console.log('✅ Columna url_foto ya existe en solicitud_tramite');
+        }
+      }
+
       const columnaCierreAutomaticoExiste = await queryRunner.hasColumn('record_asistencia', 'cierre_automatico');
       if (!columnaCierreAutomaticoExiste) {
         console.log('⚠️ Agregando columna cierre_automatico...');

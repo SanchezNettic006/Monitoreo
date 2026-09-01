@@ -25,13 +25,14 @@ export interface Solicitud {
       email: string;
     };
   };
-  tipo: 'vacaciones' | 'ausencia' | 'cambio_jornada';
+  tipo: 'vacaciones' | 'ausencia' | 'cambio_jornada' | 'cita_medica_programada' | 'cita_medica_emergencia';
   estado: 'pendiente' | 'aprobada' | 'rechazada' | 'cancelada';
   fecha_inicio: Date;
   fecha_fin?: Date;
   dias_solicitados: number;
   motivo?: string;
   descripcion?: string;
+  url_foto?: string;
   observacion_admin?: string;
   aprobador_id?: number;
   historial?: any[];
@@ -63,6 +64,17 @@ export class SolicitudService {
 
   constructor(private http: HttpClient) {}
 
+  private aFormData(datos: Partial<Solicitud>, foto: File): FormData {
+    const formData = new FormData();
+    Object.entries(datos).forEach(([clave, valor]) => {
+      if (valor !== null && valor !== undefined) {
+        formData.append(clave, String(valor));
+      }
+    });
+    formData.append('foto', foto, foto.name);
+    return formData;
+  }
+
   // Observable para notificar cuando se crea una solicitud
   getSolicitudCreadaNotification(): Observable<SolicitudNotification> {
     console.log('📡 [SolicitudService] Suscriptor conectado a solicitudCreada$');
@@ -78,8 +90,9 @@ export class SolicitudService {
   /**
    * Crear nueva solicitud
    */
-  crearSolicitud(datos: Partial<Solicitud>): Observable<Solicitud> {
-    return this.http.post<{ exitoso: boolean; data: Solicitud }>(`${this.apiUrl}/crear`, datos).pipe(
+  crearSolicitud(datos: Partial<Solicitud>, foto?: File | null): Observable<Solicitud> {
+    const body: FormData | Partial<Solicitud> = foto ? this.aFormData(datos, foto) : datos;
+    return this.http.post<{ exitoso: boolean; data: Solicitud }>(`${this.apiUrl}/crear`, body).pipe(
       tap((response) => {
         console.log('✅ [SolicitudService] Solicitud creada exitosamente');
         const notification: SolicitudNotification = {

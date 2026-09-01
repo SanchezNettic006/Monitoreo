@@ -77,6 +77,8 @@ export class CalendarioService {
       vacaciones: 'Vacaciones',
       ausencia: 'Ausencia',
       cambio_jornada: 'Cambio de jornada',
+      cita_medica_programada: 'Cita médica programada',
+      cita_medica_emergencia: 'Cita médica de emergencia',
     };
 
     const eventosTramites = tramitesAprobados.flatMap((t) => {

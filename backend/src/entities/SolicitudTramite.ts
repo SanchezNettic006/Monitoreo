@@ -9,7 +9,12 @@ import {
 import { Empleado } from './Empleado';
 import { SolicitudHistorial } from './SolicitudHistorial';
 
-export type TipoTramite = 'vacaciones' | 'ausencia' | 'cambio_jornada';
+export type TipoTramite =
+  | 'vacaciones'
+  | 'ausencia'
+  | 'cambio_jornada' // ya no se ofrece al crear; se deja por compatibilidad con solicitudes históricas
+  | 'cita_medica_programada'
+  | 'cita_medica_emergencia';
 export type EstadoSolicitud = 'pendiente' | 'aprobada' | 'rechazada' | 'cancelada';
 
 @Entity('solicitud_tramite')
@@ -44,6 +49,11 @@ export class SolicitudTramite {
 
   @Column({ type: 'text', nullable: true })
   descripcion?: string;
+
+  // Foto de comprobante de la cita (obligatoria para cita_medica_programada,
+  // no aplica para cita_medica_emergencia porque no hay tiempo de tomarla)
+  @Column({ name: 'url_foto', nullable: true })
+  url_foto?: string;
 
   @Column({ type: 'text', nullable: true })
   observacion_admin?: string;

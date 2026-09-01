@@ -8,6 +8,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { TipoTramitePipe } from '../../../../pipes/tipo-tramite.pipe';
 
 @Component({
   selector: 'app-reprogramar-dialog',
@@ -22,6 +23,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatNativeDateModule,
     MatButtonModule,
     MatIconModule,
+    TipoTramitePipe,
   ],
   template: `
     <div class="dialog-container">
@@ -33,7 +35,7 @@ import { MatIconModule } from '@angular/material/icon';
 
         <div class="solicitud-info">
           <p><strong>Empleado:</strong> {{ data.solicitud.empleado?.nombre }} {{ data.solicitud.empleado?.apellido }}</p>
-          <p><strong>Tipo:</strong> {{ data.solicitud.tipo | titlecase }}</p>
+          <p><strong>Tipo:</strong> {{ data.solicitud.tipo | tipoTramite }}</p>
           <p>
             <strong>Fecha actual:</strong> {{ data.solicitud.fecha_inicio | date: 'dd/MM/yyyy' }}
             <span *ngIf="data.solicitud.fecha_fin"> a {{ data.solicitud.fecha_fin | date: 'dd/MM/yyyy' }}</span>

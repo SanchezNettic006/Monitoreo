@@ -261,6 +261,8 @@ import { environment } from '../../../environments/environment';
       case 'vacaciones': return 'Vacaciones';
       case 'ausencia': return 'Ausencia';
       case 'cambio_jornada': return 'Cambio jornada';
+      case 'cita_medica_programada': return 'Cita médica programada';
+      case 'cita_medica_emergencia': return 'Cita médica de emergencia';
       default: return tipo;
     }
   }

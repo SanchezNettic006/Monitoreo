@@ -6,6 +6,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { TipoTramitePipe } from '../../../../pipes/tipo-tramite.pipe';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-aprobar-rechazar-dialog',
@@ -18,6 +20,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatInputModule,
     MatButtonModule,
     MatIconModule,
+    TipoTramitePipe,
   ],
   template: `
     <div class="dialog-container">
@@ -34,7 +37,7 @@ import { MatIconModule } from '@angular/material/icon';
             <strong>Empleado:</strong> {{ data.solicitud.empleado?.nombre }} {{ data.solicitud.empleado?.apellido }}
           </p>
           <p>
-            <strong>Tipo:</strong> {{ data.solicitud.tipo | titlecase }}
+            <strong>Tipo:</strong> {{ data.solicitud.tipo | tipoTramite }}
           </p>
           <p>
             <strong>Fecha Inicio:</strong> {{ data.solicitud.fecha_inicio | date: 'dd/MM/yyyy' }}
@@ -45,6 +48,12 @@ import { MatIconModule } from '@angular/material/icon';
           <p>
             <strong>Motivo:</strong> {{ data.solicitud.motivo || '-' }}
           </p>
+          <div *ngIf="data.solicitud.url_foto" class="comprobante">
+            <strong>Comprobante:</strong>
+            <a [href]="urlFoto(data.solicitud.url_foto)" target="_blank">
+              <img [src]="urlFoto(data.solicitud.url_foto)" alt="Comprobante de la cita" />
+            </a>
+          </div>
         </div>
 
         <form [formGroup]="formulario" class="form-section">
@@ -145,6 +154,19 @@ import { MatIconModule } from '@angular/material/icon';
             font-weight: 600;
           }
         }
+
+        .comprobante {
+          margin-top: 10px;
+
+          img {
+            display: block;
+            max-width: 160px;
+            max-height: 160px;
+            margin-top: 6px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+          }
+        }
       }
 
       .form-section {
@@ -168,6 +190,10 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class AprobarRechazarDialogComponent {
   formulario: FormGroup;
+
+  urlFoto(rutaRelativa: string): string {
+    return `${environment.apiUrl.replace('/api', '')}${rutaRelativa}`;
+  }
 
   constructor(
     public dialogRef: MatDialogRef<AprobarRechazarDialogComponent>,

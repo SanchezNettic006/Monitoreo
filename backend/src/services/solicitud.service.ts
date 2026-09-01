@@ -16,6 +16,7 @@ interface CrearSolicitudDTO {
   dias_solicitados?: number;
   motivo?: string;
   descripcion?: string;
+  url_foto?: string;
 }
 
 interface CambiarEstadoDTO {
@@ -71,6 +72,7 @@ export class SolicitudService {
         dias_solicitados: datos.dias_solicitados || 0,
         motivo: datos.motivo,
         descripcion: datos.descripcion,
+        url_foto: datos.url_foto,
         estado: 'pendiente',
       });
 

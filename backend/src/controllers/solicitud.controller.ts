@@ -20,6 +20,17 @@ export class SolicitudController {
         });
       }
 
+      // La cita médica programada sí da tiempo de tomar foto del comprobante;
+      // la de emergencia no, así que solo se exige en la programada.
+      if (tipo === 'cita_medica_programada' && !req.file) {
+        return res.status(400).json({
+          exitoso: false,
+          mensaje: 'Debes adjuntar una foto del comprobante de la cita',
+        });
+      }
+
+      const url_foto = req.file ? `/uploads/${req.file.filename}` : undefined;
+
       const solicitud = await solicitudService.crearSolicitudDesdeUsuario(req.userId!, {
         tipo,
         fecha_inicio,
@@ -27,6 +38,7 @@ export class SolicitudController {
         dias_solicitados,
         motivo,
         descripcion,
+        url_foto,
       });
 
       return res.status(201).json({

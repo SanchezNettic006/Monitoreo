@@ -14,6 +14,7 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { SolicitudService } from '../../../services/solicitud.service';
 import { ReprogramarDialogComponent } from './reprogramar-dialog/reprogramar-dialog.component';
+import { TipoTramitePipe } from '../../../pipes/tipo-tramite.pipe';
 
 interface MesComparacion {
   mes: string;
@@ -37,6 +38,7 @@ interface MesComparacion {
     MatTooltipModule,
     MatDialogModule,
     MatSnackBarModule,
+    TipoTramitePipe,
   ],
   template: `
     <div class="solicitudes-aprobadas-container">
@@ -92,7 +94,7 @@ interface MesComparacion {
 
           <ng-container matColumnDef="tipo">
             <th mat-header-cell *matHeaderCellDef>Tipo</th>
-            <td mat-cell *matCellDef="let element">{{ element.tipo | titlecase }}</td>
+            <td mat-cell *matCellDef="let element">{{ element.tipo | tipoTramite }}</td>
           </ng-container>
 
           <ng-container matColumnDef="fechas">

@@ -14,6 +14,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { SolicitudService, SaldoVacaciones } from '../../../services/solicitud.service';
 
+const TIPOS_QUE_REQUIEREN_FOTO = ['cita_medica_programada'];
+
 // Por defecto Material marca un campo en rojo apenas se toca (blur) aunque el
 // usuario nunca haya intentado enviar el formulario, lo que en este formulario
 // se sentía como si ya estuviera "mal" desde el inicio. Con este matcher solo
@@ -50,7 +52,7 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
           <mat-icon class="header-icon">post_add</mat-icon>
           <div class="header-text">
             <h2>Crear Nueva Solicitud</h2>
-            <p>Solicita vacaciones, ausencia o cambio de jornada</p>
+            <p>Solicita vacaciones, ausencia o cita médica</p>
           </div>
         </div>
 
@@ -64,7 +66,8 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
                 <mat-select formControlName="tipo" required [errorStateMatcher]="matcher" (selectionChange)="onTipoChange($event.value)">
                   <mat-option value="vacaciones">Vacaciones</mat-option>
                   <mat-option value="ausencia">Ausencia</mat-option>
-                  <mat-option value="cambio_jornada">Cambio de Jornada</mat-option>
+                  <mat-option value="cita_medica_programada">Cita Médica Programada</mat-option>
+                  <mat-option value="cita_medica_emergencia">Cita Médica de Emergencia</mat-option>
                 </mat-select>
                 <mat-error>Selecciona un tipo de solicitud</mat-error>
                 <mat-hint *ngIf="formulario.get('tipo')?.value === 'vacaciones' && saldoVacaciones">
@@ -111,6 +114,26 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
               <textarea matInput rows="4" formControlName="descripcion" placeholder="Proporciona mas detalles si es necesario..."></textarea>
               <mat-hint align="end">{{ formulario.get('descripcion')?.value?.length || 0 }}/500</mat-hint>
             </mat-form-field>
+          </div>
+
+          <!-- Comprobante: solo obligatorio para cita médica programada, ya que
+               en la de emergencia no hay tiempo de tomar la foto antes de ir -->
+          <div class="form-section" *ngIf="formulario.get('tipo')?.value === 'cita_medica_programada'">
+            <h3 class="section-title">Comprobante de la cita</h3>
+
+            <div class="foto-section">
+              <div class="foto-preview" *ngIf="previewFoto">
+                <img [src]="previewFoto" alt="Comprobante" class="preview-img" />
+              </div>
+              <input type="file" #fotoInput accept="image/*" capture="environment" (change)="onFotoSeleccionada($event)" style="display: none" />
+              <button type="button" mat-stroked-button color="primary" (click)="fotoInput.click()" class="foto-btn">
+                <mat-icon>photo_camera</mat-icon>
+                {{ previewFoto ? 'Cambiar foto' : 'Tomar/Subir foto' }}
+              </button>
+              <p class="foto-error" *ngIf="!previewFoto && intentoEnvio">
+                Debes adjuntar una foto del comprobante de la cita
+              </p>
+            </div>
           </div>
 
           <div class="info-box">
@@ -208,6 +231,26 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
     .full-width {
       width: 100%;
     }
+    .foto-section {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .foto-preview {
+      .preview-img {
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        display: block;
+      }
+    }
+    .foto-error {
+      margin: 0;
+      color: #d32f2f;
+      font-size: 12px;
+    }
     .info-box {
       background: #f0fbe8;
       border-radius: 6px;
@@ -301,6 +344,8 @@ export class CrearSolicitudComponent {
   saldoVacaciones: SaldoVacaciones | null = null;
   intentoEnvio = false;
   matcher = new MostrarErrorAlEnviar(() => this.intentoEnvio);
+  fotoCapturada: File | null = null;
+  previewFoto: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -326,9 +371,29 @@ export class CrearSolicitudComponent {
     }
   }
 
+  onFotoSeleccionada(event: any): void {
+    const archivo = event.target.files?.[0];
+    if (!archivo) return;
+
+    if (!archivo.type.startsWith('image/')) {
+      this.snackBar.open('Solo se permiten imágenes', 'Cerrar', { duration: 3000 });
+      return;
+    }
+
+    this.fotoCapturada = archivo;
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.previewFoto = e.target.result;
+    };
+    reader.readAsDataURL(archivo);
+  }
+
   onSubmit() {
     this.intentoEnvio = true;
-    if (!this.formulario.valid) {
+    const tipo = this.formulario.get('tipo')?.value;
+    const fotoRequerida = TIPOS_QUE_REQUIEREN_FOTO.includes(tipo) && !this.fotoCapturada;
+
+    if (!this.formulario.valid || fotoRequerida) {
       this.snackBar.open('Por favor completa todos los campos requeridos', 'Cerrar', {
         duration: 3000,
         horizontalPosition: 'end',
@@ -340,10 +405,10 @@ export class CrearSolicitudComponent {
     this.loading = true;
     console.log('📝 [CrearSolicitud] Enviando solicitud...', this.formulario.value);
 
-    this.solicitudService.crearSolicitud(this.formulario.value).subscribe({
+    this.solicitudService.crearSolicitud(this.formulario.value, this.fotoCapturada).subscribe({
       next: (data) => {
         console.log('✅ [CrearSolicitud] Solicitud creada. Datos devueltos:', data);
-        
+
         this.snackBar.open('Solicitud creada exitosamente', 'Cerrar', {
           duration: 3000,
           horizontalPosition: 'end',
@@ -352,6 +417,8 @@ export class CrearSolicitudComponent {
         });
 
         this.formulario.reset();
+        this.fotoCapturada = null;
+        this.previewFoto = null;
         this.intentoEnvio = false;
         this.loading = false;
       },
@@ -376,10 +443,14 @@ export class CrearSolicitudComponent {
       if (confirm('Estás seguro? Se perderán los cambios')) {
         this.formulario.reset();
         this.intentoEnvio = false;
+        this.fotoCapturada = null;
+        this.previewFoto = null;
       }
     } else {
       this.formulario.reset();
       this.intentoEnvio = false;
+      this.fotoCapturada = null;
+      this.previewFoto = null;
     }
   }
 }

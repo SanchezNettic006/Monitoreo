@@ -13,6 +13,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { SolicitudService, SaldoVacaciones } from '../../../services/solicitud.service';
 import { AprobarRechazarDialogComponent } from './aprobar-rechazar-dialog/aprobar-rechazar-dialog.component';
+import { TipoTramitePipe } from '../../../pipes/tipo-tramite.pipe';
 
 @Component({
   selector: 'app-gestionar-solicitudes',
@@ -28,6 +29,7 @@ import { AprobarRechazarDialogComponent } from './aprobar-rechazar-dialog/aproba
     MatTooltipModule,
     MatDialogModule,
     MatSnackBarModule,
+    TipoTramitePipe,
   ],
   template: `
     <div class="gestionar-solicitudes-container">
@@ -62,7 +64,7 @@ import { AprobarRechazarDialogComponent } from './aprobar-rechazar-dialog/aproba
           <ng-container matColumnDef="tipo">
             <th mat-header-cell *matHeaderCellDef>Tipo</th>
             <td mat-cell *matCellDef="let element">
-              {{ element.tipo | titlecase }}
+              {{ element.tipo | tipoTramite }}
             </td>
           </ng-container>
 

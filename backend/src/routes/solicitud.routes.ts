@@ -6,6 +6,7 @@ import {
   liderOAdminMiddleware,
   cargarDepartamentoLider,
 } from '@middleware/auth.middleware';
+import { uploadFoto } from '@utils/upload';
 
 const router = Router();
 const controller = new SolicitudController();
@@ -13,8 +14,8 @@ const controller = new SolicitudController();
 // Todas las rutas requieren autenticación
 router.use(authMiddleware);
 
-// Crear solicitud
-router.post('/crear', (req, res, next) => controller.crear(req, res, next));
+// Crear solicitud (foto opcional/obligatoria según el tipo, ver controller)
+router.post('/crear', uploadFoto.single('foto'), (req, res, next) => controller.crear(req, res, next));
 
 // Obtener mis solicitudes
 router.get('/mis-solicitudes', (req, res, next) =>
