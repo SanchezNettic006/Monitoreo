@@ -325,9 +325,11 @@
             <input
               matInput
               [(ngModel)]="numeroTicket"
-              type="number"
+              type="text"
+              inputmode="numeric"
               placeholder="Ej: 12345"
               [disabled]="cargando"
+              (input)="soloNumeros($event)"
             />
             <mat-icon matPrefix>confirmation_number</mat-icon>
           </mat-form-field>

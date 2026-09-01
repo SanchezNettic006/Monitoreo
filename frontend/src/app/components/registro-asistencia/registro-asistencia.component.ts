@@ -691,6 +691,16 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Filtra en vivo cualquier caracter que no sea dígito (el input es texto, no number, para no romper .trim()) */
+  soloNumeros(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const limpio = input.value.replace(/\D/g, '');
+    if (limpio !== input.value) {
+      input.value = limpio;
+    }
+    this.numeroTicket = limpio;
+  }
+
   /**
    * Mostrar/ocultar formulario de hora extra
    */
