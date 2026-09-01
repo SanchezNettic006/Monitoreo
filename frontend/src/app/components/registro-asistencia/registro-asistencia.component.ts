@@ -714,8 +714,8 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.tipoTrabajo === 'averia' && !/^\d+$/.test(numero)) {
-      this.snackBar.open('❌ El número de ticket de avería debe ser solo números', 'Cerrar', { duration: 3000 });
+    if (!/^\d+$/.test(numero)) {
+      this.snackBar.open('❌ El número debe ser solo dígitos, sin letras', 'Cerrar', { duration: 3000 });
       return;
     }
 

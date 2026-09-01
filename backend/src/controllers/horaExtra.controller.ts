@@ -32,12 +32,11 @@ export class HoraExtraController {
         });
       }
 
-      // Avería se identifica solo con número de ticket (solo dígitos); instalación
-      // usa el número NET, que sí puede traer letras (ej. "NET-12345").
-      if (tipoTrabajo === 'averia' && !/^\d+$/.test(String(numeroTicket).trim())) {
+      // Tanto el número NET (instalación) como el de ticket (avería) son solo dígitos.
+      if (!/^\d+$/.test(String(numeroTicket).trim())) {
         return res.status(400).json({
           exitoso: false,
-          mensaje: 'El número de ticket de avería debe contener solo números',
+          mensaje: 'El número debe contener solo dígitos, sin letras',
         });
       }
 
