@@ -114,7 +114,7 @@ interface Resumen {
           <app-crear-solicitud></app-crear-solicitud>
         </mat-tab>
 
-        <mat-tab *ngIf="esAdmin">
+        <mat-tab *ngIf="esAdminOLider">
           <ng-template mat-tab-label>
             <span class="tab-label-with-badge">
               Gestionar Solicitudes
@@ -126,7 +126,7 @@ interface Resumen {
           <app-gestionar-solicitudes></app-gestionar-solicitudes>
         </mat-tab>
 
-        <mat-tab label="Aprobados" *ngIf="esAdmin">
+        <mat-tab label="Aprobados" *ngIf="esAdminOLider">
           <app-solicitudes-aprobadas></app-solicitudes-aprobadas>
         </mat-tab>
       </mat-tab-group>
@@ -389,6 +389,12 @@ export class TramitesDashboardComponent implements OnInit, OnDestroy {
 
   get esAdmin(): boolean {
     return this.authService.esAdmin();
+  }
+
+  // Admin y líder gestionan/aprueban solicitudes; el líder solo ve las de su
+  // propio departamento (ya filtrado por el backend).
+  get esAdminOLider(): boolean {
+    return this.authService.esAdmin() || this.authService.esLider();
   }
 
   ngOnInit() {
