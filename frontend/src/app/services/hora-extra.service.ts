@@ -7,6 +7,7 @@ export interface HoraExtraResponse {
   id: number;
   record_asistencia_id: number;
   numero_ticket: string;
+  tipo_trabajo: 'instalacion' | 'averia';
   hora_inicio: string;
   hora_fin: string | null;
   duracion: number | null;
@@ -72,11 +73,13 @@ export class HoraExtraService {
     latitud: number | null,
     longitud: number | null,
     foto?: File,
-    capturadoEn?: string
+    capturadoEn?: string,
+    tipoTrabajo: 'instalacion' | 'averia' = 'instalacion',
   ): Observable<IniciarHoraExtraResponse> {
     const formData = new FormData();
     formData.append('recordAsistenciaId', recordAsistenciaId.toString());
     formData.append('numeroTicket', numeroTicket);
+    formData.append('tipoTrabajo', tipoTrabajo);
     if (latitud !== null && longitud !== null) {
       formData.append('latitud', latitud.toString());
       formData.append('longitud', longitud.toString());
@@ -102,10 +105,12 @@ export class HoraExtraService {
     latitud: number | null,
     longitud: number | null,
     foto?: File,
-    capturadoEn?: string
+    capturadoEn?: string,
+    tipoTrabajo: 'instalacion' | 'averia' = 'instalacion',
   ): Observable<IniciarHoraExtraResponse> {
     const formData = new FormData();
     formData.append('numeroTicket', numeroTicket);
+    formData.append('tipoTrabajo', tipoTrabajo);
     if (latitud !== null && longitud !== null) {
       formData.append('latitud', latitud.toString());
       formData.append('longitud', longitud.toString());

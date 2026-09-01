@@ -282,6 +282,20 @@ export async function inicializarColumnas() {
         console.log('✅ Columna alerta_jornada_larga_lider_enviada ya existe');
       }
 
+      const tablaHoraExtraExiste = await queryRunner.hasTable('hora_extra');
+      if (tablaHoraExtraExiste) {
+        const columnaTipoTrabajoExiste = await queryRunner.hasColumn('hora_extra', 'tipo_trabajo');
+        if (!columnaTipoTrabajoExiste) {
+          console.log('⚠️ Agregando columna tipo_trabajo a hora_extra...');
+          await queryRunner.query(
+            `ALTER TABLE hora_extra ADD COLUMN tipo_trabajo VARCHAR(255) NOT NULL DEFAULT 'instalacion'`,
+          );
+          console.log('✅ Columna tipo_trabajo agregada exitosamente');
+        } else {
+          console.log('✅ Columna tipo_trabajo ya existe');
+        }
+      }
+
       const columnaCierreAutomaticoExiste = await queryRunner.hasColumn('record_asistencia', 'cierre_automatico');
       if (!columnaCierreAutomaticoExiste) {
         console.log('⚠️ Agregando columna cierre_automatico...');

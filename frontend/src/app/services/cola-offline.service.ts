@@ -15,6 +15,7 @@ export interface AccionPendiente {
   foto: Blob;
   fotoNombre: string;
   numeroTicket?: string;
+  tipoTrabajo?: 'instalacion' | 'averia';
   recordAsistenciaId?: number;
   horaExtraId?: number;
   intentos: number;
@@ -207,6 +208,7 @@ export class ColaOfflineService {
                 accion.gps?.longitud ?? null,
                 foto,
                 accion.capturadoEn,
+                accion.tipoTrabajo,
               )
               .toPromise()
           : this.horaExtraService
@@ -216,6 +218,7 @@ export class ColaOfflineService {
                 accion.gps?.longitud ?? null,
                 foto,
                 accion.capturadoEn,
+                accion.tipoTrabajo,
               )
               .toPromise();
       case 'finalizar_hora_extra':

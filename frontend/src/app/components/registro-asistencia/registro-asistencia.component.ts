@@ -10,6 +10,7 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 import { AsistenciaService, GPS, RecordAsistencia } from '../../services/asistencia.service';
 import { HoraExtraService, HoraExtraResponse } from '../../services/hora-extra.service';
 import { PausaAsistencia, PausasResponse } from '../../models/pausa.model';
@@ -33,6 +34,7 @@ import { ColaOfflineService } from '../../services/cola-offline.service';
     MatMenuModule,
     MatInputModule,
     MatFormFieldModule,
+    MatSelectModule,
   ],
   templateUrl: './registro-asistencia.component.html',
   styleUrl: './registro-asistencia.component.scss',
@@ -67,6 +69,7 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
   tiempoHoraExtra = '00:00:00';
   intervalIdHoraExtra: any = null;
   numeroTicket = '';
+  tipoTrabajo: 'instalacion' | 'averia' = 'instalacion';
   mostrarFormHoraExtra = false;
   
   // Fotos de horas extras
@@ -695,6 +698,7 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
     this.mostrarFormHoraExtra = !this.mostrarFormHoraExtra;
     if (this.mostrarFormHoraExtra) {
       this.numeroTicket = '';
+      this.tipoTrabajo = 'instalacion';
     }
   }
 
@@ -702,8 +706,16 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
    * Iniciar hora extra
    */
   async iniciarHoraExtra(): Promise<void> {
-    if (!this.numeroTicket.trim()) {
-      this.snackBar.open('❌ Debes ingresar un número de ticket/NET', 'Cerrar', { duration: 3000 });
+    const numero = this.numeroTicket.trim();
+
+    if (!numero) {
+      const campo = this.tipoTrabajo === 'averia' ? 'número de ticket' : 'número NET';
+      this.snackBar.open(`❌ Debes ingresar el ${campo}`, 'Cerrar', { duration: 3000 });
+      return;
+    }
+
+    if (this.tipoTrabajo === 'averia' && !/^\d+$/.test(numero)) {
+      this.snackBar.open('❌ El número de ticket de avería debe ser solo números', 'Cerrar', { duration: 3000 });
       return;
     }
 
@@ -719,6 +731,7 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
       const gps = await this.obtenerGPS();
       const foto = this.fotoCapturadaHoraExtra!;
       const numeroTicket = this.numeroTicket.trim();
+      const tipoTrabajo = this.tipoTrabajo;
       const capturadoEn = new Date().toISOString();
       const recordAsistenciaId = this.registroHoy?.id;
 
@@ -730,6 +743,7 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
           foto,
           fotoNombre: foto.name,
           numeroTicket,
+          tipoTrabajo,
           recordAsistenciaId,
         });
         this.confirmarGuardadoOffline('Inicio de hora extra');
@@ -743,8 +757,8 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
       // Si ya existe un registro de asistencia hoy, vincular la hora extra a ese registro
       // en vez de crear uno independiente
       const iniciarHoraExtra$ = recordAsistenciaId
-        ? this.horaExtraService.iniciarHoraExtra(recordAsistenciaId, numeroTicket, gps?.latitud ?? null, gps?.longitud ?? null, foto, capturadoEn)
-        : this.horaExtraService.iniciarHoraExtraDirecta(numeroTicket, gps?.latitud ?? null, gps?.longitud ?? null, foto, capturadoEn);
+        ? this.horaExtraService.iniciarHoraExtra(recordAsistenciaId, numeroTicket, gps?.latitud ?? null, gps?.longitud ?? null, foto, capturadoEn, tipoTrabajo)
+        : this.horaExtraService.iniciarHoraExtraDirecta(numeroTicket, gps?.latitud ?? null, gps?.longitud ?? null, foto, capturadoEn, tipoTrabajo);
 
       // Iniciar hora extra
       iniciarHoraExtra$.subscribe({
@@ -768,6 +782,7 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
                 foto,
                 fotoNombre: foto.name,
                 numeroTicket,
+                tipoTrabajo,
                 recordAsistenciaId,
               });
               this.confirmarGuardadoOffline('Inicio de hora extra');

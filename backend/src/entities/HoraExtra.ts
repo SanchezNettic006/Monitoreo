@@ -32,6 +32,11 @@ export class HoraExtra {
   @Column({ name: 'numero_ticket', type: 'varchar', length: 100 })
   numero_ticket!: string;
 
+  // Instalación se identifica con número NET; avería con número de ticket
+  // (solo dígitos). Default 'instalacion' por compatibilidad con registros viejos.
+  @Column({ name: 'tipo_trabajo', default: 'instalacion' })
+  tipo_trabajo!: string; // 'instalacion' | 'averia'
+
   @Column({ name: 'hora_inicio', type: 'timestamp' })
   hora_inicio!: Date;
 

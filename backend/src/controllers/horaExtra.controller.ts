@@ -13,7 +13,7 @@ export class HoraExtraController {
   async iniciar(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       // Desde FormData, los campos vienen en req.body como strings
-      const { recordAsistenciaId, numeroTicket, latitud, longitud, capturadoEn } = req.body;
+      const { recordAsistenciaId, numeroTicket, tipoTrabajo, latitud, longitud, capturadoEn } = req.body;
       const fotoPath = req.file ? `/uploads/${req.file.filename}` : undefined; // Ruta pública del archivo subido
 
       // Validar campos requeridos (sin recordAsistenciaId, usaremos usuarioId del token)
@@ -22,6 +22,22 @@ export class HoraExtraController {
         return res.status(400).json({
           exitoso: false,
           mensaje: 'Faltan campos requeridos: numeroTicket',
+        });
+      }
+
+      if (tipoTrabajo !== 'instalacion' && tipoTrabajo !== 'averia') {
+        return res.status(400).json({
+          exitoso: false,
+          mensaje: 'tipoTrabajo debe ser "instalacion" o "averia"',
+        });
+      }
+
+      // Avería se identifica solo con número de ticket (solo dígitos); instalación
+      // usa el número NET, que sí puede traer letras (ej. "NET-12345").
+      if (tipoTrabajo === 'averia' && !/^\d+$/.test(String(numeroTicket).trim())) {
+        return res.status(400).json({
+          exitoso: false,
+          mensaje: 'El número de ticket de avería debe contener solo números',
         });
       }
 
@@ -49,6 +65,7 @@ export class HoraExtraController {
         undefined, // No pasar fotoPath aquí
         userId, // Pasar usuarioId extraído del token
         capturadoEn,
+        tipoTrabajo,
       );
 
       // Guardar foto si existe
