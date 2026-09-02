@@ -10,6 +10,7 @@ import { MisHorasComponent } from './components/mis-horas/mis-horas.component';
 import { MiEquipoComponent } from './components/mi-equipo/mi-equipo.component';
 import { HorasExtrasComponent } from './components/horas-extras/horas-extras.component';
 import { ProyectosComponent } from './components/proyectos/proyectos.component';
+import { PanelGeneralComponent } from './components/panel-general/panel-general.component';
 import { authGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
 import { adminOLiderGuard } from './guards/admin-o-lider.guard';
@@ -26,6 +27,7 @@ export const routes: Routes = [
   { path: 'proyectos', component: ProyectosComponent, canActivate: [authGuard, adminOLiderGuard] },
   { path: 'horas-extras', component: HorasExtrasComponent, canActivate: [authGuard, adminOLiderGuard] },
   { path: 'reportes', component: ReportesComponent, canActivate: [authGuard, adminGuard] },
+  { path: 'panel', component: PanelGeneralComponent, canActivate: [authGuard, adminGuard] },
   { path: 'tramites', component: TramitesDashboardComponent, canActivate: [authGuard] },
   { path: 'calendario', component: CalendarioLaboralComponent, canActivate: [authGuard, adminGuard] },
   { path: '**', redirectTo: '/login' }

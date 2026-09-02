@@ -1,0 +1,45 @@
+<mat-toolbar color="primary">
+  <button mat-icon-button (click)="volver()" title="Volver">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span>📊 Panel General</span>
+</mat-toolbar>
+
+<div class="panel-container">
+  <p class="panel-subtitle">Vista general con KPIs y gráficas de distintos módulos, en una sola pantalla.</p>
+
+  <div class="kpi-grid">
+    <!-- KPI: Horas Extra Aprobadas - PLEX -->
+    <mat-card class="kpi-card">
+      <div class="kpi-header">
+        <div class="kpi-icon plex">
+          <mat-icon>engineering</mat-icon>
+        </div>
+        <mat-form-field appearance="fill" class="mes-selector">
+          <mat-label>Mes</mat-label>
+          <mat-select [(ngModel)]="mesHorasPlex" (selectionChange)="cargarHorasAprobadasPlex()">
+            <mat-option *ngFor="let opcion of opcionesMes" [value]="opcion.value">{{ opcion.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="kpi-body" *ngIf="!cargandoHorasPlex; else cargando">
+        <span class="kpi-titulo">Horas Extra Aprobadas · PLEX</span>
+        <span class="kpi-valor">{{ horasAprobadasPlex ?? 0 }}h</span>
+        <span class="kpi-detalle">{{ ticketsAprobadosPlex ?? 0 }} tickets aprobados</span>
+      </div>
+
+      <ng-template #cargando>
+        <div class="kpi-loading">
+          <mat-spinner diameter="28"></mat-spinner>
+        </div>
+      </ng-template>
+    </mat-card>
+
+    <!-- Placeholder: aquí se van agregando las próximas gráficas/KPIs que pidan -->
+    <div class="kpi-placeholder">
+      <mat-icon>add_circle_outline</mat-icon>
+      <span>Próximas métricas aparecerán aquí</span>
+    </div>
+  </div>
+</div>

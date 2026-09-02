@@ -277,6 +277,24 @@
         </div>
       </button>
 
+      <!-- Panel General (solo admin): KPIs y gráficas de varios módulos en una sola pantalla -->
+      <button mat-raised-button class="module-card" *ngIf="esAdmin" (click)="irA('panel')">
+        <div class="card-header">
+          <div class="card-icon reports">
+            <mat-icon>dashboard</mat-icon>
+          </div>
+          <div class="card-badge">Disponible</div>
+        </div>
+        <div class="card-content">
+          <h3>Panel General</h3>
+          <p>KPIs y gráficas de varios módulos en una sola pantalla</p>
+        </div>
+        <div class="card-footer">
+          <span>Ingresar</span>
+          <mat-icon>arrow_forward</mat-icon>
+        </div>
+      </button>
+
       <!-- Trámites -->
       <button mat-raised-button class="module-card" (click)="irA('tramites')">
         <div class="card-header">
