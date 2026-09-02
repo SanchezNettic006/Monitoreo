@@ -14,6 +14,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatDividerModule } from '@angular/material/divider';
 import {
   ReportesService,
   AsistenciaReporte,
@@ -45,6 +46,7 @@ import { ExportarExcelService } from '../../services/exportar-excel.service';
     MatSnackBarModule,
     MatDialogModule,
     MatMenuModule,
+    MatDividerModule,
   ],
   templateUrl: './reportes.component.html',
   styleUrl: './reportes.component.scss',
@@ -317,9 +319,13 @@ export class ReportesComponent implements OnInit {
     });
   }
 
-  /** true si la fila tiene al menos una ubicación de marcaje registrada */
+  /** true si la fila tiene al menos una ubicación de marcaje registrada (jornada o algún ticket) */
   tieneUbicacion(element: AsistenciaReporte): boolean {
-    return !!(element.latitudEntrada || element.latitudSalida);
+    return !!(
+      element.latitudEntrada ||
+      element.latitudSalida ||
+      element.ticketsUbicacion?.some((t) => t.latitudInicio || t.latitudFin)
+    );
   }
 
   /** Abre la ubicación (lat/lng) en Google Maps en una pestaña nueva */

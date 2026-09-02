@@ -28,6 +28,14 @@ export interface AsistenciaReporte {
   longitudEntrada?: number | null;
   latitudSalida?: number | null;
   longitudSalida?: number | null;
+  // Ubicación de cada ticket de hora extra reportado dentro de esta jornada
+  ticketsUbicacion?: {
+    numeroTicket: string;
+    latitudInicio: number | null;
+    longitudInicio: number | null;
+    latitudFin: number | null;
+    longitudFin: number | null;
+  }[];
 }
 
 export interface ResumenReportes {

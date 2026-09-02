@@ -201,6 +201,21 @@
                   <mat-icon>logout</mat-icon>
                   <span>{{ element.tipo === 'horaExtra' ? 'Ver fin' : 'Ver salida' }}</span>
                 </button>
+                <!-- Ubicación de cada ticket de hora extra reportado dentro de esta jornada -->
+                <ng-container *ngIf="element.ticketsUbicacion?.length">
+                  <mat-divider></mat-divider>
+                  <div class="menu-seccion-titulo">Horas extra</div>
+                  <ng-container *ngFor="let ticket of element.ticketsUbicacion">
+                    <button mat-menu-item [disabled]="!ticket.latitudInicio" (click)="abrirMapa(ticket.latitudInicio, ticket.longitudInicio)">
+                      <mat-icon>login</mat-icon>
+                      <span>Ticket {{ ticket.numeroTicket }} · Inicio</span>
+                    </button>
+                    <button mat-menu-item [disabled]="!ticket.latitudFin" (click)="abrirMapa(ticket.latitudFin, ticket.longitudFin)">
+                      <mat-icon>logout</mat-icon>
+                      <span>Ticket {{ ticket.numeroTicket }} · Fin</span>
+                    </button>
+                  </ng-container>
+                </ng-container>
               </mat-menu>
             </td>
             <td>

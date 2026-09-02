@@ -180,6 +180,15 @@ export class ReportesService {
         longitudEntrada: r.longitud_entrada,
         latitudSalida: r.latitud_salida,
         longitudSalida: r.longitud_salida,
+        // Ubicación de cada ticket de hora extra reportado dentro de esta jornada
+        // (además de la entrada/salida general de la jornada)
+        ticketsUbicacion: ticketsDelDia.map((t) => ({
+          numeroTicket: t.numero_ticket,
+          latitudInicio: t.latitud_inicio,
+          longitudInicio: t.longitud_inicio,
+          latitudFin: t.latitud_fin,
+          longitudFin: t.longitud_fin,
+        })),
         // Prioriza el proyecto que el propio técnico reportó ese día al cerrar
         // jornada; si el registro es anterior a esa función, se usa el cálculo
         // viejo basado en el grupo asignado (menos preciso, pero mejor que nada).
