@@ -85,4 +85,15 @@ export class PanelGeneralComponent implements OnInit {
   volver(): void {
     this.router.navigate(['/dashboard']);
   }
+
+  /** Mismo formato usado en Reportes: "2h 30m" en vez de un decimal crudo como "0.03h" */
+  formatearDuracion(horas: number | null | undefined): string {
+    if (typeof horas !== 'number' || isNaN(horas) || horas === 0) return '0m';
+
+    const h = Math.floor(horas);
+    const m = Math.round((horas % 1) * 60);
+
+    if (h === 0) return `${m}m`;
+    return `${h}h ${m}m`;
+  }
 }

@@ -25,8 +25,8 @@
 
       <div class="kpi-body" *ngIf="!cargandoHorasPlex; else cargando">
         <span class="kpi-titulo">Horas Extra Aprobadas · PLEX</span>
-        <span class="kpi-valor">{{ horasAprobadasPlex ?? 0 }}h</span>
-        <span class="kpi-detalle">{{ ticketsAprobadosPlex ?? 0 }} tickets aprobados</span>
+        <span class="kpi-valor">{{ formatearDuracion(horasAprobadasPlex) }}</span>
+        <span class="kpi-detalle">{{ ticketsAprobadosPlex ?? 0 }} {{ ticketsAprobadosPlex === 1 ? 'ticket aprobado' : 'tickets aprobados' }}</span>
       </div>
 
       <ng-template #cargando>
