@@ -13,6 +13,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatMenuModule } from '@angular/material/menu';
 import {
   ReportesService,
   AsistenciaReporte,
@@ -43,6 +44,7 @@ import { ExportarExcelService } from '../../services/exportar-excel.service';
     MatSelectModule,
     MatSnackBarModule,
     MatDialogModule,
+    MatMenuModule,
   ],
   templateUrl: './reportes.component.html',
   styleUrl: './reportes.component.scss',
@@ -313,6 +315,17 @@ export class ReportesComponent implements OnInit {
       width: '600px',
       data: { fotos, descripcion },
     });
+  }
+
+  /** true si la fila tiene al menos una ubicación de marcaje registrada */
+  tieneUbicacion(element: AsistenciaReporte): boolean {
+    return !!(element.latitudEntrada || element.latitudSalida);
+  }
+
+  /** Abre la ubicación (lat/lng) en Google Maps en una pestaña nueva */
+  abrirMapa(lat?: number | null, lng?: number | null): void {
+    if (!lat || !lng) return;
+    window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
   }
 
   /**

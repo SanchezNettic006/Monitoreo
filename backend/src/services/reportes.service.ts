@@ -176,6 +176,10 @@ export class ReportesService {
         duracionHoraExtra: null,
         estado: r.estado,
         descripcionTrabajo: r.descripcion_trabajo || null,
+        latitudEntrada: r.latitud_entrada,
+        longitudEntrada: r.longitud_entrada,
+        latitudSalida: r.latitud_salida,
+        longitudSalida: r.longitud_salida,
         // Prioriza el proyecto que el propio técnico reportó ese día al cerrar
         // jornada; si el registro es anterior a esa función, se usa el cálculo
         // viejo basado en el grupo asignado (menos preciso, pero mejor que nada).
@@ -212,6 +216,10 @@ export class ReportesService {
           horasExtras: null,
           duracionHoraExtra: duracion,
           estado: he.estado,
+          latitudEntrada: he.latitud_inicio,
+          longitudEntrada: he.longitud_inicio,
+          latitudSalida: he.latitud_fin,
+          longitudSalida: he.longitud_fin,
           fotos: he.fotos?.map(f => ({
             id: f.id,
             tipo: f.tipo,

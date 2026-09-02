@@ -127,6 +127,7 @@
             <th>Extras</th>
             <th>Horas Netas</th>
             <th>Motivo</th>
+            <th>Ubicación</th>
             <th>Fotos</th>
           </tr>
         </thead>
@@ -179,6 +180,28 @@
             <td>
               <span *ngIf="element.tipo === 'evento'" class="badge badge-motivo">{{ element.motivo }}</span>
               <span *ngIf="element.tipo !== 'evento'">-</span>
+            </td>
+            <!-- Ubicación de marcaje (entrada/salida en asistencia, inicio/fin en hora extra) -->
+            <td>
+              <button
+                mat-icon-button
+                [matMenuTriggerFor]="menuUbicacion"
+                [disabled]="!tieneUbicacion(element)"
+                title="Ver ubicación"
+                class="fotos-btn"
+              >
+                <mat-icon>location_on</mat-icon>
+              </button>
+              <mat-menu #menuUbicacion="matMenu">
+                <button mat-menu-item [disabled]="!element.latitudEntrada" (click)="abrirMapa(element.latitudEntrada, element.longitudEntrada)">
+                  <mat-icon>login</mat-icon>
+                  <span>{{ element.tipo === 'horaExtra' ? 'Ver inicio' : 'Ver entrada' }}</span>
+                </button>
+                <button mat-menu-item [disabled]="!element.latitudSalida" (click)="abrirMapa(element.latitudSalida, element.longitudSalida)">
+                  <mat-icon>logout</mat-icon>
+                  <span>{{ element.tipo === 'horaExtra' ? 'Ver fin' : 'Ver salida' }}</span>
+                </button>
+              </mat-menu>
             </td>
             <td>
               <button

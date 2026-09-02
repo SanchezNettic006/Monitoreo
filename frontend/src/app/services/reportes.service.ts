@@ -23,6 +23,11 @@ export interface AsistenciaReporte {
   descripcionTrabajo?: string | null;
   proyecto?: string | null;
   fotos?: { id: number; tipo: string; url_foto: string }[];
+  // Ubicación del marcaje: entrada/inicio y salida/fin (según tipo de fila)
+  latitudEntrada?: number | null;
+  longitudEntrada?: number | null;
+  latitudSalida?: number | null;
+  longitudSalida?: number | null;
 }
 
 export interface ResumenReportes {
