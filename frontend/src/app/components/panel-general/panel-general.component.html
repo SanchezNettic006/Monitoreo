@@ -8,6 +8,29 @@
 <div class="panel-container">
   <p class="panel-subtitle">Vista general con KPIs y gráficas de distintos módulos, en una sola pantalla.</p>
 
+  <!-- Estadísticas rápidas generales -->
+  <div class="stat-tiles-row" *ngIf="!cargandoResumen && resumen">
+    <div class="stat-tile">
+      <mat-icon class="stat-tile-icon extras">schedule</mat-icon>
+      <div class="stat-tile-texto">
+        <span class="stat-tile-valor">{{ formatearDuracion(resumen.horasExtrasAlMes) }}</span>
+        <span class="stat-tile-label">Horas Extra · Todos los deptos</span>
+      </div>
+    </div>
+
+    <div class="stat-tile">
+      <mat-icon class="stat-tile-icon pausas">free_breakfast</mat-icon>
+      <div class="stat-tile-texto">
+        <span class="stat-tile-valor">{{ formatearDuracion(resumen.promedioPausas) }}</span>
+        <span class="stat-tile-label">Promedio de pausas</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-tiles-loading" *ngIf="cargandoResumen">
+    <mat-spinner diameter="24"></mat-spinner>
+  </div>
+
   <div class="kpi-grid">
     <!-- KPI: Horas Extra Aprobadas - PLEX -->
     <mat-card class="kpi-card">

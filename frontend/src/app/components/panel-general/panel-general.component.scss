@@ -10,6 +10,74 @@
   margin: 0 0 24px;
 }
 
+// ============= ESTADÍSTICAS RÁPIDAS (fila de tarjetitas) =============
+
+.stat-tiles-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.stat-tiles-loading {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+  margin-bottom: 20px;
+}
+
+.stat-tile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.stat-tile-icon {
+  width: 36px;
+  height: 36px;
+  font-size: 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &.extras {
+    background: #fff3e0;
+    color: #e08900;
+  }
+
+  &.pausas {
+    background: #f3e5f5;
+    color: #8e24aa;
+  }
+}
+
+.stat-tile-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.stat-tile-valor {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+}
+
+.stat-tile-label {
+  font-size: 12px;
+  color: #999;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

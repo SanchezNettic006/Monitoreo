@@ -8,7 +8,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ReportesService, CumplimientoDepartamento } from '../../services/reportes.service';
+import { ReportesService, CumplimientoDepartamento, ResumenReportes } from '../../services/reportes.service';
 import { SolicitudService } from '../../services/solicitud.service';
 
 // Departamento PLEX (ver listas hardcodeadas de departamentos en el resto de la app)
@@ -54,6 +54,10 @@ export class PanelGeneralComponent implements OnInit {
   cumplimientoDeptos: CumplimientoDepartamento[] = [];
   cargandoCumplimiento = false;
 
+  // Estadísticas rápidas generales (presentes hoy, horas extra del mes, pausas)
+  resumen: ResumenReportes | null = null;
+  cargandoResumen = false;
+
   constructor(
     private reportesService: ReportesService,
     private solicitudService: SolicitudService,
@@ -65,6 +69,7 @@ export class PanelGeneralComponent implements OnInit {
     this.cargarHorasAprobadasPlex();
     this.cargarAusencias();
     this.cargarCumplimiento();
+    this.cargarResumen();
   }
 
   private generarOpcionesMes(): { value: string; label: string }[] {
@@ -106,6 +111,20 @@ export class PanelGeneralComponent implements OnInit {
       error: () => {
         this.totalAusencias = null;
         this.cargandoAusencias = false;
+      },
+    });
+  }
+
+  cargarResumen(): void {
+    this.cargandoResumen = true;
+    this.reportesService.obtenerResumen().subscribe({
+      next: (response) => {
+        this.resumen = response.data;
+        this.cargandoResumen = false;
+      },
+      error: () => {
+        this.resumen = null;
+        this.cargandoResumen = false;
       },
     });
   }
