@@ -297,7 +297,7 @@ export class ReportesService {
 
     const nombreTipoTramite: Record<string, string> = {
       vacaciones: 'Vacaciones',
-      ausencia: 'Ausencia/Incapacidad',
+      ausencia: 'Reposición',
       cambio_jornada: 'Cambio de jornada',
     };
 

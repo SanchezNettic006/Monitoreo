@@ -52,7 +52,7 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
           <mat-icon class="header-icon">post_add</mat-icon>
           <div class="header-text">
             <h2>Crear Nueva Solicitud</h2>
-            <p>Solicita vacaciones, ausencia o cita médica</p>
+            <p>Solicita vacaciones, reposición o cita médica</p>
           </div>
         </div>
 
@@ -65,7 +65,7 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
                 <mat-label>Tipo de Solicitud</mat-label>
                 <mat-select formControlName="tipo" required [errorStateMatcher]="matcher" (selectionChange)="onTipoChange($event.value)">
                   <mat-option value="vacaciones">Vacaciones</mat-option>
-                  <mat-option value="ausencia">Ausencia</mat-option>
+                  <mat-option value="ausencia">Reposición</mat-option>
                   <mat-option value="cita_medica_programada">Cita Médica Programada</mat-option>
                   <mat-option value="cita_medica_emergencia">Cita Médica de Emergencia</mat-option>
                   <mat-option value="cumpleanos">Cumpleaños</mat-option>

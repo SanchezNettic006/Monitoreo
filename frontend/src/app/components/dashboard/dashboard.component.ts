@@ -259,7 +259,7 @@ import { environment } from '../../../environments/environment';
       case 'festivo': return 'Festivo';
       case 'no_laborable': return 'No laborable';
       case 'vacaciones': return 'Vacaciones';
-      case 'ausencia': return 'Ausencia';
+      case 'ausencia': return 'Reposición';
       case 'cambio_jornada': return 'Cambio jornada';
       case 'cita_medica_programada': return 'Cita médica programada';
       case 'cita_medica_emergencia': return 'Cita médica de emergencia';

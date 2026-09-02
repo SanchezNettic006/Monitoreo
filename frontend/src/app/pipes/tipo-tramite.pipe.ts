@@ -2,7 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 const ETIQUETAS: Record<string, string> = {
   vacaciones: 'Vacaciones',
-  ausencia: 'Ausencia',
+  ausencia: 'Reposición',
   cambio_jornada: 'Cambio de Jornada',
   cita_medica_programada: 'Cita Médica Programada',
   cita_medica_emergencia: 'Cita Médica de Emergencia',

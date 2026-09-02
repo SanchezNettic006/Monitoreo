@@ -75,7 +75,7 @@ export class CalendarioService {
 
     const nombreTipoTramite: Record<string, string> = {
       vacaciones: 'Vacaciones',
-      ausencia: 'Ausencia',
+      ausencia: 'Reposición',
       cambio_jornada: 'Cambio de jornada',
       cita_medica_programada: 'Cita médica programada',
       cita_medica_emergencia: 'Cita médica de emergencia',
