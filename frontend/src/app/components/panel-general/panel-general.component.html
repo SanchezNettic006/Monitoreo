@@ -36,7 +36,7 @@
       </ng-template>
     </mat-card>
 
-    <!-- KPI: Ausencias del mes (clic lleva al dato real en Trámites > Aprobados) -->
+    <!-- KPI: Reposiciones del mes (tipo interno "ausencia") - clic lleva al dato real en Trámites > Aprobados -->
     <mat-card class="kpi-card kpi-card--clickable" (click)="verAusencias()">
       <div class="kpi-header">
         <div class="kpi-icon ausencias">
@@ -51,7 +51,7 @@
       </div>
 
       <div class="kpi-body" *ngIf="!cargandoAusencias; else cargando2">
-        <span class="kpi-titulo">Ausencias del mes</span>
+        <span class="kpi-titulo">Reposiciones del mes</span>
         <span class="kpi-valor">{{ totalAusencias ?? 0 }}</span>
         <span class="kpi-detalle">
           <mat-icon>open_in_new</mat-icon>
