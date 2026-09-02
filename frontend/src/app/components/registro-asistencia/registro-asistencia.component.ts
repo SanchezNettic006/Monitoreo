@@ -18,6 +18,7 @@ import { Router } from '@angular/router';
 import { ReporteCierreDialogComponent } from './reporte-cierre-dialog/reporte-cierre-dialog.component';
 import { ConexionService } from '../../services/conexion.service';
 import { ColaOfflineService } from '../../services/cola-offline.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-registro-asistencia',
@@ -69,7 +70,7 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
   tiempoHoraExtra = '00:00:00';
   intervalIdHoraExtra: any = null;
   numeroTicket = '';
-  tipoTrabajo: 'instalacion' | 'averia' = 'instalacion';
+  tipoTrabajo: 'instalacion' | 'averia' | 'motivo' = 'instalacion';
   mostrarFormHoraExtra = false;
   
   // Fotos de horas extras
@@ -84,7 +85,13 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
     private router: Router,
     private conexionService: ConexionService,
     private colaOfflineService: ColaOfflineService,
+    private authService: AuthService,
   ) {}
+
+  /** false solo en departamentos que no trabajan con tickets/NET (ej. Vehículos) */
+  get usaTicketHorasExtra(): boolean {
+    return this.authService.getCurrentUser()?.usaTicketHorasExtra ?? true;
+  }
 
   ngOnInit(): void {
     // Restaurar foto capturada del localStorage si existe (solo asistencia)
@@ -708,7 +715,7 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
     this.mostrarFormHoraExtra = !this.mostrarFormHoraExtra;
     if (this.mostrarFormHoraExtra) {
       this.numeroTicket = '';
-      this.tipoTrabajo = 'instalacion';
+      this.tipoTrabajo = this.usaTicketHorasExtra ? 'instalacion' : 'motivo';
     }
   }
 
@@ -719,12 +726,12 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
     const numero = this.numeroTicket.trim();
 
     if (!numero) {
-      const campo = this.tipoTrabajo === 'averia' ? 'número de ticket' : 'número NET';
+      const campo = this.tipoTrabajo === 'motivo' ? 'motivo' : this.tipoTrabajo === 'averia' ? 'número de ticket' : 'número NET';
       this.snackBar.open(`❌ Debes ingresar el ${campo}`, 'Cerrar', { duration: 3000 });
       return;
     }
 
-    if (!/^\d+$/.test(numero)) {
+    if (this.tipoTrabajo !== 'motivo' && !/^\d+$/.test(numero)) {
       this.snackBar.open('❌ El número debe ser solo dígitos, sin letras', 'Cerrar', { duration: 3000 });
       return;
     }

@@ -311,28 +311,44 @@
 
         <!-- Formulario -->
         <div *ngIf="mostrarFormHoraExtra" class="hora-extra-form">
-          <mat-form-field appearance="fill" class="full-width">
-            <mat-label>Tipo de trabajo</mat-label>
-            <mat-select [(ngModel)]="tipoTrabajo" [disabled]="cargando">
-              <mat-option value="instalacion">Instalación</mat-option>
-              <mat-option value="averia">Avería</mat-option>
-            </mat-select>
-            <mat-icon matPrefix>build</mat-icon>
-          </mat-form-field>
+          <ng-container *ngIf="usaTicketHorasExtra; else campoMotivo">
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>Tipo de trabajo</mat-label>
+              <mat-select [(ngModel)]="tipoTrabajo" [disabled]="cargando">
+                <mat-option value="instalacion">Instalación</mat-option>
+                <mat-option value="averia">Avería</mat-option>
+              </mat-select>
+              <mat-icon matPrefix>build</mat-icon>
+            </mat-form-field>
 
-          <mat-form-field appearance="fill" class="full-width">
-            <mat-label>{{ tipoTrabajo === 'averia' ? 'Número de Ticket' : 'Número NET' }}</mat-label>
-            <input
-              matInput
-              [(ngModel)]="numeroTicket"
-              type="text"
-              inputmode="numeric"
-              placeholder="Ej: 12345"
-              [disabled]="cargando"
-              (input)="soloNumeros($event)"
-            />
-            <mat-icon matPrefix>confirmation_number</mat-icon>
-          </mat-form-field>
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>{{ tipoTrabajo === 'averia' ? 'Número de Ticket' : 'Número NET' }}</mat-label>
+              <input
+                matInput
+                [(ngModel)]="numeroTicket"
+                type="text"
+                inputmode="numeric"
+                placeholder="Ej: 12345"
+                [disabled]="cargando"
+                (input)="soloNumeros($event)"
+              />
+              <mat-icon matPrefix>confirmation_number</mat-icon>
+            </mat-form-field>
+          </ng-container>
+
+          <ng-template #campoMotivo>
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>Motivo de la hora extra</mat-label>
+              <textarea
+                matInput
+                rows="3"
+                [(ngModel)]="numeroTicket"
+                placeholder="Ej: Traslado de vehículos a otra sede"
+                [disabled]="cargando"
+              ></textarea>
+              <mat-icon matPrefix>edit_note</mat-icon>
+            </mat-form-field>
+          </ng-template>
 
           <div class="photo-picker">
             <div class="photo-circle photo-circle--amber" [class.has-photo]="previewFotoHoraExtra">

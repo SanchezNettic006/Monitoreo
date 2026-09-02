@@ -25,6 +25,8 @@ export interface Usuario {
   cargo?: string;
   telefono?: string;
   departamento?: string;
+  /** false solo en departamentos que no trabajan con tickets/NET (ej. Vehículos) */
+  usaTicketHorasExtra?: boolean;
 }
 
 @Injectable({

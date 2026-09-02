@@ -126,7 +126,7 @@
               <tr *ngFor="let extra of dataSourceActivas.data" class="table-row">
                 <td class="ticket-cell">
                   <span class="badge badge-active">{{ extra.numero_ticket }}</span>
-                  <span class="tipo-trabajo-tag">{{ extra.tipo_trabajo === 'averia' ? 'Avería' : 'Instalación' }}</span>
+                  <span class="tipo-trabajo-tag">{{ extra.tipo_trabajo === 'averia' ? 'Avería' : extra.tipo_trabajo === 'motivo' ? 'Motivo' : 'Instalación' }}</span>
                 </td>
                 <td class="empleado-cell">
                   {{ extra.empleado_nombre_completo || 'N/A' }}
@@ -245,7 +245,7 @@
               <tr *ngFor="let extra of dataSourceFinalizadas.data" class="table-row">
                 <td class="ticket-cell">
                   <span class="badge badge-completed">{{ extra.numero_ticket }}</span>
-                  <span class="tipo-trabajo-tag">{{ extra.tipo_trabajo === 'averia' ? 'Avería' : 'Instalación' }}</span>
+                  <span class="tipo-trabajo-tag">{{ extra.tipo_trabajo === 'averia' ? 'Avería' : extra.tipo_trabajo === 'motivo' ? 'Motivo' : 'Instalación' }}</span>
                 </td>
                 <td class="empleado-cell">
                   {{ extra.empleado_nombre_completo || 'N/A' }}

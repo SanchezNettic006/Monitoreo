@@ -25,15 +25,17 @@ export class HoraExtraController {
         });
       }
 
-      if (tipoTrabajo !== 'instalacion' && tipoTrabajo !== 'averia') {
+      if (tipoTrabajo !== 'instalacion' && tipoTrabajo !== 'averia' && tipoTrabajo !== 'motivo') {
         return res.status(400).json({
           exitoso: false,
-          mensaje: 'tipoTrabajo debe ser "instalacion" o "averia"',
+          mensaje: 'tipoTrabajo debe ser "instalacion", "averia" o "motivo"',
         });
       }
 
       // Tanto el número NET (instalación) como el de ticket (avería) son solo dígitos.
-      if (!/^\d+$/.test(String(numeroTicket).trim())) {
+      // En departamentos que no trabajan con tickets (ej. Vehículos) este campo
+      // guarda el motivo libre de la hora extra, así que no aplica esa validación.
+      if (tipoTrabajo !== 'motivo' && !/^\d+$/.test(String(numeroTicket).trim())) {
         return res.status(400).json({
           exitoso: false,
           mensaje: 'El número debe contener solo dígitos, sin letras',

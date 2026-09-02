@@ -37,7 +37,7 @@ export class HoraExtraService {
       horaExtra.usuario_id = usuarioId || 0; // Necesario para identificar al usuario
       horaExtra.record_asistencia_id = recordAsistenciaId || undefined; // Puede ser undefined
       horaExtra.numero_ticket = numeroTicket;
-      horaExtra.tipo_trabajo = tipoTrabajo === 'averia' ? 'averia' : 'instalacion';
+      horaExtra.tipo_trabajo = tipoTrabajo === 'averia' ? 'averia' : tipoTrabajo === 'motivo' ? 'motivo' : 'instalacion';
       horaExtra.hora_inicio = resolverFechaCaptura(capturadoEn);
       horaExtra.latitud_inicio = latitud;
       horaExtra.longitud_inicio = longitud;

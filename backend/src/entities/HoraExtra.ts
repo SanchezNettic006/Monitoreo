@@ -29,13 +29,16 @@ export class HoraExtra {
   @Column({ name: 'record_asistencia_id', nullable: true })
   record_asistencia_id?: number;
 
-  @Column({ name: 'numero_ticket', type: 'varchar', length: 100 })
+  // Instalación/avería guardan el número NET/ticket (solo dígitos); en
+  // departamentos que no usan tickets (ej. Vehículos) guarda el motivo libre.
+  @Column({ name: 'numero_ticket', type: 'varchar', length: 255 })
   numero_ticket!: string;
 
   // Instalación se identifica con número NET; avería con número de ticket
-  // (solo dígitos). Default 'instalacion' por compatibilidad con registros viejos.
+  // (solo dígitos); motivo es texto libre para departamentos sin tickets.
+  // Default 'instalacion' por compatibilidad con registros viejos.
   @Column({ name: 'tipo_trabajo', default: 'instalacion' })
-  tipo_trabajo!: string; // 'instalacion' | 'averia'
+  tipo_trabajo!: string; // 'instalacion' | 'averia' | 'motivo'
 
   @Column({ name: 'hora_inicio', type: 'timestamp' })
   hora_inicio!: Date;

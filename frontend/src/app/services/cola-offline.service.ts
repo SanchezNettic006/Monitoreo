@@ -15,7 +15,7 @@ export interface AccionPendiente {
   foto: Blob;
   fotoNombre: string;
   numeroTicket?: string;
-  tipoTrabajo?: 'instalacion' | 'averia';
+  tipoTrabajo?: 'instalacion' | 'averia' | 'motivo';
   recordAsistenciaId?: number;
   horaExtraId?: number;
   intentos: number;
