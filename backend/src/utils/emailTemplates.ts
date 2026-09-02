@@ -2,6 +2,7 @@
  * Plantillas de emails para notificaciones
  */
 import { formatFechaDisplay } from './fecha.utils';
+import { config } from '@config/env';
 
 export const emailTemplates = {
   /**
@@ -61,7 +62,7 @@ export const emailTemplates = {
             ` : ''}
 
             <div style="text-align: center; margin: 30px 0;">
-              <a href="http://localhost:4200/tramites" 
+              <a href="${config.cors.origin}/tramites"
                  style="display: inline-block; padding: 12px 32px; background: #2c3e50; color: white; text-decoration: none; border-radius: 4px; font-weight: 500; font-size: 14px;">
                 Revisar Solicitud
               </a>
