@@ -701,7 +701,10 @@ export class ReportesService {
     let queryEmpleados = this.empleadoRepository
       .createQueryBuilder('empleado')
       .leftJoinAndSelect('empleado.departamento', 'departamento')
-      .where('empleado.estado = :estado', { estado: 'activo' });
+      .innerJoin('empleado.usuario', 'usuario')
+      .where('empleado.estado = :estado', { estado: 'activo' })
+      // El cumplimiento de reportes solo aplica a empleados, no a líderes
+      .andWhere('usuario.rol != :lider', { lider: 'lider' });
 
     if (departamentoId) {
       queryEmpleados.andWhere('empleado.departamento_id = :departamentoId', { departamentoId });
