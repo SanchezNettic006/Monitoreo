@@ -19,7 +19,7 @@ interface FiltrosAsistencia {
   /** 'YYYY-MM-DD' — se compara contra columnas 'date' sin conversión de zona horaria */
   fechaInicio?: string;
   fechaFin?: string;
-  departamentoId?: number;
+  departamentoId?: number[];
   page?: number;
   limit?: number;
 }
@@ -85,8 +85,8 @@ export class ReportesService {
           nombreEmpleado: `%${nombreEmpleado}%`,
         });
       }
-      if (departamentoId) {
-        queryAsistencia.andWhere('empleado.departamento_id = :departamentoId', { departamentoId });
+      if (departamentoId?.length) {
+        queryAsistencia.andWhere('empleado.departamento_id IN (:...departamentoId)', { departamentoId });
       }
       if (fechaInicio && fechaFin) {
         queryAsistencia.andWhere('record.fecha BETWEEN :fechaInicio AND :fechaFin', {
@@ -134,8 +134,8 @@ export class ReportesService {
           nombreEmpleado: `%${nombreEmpleado}%`,
         });
       }
-      if (departamentoId) {
-        queryHorasExtras.andWhere('departamento.id = :departamentoId', { departamentoId });
+      if (departamentoId?.length) {
+        queryHorasExtras.andWhere('departamento.id IN (:...departamentoId)', { departamentoId });
       }
       if (fechaInicio && fechaFin) {
         // hora_inicio es timestamp: el límite superior debe cubrir todo el último día
@@ -258,7 +258,7 @@ export class ReportesService {
   private async obtenerDatosEventosSinAsistencia(
     records: RecordAsistencia[],
     empleadoId: number | undefined,
-    departamentoId: number | undefined,
+    departamentoId: number[] | undefined,
     fechaInicio: string,
     fechaFin: string,
   ) {
@@ -270,8 +270,8 @@ export class ReportesService {
     if (empleadoId) {
       queryEmpleados.andWhere('empleado.id = :empleadoId', { empleadoId });
     }
-    if (departamentoId) {
-      queryEmpleados.andWhere('empleado.departamento_id = :departamentoId', { departamentoId });
+    if (departamentoId?.length) {
+      queryEmpleados.andWhere('empleado.departamento_id IN (:...departamentoId)', { departamentoId });
     }
 
     const empleados = await queryEmpleados.getMany();
@@ -768,7 +768,7 @@ export class ReportesService {
    * y desglosadas por técnico. `horas_aprobadas` ya refleja el monto aprobado
    * sea total o parcial, así que sumarlo cubre ambos casos.
    */
-  async obtenerHorasAprobadas(mes: string, departamentoId?: number) {
+  async obtenerHorasAprobadas(mes: string, departamentoId?: number[]) {
     const [anio, mesNum] = mes.split('-').map(Number);
     const inicioMes = new Date(anio, mesNum - 1, 1);
     const finMes = new Date(anio, mesNum, 0, 23, 59, 59, 999);
@@ -793,8 +793,8 @@ export class ReportesService {
       .addGroupBy('departamento.id')
       .addGroupBy('departamento.nombre');
 
-    if (departamentoId) {
-      query = query.andWhere('departamento.id = :departamentoId', { departamentoId });
+    if (departamentoId?.length) {
+      query = query.andWhere('departamento.id IN (:...departamentoId)', { departamentoId });
     }
 
     const filas = await query.getRawMany();

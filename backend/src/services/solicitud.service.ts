@@ -1,3 +1,4 @@
+import { In } from 'typeorm';
 import { AppDataSource } from '@config/database';
 import { SolicitudTramite, TipoTramite, EstadoSolicitud } from '@entities/SolicitudTramite';
 import { SolicitudHistorial } from '@entities/SolicitudHistorial';
@@ -108,7 +109,7 @@ export class SolicitudService {
    */
   async cambiarEstado(
     datos: CambiarEstadoDTO,
-    departamentoIdRestringido?: number,
+    departamentoIdRestringido?: number[],
   ): Promise<SolicitudTramite> {
     try {
       const solicitud = await this.solicitudRepository.findOne({
@@ -122,7 +123,7 @@ export class SolicitudService {
 
       if (
         departamentoIdRestringido !== undefined &&
-        solicitud.empleado?.departamento_id !== departamentoIdRestringido
+        !departamentoIdRestringido.includes(solicitud.empleado?.departamento_id!)
       ) {
         throw new OperationalError(403, 'No tienes permisos para gestionar solicitudes de otro departamento');
       }
@@ -174,7 +175,7 @@ export class SolicitudService {
     nuevaFechaFin: string | undefined,
     motivo: string | undefined,
     usuarioId?: number,
-    departamentoIdRestringido?: number,
+    departamentoIdRestringido?: number[],
   ): Promise<SolicitudTramite> {
     try {
       const solicitud = await this.solicitudRepository.findOne({
@@ -188,7 +189,7 @@ export class SolicitudService {
 
       if (
         departamentoIdRestringido !== undefined &&
-        solicitud.empleado?.departamento_id !== departamentoIdRestringido
+        !departamentoIdRestringido.includes(solicitud.empleado?.departamento_id!)
       ) {
         throw new OperationalError(403, 'No tienes permisos para reprogramar solicitudes de otro departamento');
       }
@@ -265,11 +266,11 @@ export class SolicitudService {
    * Obtener todas las solicitudes pendientes (admin) o solo las de un
    * departamento (líder, cuando se pasa departamentoId)
    */
-  async obtenerSolicitudesPendientes(departamentoId?: number) {
+  async obtenerSolicitudesPendientes(departamentoId?: number[]) {
     try {
       const where: any = { estado: 'pendiente' };
       if (departamentoId !== undefined) {
-        where.empleado = { departamento_id: departamentoId };
+        where.empleado = { departamento_id: In(departamentoId) };
       }
 
       const solicitudes = await this.solicitudRepository.find({
@@ -295,11 +296,11 @@ export class SolicitudService {
    * Obtener solicitudes aprobadas, opcionalmente filtradas por mes de inicio
    * ('YYYY-MM'). Admin: todas; líder: solo su departamento.
    */
-  async obtenerSolicitudesAprobadas(departamentoId?: number, mes?: string) {
+  async obtenerSolicitudesAprobadas(departamentoId?: number[], mes?: string) {
     try {
       const where: any = { estado: 'aprobada' };
       if (departamentoId !== undefined) {
-        where.empleado = { departamento_id: departamentoId };
+        where.empleado = { departamento_id: In(departamentoId) };
       }
 
       const solicitudes = await this.solicitudRepository
@@ -308,7 +309,7 @@ export class SolicitudService {
         .leftJoinAndSelect('empleado.departamento', 'departamento')
         .leftJoinAndSelect('empleado.usuario', 'usuario')
         .where('s.estado = :estado', { estado: 'aprobada' })
-        .andWhere(departamentoId !== undefined ? 'empleado.departamento_id = :departamentoId' : '1=1', {
+        .andWhere(departamentoId !== undefined ? 'empleado.departamento_id IN (:...departamentoId)' : '1=1', {
           departamentoId,
         })
         .andWhere(mes ? "to_char(s.fecha_inicio, 'YYYY-MM') = :mes" : '1=1', { mes })
@@ -380,13 +381,13 @@ export class SolicitudService {
    * cada año calendario reinicia el cupo completo. Si se valida el enfoque,
    * el acarreo se puede agregar después sin romper esta base.
    */
-  async obtenerSaldoVacaciones(empleadoId: number, anio?: number, departamentoIdRestringido?: number) {
+  async obtenerSaldoVacaciones(empleadoId: number, anio?: number, departamentoIdRestringido?: number[]) {
     const empleado = await this.empleadoRepository.findOne({ where: { id: empleadoId } });
     if (!empleado) {
       throw new OperationalError(404, 'Empleado no encontrado');
     }
 
-    if (departamentoIdRestringido !== undefined && empleado.departamento_id !== departamentoIdRestringido) {
+    if (departamentoIdRestringido !== undefined && !departamentoIdRestringido.includes(empleado.departamento_id)) {
       throw new OperationalError(403, 'No tienes permisos para ver el saldo de otro departamento');
     }
 
@@ -421,15 +422,15 @@ export class SolicitudService {
    * en una sola consulta agrupada — para la vista de administración donde
    * se necesita ver de un vistazo cuánto tiene cada quien.
    */
-  async obtenerSaldosVacacionesMasivo(anio?: number, departamentoId?: number) {
+  async obtenerSaldosVacacionesMasivo(anio?: number, departamentoId?: number[]) {
     const anioConsulta = anio || new Date().getFullYear();
 
     let queryEmpleados = this.empleadoRepository
       .createQueryBuilder('empleado')
       .where('empleado.estado = :estado', { estado: 'activo' });
 
-    if (departamentoId !== undefined) {
-      queryEmpleados = queryEmpleados.andWhere('empleado.departamento_id = :departamentoId', { departamentoId });
+    if (departamentoId?.length) {
+      queryEmpleados = queryEmpleados.andWhere('empleado.departamento_id IN (:...departamentoId)', { departamentoId });
     }
 
     const empleados = await queryEmpleados.getMany();

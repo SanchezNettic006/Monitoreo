@@ -23,6 +23,7 @@ import { NotificacionEmail } from '../entities/NotificacionEmail';
 import { DiaCalendario } from '../entities/DiaCalendario';
 import { Grupo } from '../entities/Grupo';
 import { AsignacionProyecto } from '../entities/AsignacionProyecto';
+import { LiderDepartamentoExtra } from '../entities/LiderDepartamentoExtra';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -49,6 +50,7 @@ export const AppDataSource = new DataSource({
     DiaCalendario,
     Grupo,
     AsignacionProyecto,
+    LiderDepartamentoExtra,
   ],
   migrations: [path.join(__dirname, '../migrations/**/*.ts')],
   subscribers: [path.join(__dirname, '../subscribers/**/*.ts')],

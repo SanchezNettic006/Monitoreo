@@ -192,7 +192,7 @@ export class HoraExtraService {
    * Incluye información del empleado y departamento. Si se pasa departamentoId
    * (líder), se restringe a las de ese departamento.
    */
-  async obtenerTodasHorasExtras(departamentoId?: number) {
+  async obtenerTodasHorasExtras(departamentoId?: number[]) {
     try {
       let query = this.horaExtraRepository
         .createQueryBuilder('he')
@@ -205,9 +205,9 @@ export class HoraExtraService {
         .leftJoinAndSelect('he.fotos', 'fotos')
         .orderBy('he.hora_inicio', 'DESC');
 
-      if (departamentoId !== undefined) {
+      if (departamentoId?.length) {
         query = query.andWhere(
-          '(recordEmpleado.departamento_id = :departamentoId OR usuarioEmpleado.departamento_id = :departamentoId)',
+          '(recordEmpleado.departamento_id IN (:...departamentoId) OR usuarioEmpleado.departamento_id IN (:...departamentoId))',
           { departamentoId },
         );
       }
@@ -266,15 +266,13 @@ export class HoraExtraService {
 
   /**
    * Aprobar, ajustar (parcial) o rechazar las horas de un ticket finalizado.
-   * @param departamentoIdRestringido reservado para cuando líderes puedan aprobar;
-   * hoy no se usa porque solo admin llega a este método (ver rutas).
    */
   async revisarHoraExtra(
     horaExtraId: number,
     adminUsuarioId: number,
     horasAprobadas: number,
     motivo?: string,
-    departamentoIdRestringido?: number,
+    departamentoIdRestringido?: number[],
   ): Promise<HoraExtra> {
     const horaExtra = await this.horaExtraRepository.findOne({
       where: { id: horaExtraId },
@@ -285,10 +283,10 @@ export class HoraExtraService {
       throw new OperationalError(404, 'Hora extra no encontrada');
     }
 
-    // Un líder solo puede revisar horas extra de empleados de su propio departamento
+    // Un líder solo puede revisar horas extra de empleados de sus propios departamentos
     if (
       departamentoIdRestringido !== undefined &&
-      horaExtra.usuario?.empleado?.departamento_id !== departamentoIdRestringido
+      !departamentoIdRestringido.includes(horaExtra.usuario?.empleado?.departamento_id!)
     ) {
       throw new OperationalError(403, 'No tienes permisos para revisar horas extra de otro departamento');
     }

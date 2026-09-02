@@ -1,7 +1,9 @@
+import { In } from 'typeorm';
 import { AppDataSource } from '@config/database';
 import { Empleado } from '@entities/Empleado';
 import { Usuario } from '@entities/Usuario';
 import { RecordAsistencia } from '@entities/RecordAsistencia';
+import { LiderDepartamentoExtra } from '@entities/LiderDepartamentoExtra';
 import { OperationalError } from '@middleware/errorHandler';
 import { generarUsernameUnico, hashPassword } from '@utils/credenciales';
 import { hoyLocal } from '@utils/fecha.utils';
@@ -10,9 +12,10 @@ export class EmpleadoService {
   private empleadoRepository = AppDataSource.getRepository(Empleado);
   private usuarioRepository = AppDataSource.getRepository(Usuario);
   private recordRepository = AppDataSource.getRepository(RecordAsistencia);
+  private liderDeptoExtraRepository = AppDataSource.getRepository(LiderDepartamentoExtra);
 
   async obtenerEmpleado(id: number) {
-    const empleado = await this.empleadoRepository.findOne({
+    const empleado: any = await this.empleadoRepository.findOne({
       where: { id },
       relations: ['usuario', 'departamento', 'records'],
     });
@@ -21,12 +24,42 @@ export class EmpleadoService {
       throw new OperationalError(404, 'Empleado no encontrado');
     }
 
+    // Si es líder, incluir los departamentos adicionales que supervisa (además
+    // del suyo propio), para que el formulario de edición los pueda mostrar
+    if (empleado.usuario?.rol === 'lider') {
+      const extras = await this.liderDeptoExtraRepository.find({
+        where: { usuario_id: empleado.usuario_id },
+        relations: ['departamento'],
+      });
+      empleado.departamentosExtra = extras.map((e) => ({ id: e.departamento_id, nombre: e.departamento?.nombre }));
+    }
+
     return empleado;
   }
 
-  async obtenerTodos(departamentoId?: number) {
+  /** Reemplaza por completo el conjunto de departamentos adicionales que supervisa un líder */
+  async actualizarDepartamentosExtra(empleadoId: number, departamentoIds: number[]) {
+    const empleado = await this.empleadoRepository.findOne({ where: { id: empleadoId } });
+    if (!empleado) {
+      throw new OperationalError(404, 'Empleado no encontrado');
+    }
+
+    await this.liderDeptoExtraRepository.delete({ usuario_id: empleado.usuario_id });
+
+    const nuevos = departamentoIds
+      .filter((id) => id !== empleado.departamento_id) // el propio no cuenta como "extra"
+      .map((departamento_id) => this.liderDeptoExtraRepository.create({ usuario_id: empleado.usuario_id, departamento_id }));
+
+    if (nuevos.length) {
+      await this.liderDeptoExtraRepository.save(nuevos);
+    }
+
+    return { mensaje: '✅ Departamentos adicionales actualizados' };
+  }
+
+  async obtenerTodos(departamentoId?: number[]) {
     return await this.empleadoRepository.find({
-      where: departamentoId !== undefined ? { departamento_id: departamentoId } : {},
+      where: departamentoId !== undefined ? { departamento_id: In(departamentoId) } : {},
       relations: ['usuario', 'departamento'],
     });
   }

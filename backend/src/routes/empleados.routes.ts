@@ -47,4 +47,11 @@ router.post('/:id/foto', uploadFoto.single('foto'), (req, res, next) =>
   controller.subirFoto(req, res, next),
 );
 
+// PUT /api/empleados/:id/departamentos-extra - Departamentos adicionales que
+// supervisa este líder, más allá del suyo propio (ej. líder de Troncal que
+// también supervisa Vehículos). Body: { departamentoIds: number[] }
+router.put('/:id/departamentos-extra', (req, res, next) =>
+  controller.actualizarDepartamentosExtra(req, res, next),
+);
+
 export default router;

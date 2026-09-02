@@ -25,6 +25,8 @@ export interface Empleado {
     nombre: string;
     descripcion: string;
   };
+  /** Solo presente cuando el empleado es líder: departamentos que supervisa además del suyo */
+  departamentosExtra?: { id: number; nombre: string }[];
 }
 
 export interface EmpleadoResponse {
@@ -77,6 +79,14 @@ export class EmpleadoService {
    */
   eliminar(id: number): Observable<EmpleadoResponse> {
     return this.http.delete<EmpleadoResponse>(`${this.apiUrl}/${id}`);
+  }
+
+  /**
+   * Reemplaza el conjunto de departamentos adicionales que supervisa un líder
+   * (ej. el líder de Troncal que también supervisa Vehículos)
+   */
+  actualizarDepartamentosExtra(id: number, departamentoIds: number[]): Observable<{ mensaje: string }> {
+    return this.http.put<{ mensaje: string }>(`${this.apiUrl}/${id}/departamentos-extra`, { departamentoIds });
   }
 
   /**

@@ -223,16 +223,22 @@ export class AlertasService {
     return ahora >= objetivo;
   }
 
-  /** Admins (todos) + líder(es) del departamento del empleado en cuestión */
+  /**
+   * Admins (todos) + líder(es) del departamento del empleado en cuestión —
+   * incluye tanto al líder "dueño" del departamento (su propio empleado.departamento_id)
+   * como a cualquier otro líder que lo supervise como adicional (ej. el líder de
+   * Troncal que también supervisa Vehículos).
+   */
   private async obtenerLideresYAdmins(departamentoId: number): Promise<Usuario[]> {
     return this.usuarioRepository
       .createQueryBuilder('usuario')
       .leftJoinAndSelect('usuario.empleado', 'empleado')
+      .leftJoin('lider_departamento_extra', 'extra', 'extra.usuario_id = usuario.id')
       .where('usuario.rol = :admin', { admin: 'admin' })
-      .orWhere('usuario.rol = :lider AND empleado.departamento_id = :departamentoId', {
-        lider: 'lider',
-        departamentoId,
-      })
+      .orWhere(
+        '(usuario.rol = :lider) AND (empleado.departamento_id = :departamentoId OR extra.departamento_id = :departamentoId)',
+        { lider: 'lider', departamentoId },
+      )
       .getMany();
   }
 }

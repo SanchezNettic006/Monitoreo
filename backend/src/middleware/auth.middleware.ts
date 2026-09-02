@@ -3,13 +3,19 @@ import jwt from 'jsonwebtoken';
 import { config } from '@config/env';
 import { AppDataSource } from '@config/database';
 import { Empleado } from '@entities/Empleado';
+import { LiderDepartamentoExtra } from '@entities/LiderDepartamentoExtra';
 import { OperationalError } from './errorHandler';
 
 export interface AuthRequest extends Request {
   userId?: number;
   user?: any;
-  /** Solo se define cuando el usuario es 'lider': departamento al que debe restringirse */
-  departamentoId?: number;
+  /**
+   * Solo se define cuando el usuario es 'lider': departamento(s) a los que debe
+   * restringirse. Normalmente es solo el suyo propio, pero un líder puede
+   * supervisar departamentos adicionales (ver lider_departamento_extra), así
+   * que siempre es un arreglo aunque tenga un solo elemento.
+   */
+  departamentoId?: number[];
 }
 
 export const authMiddleware = (
@@ -86,7 +92,10 @@ export const cargarDepartamentoLider = async (
       return next(new OperationalError(403, 'Tu usuario líder no tiene un departamento asignado'));
     }
 
-    req.departamentoId = empleado.departamento_id;
+    const extraRepository = AppDataSource.getRepository(LiderDepartamentoExtra);
+    const extras = await extraRepository.find({ where: { usuario_id: req.userId } });
+
+    req.departamentoId = [empleado.departamento_id, ...extras.map((e) => e.departamento_id)];
     next();
   } catch (error) {
     next(error);

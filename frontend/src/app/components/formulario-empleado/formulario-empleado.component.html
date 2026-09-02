@@ -93,6 +93,15 @@
       <mat-hint>Un líder ve y gestiona las solicitudes, asistencias y empleados de su departamento</mat-hint>
     </mat-form-field>
 
+    <!-- Departamentos adicionales (solo editando un líder ya creado) -->
+    <mat-form-field appearance="fill" class="full-width" *ngIf="esLiderEnEdicion">
+      <mat-label>Departamentos adicionales que supervisa (opcional)</mat-label>
+      <mat-select [(ngModel)]="departamentosExtraSeleccionados" [ngModelOptions]="{ standalone: true }" multiple>
+        <mat-option *ngFor="let depto of departamentosParaExtra" [value]="depto.id">{{ depto.nombre }}</mat-option>
+      </mat-select>
+      <mat-hint>Ej: el líder de Troncal que también supervisa Vehículos</mat-hint>
+    </mat-form-field>
+
     <!-- Fecha de ingreso -->
     <mat-form-field appearance="fill" class="full-width">
       <mat-label>Fecha de ingreso (opcional)</mat-label>

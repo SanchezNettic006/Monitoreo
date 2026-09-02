@@ -57,8 +57,8 @@ export class ReportesController {
         nombreEmpleado: nombreEmpleado ? String(nombreEmpleado) : undefined,
         fechaInicio: normalizarFechaParam(fechaInicio as string),
         fechaFin: normalizarFechaParam(fechaFin as string),
-        // Si es líder, se ignora cualquier departamentoId de la query y se fuerza el suyo
-        departamentoId: req.departamentoId ?? (departamentoId ? parseInt(departamentoId as string) : undefined),
+        // Si es líder, se ignora cualquier departamentoId de la query y se fuerzan los suyos
+        departamentoId: req.departamentoId ?? (departamentoId ? [parseInt(departamentoId as string)] : undefined),
         page: page ? parseInt(page as string) : 1,
         limit: limit ? parseInt(limit as string) : 20,
       };
@@ -209,7 +209,8 @@ export class ReportesController {
   async obtenerHorasAprobadas(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const mes = (req.query.mes as string) || new Date().toISOString().slice(0, 7);
-      const departamentoId = req.departamentoId ?? (req.query.departamentoId ? parseInt(String(req.query.departamentoId), 10) : undefined);
+      const departamentoId =
+        req.departamentoId ?? (req.query.departamentoId ? [parseInt(String(req.query.departamentoId), 10)] : undefined);
 
       const resultado = await reportesService.obtenerHorasAprobadas(mes, departamentoId);
 

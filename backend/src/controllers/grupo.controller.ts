@@ -1,14 +1,42 @@
 import { Response, NextFunction } from 'express';
 import { GrupoService } from '@services/grupo.service';
 import { AuthRequest } from '@middleware/auth.middleware';
+import { OperationalError } from '@middleware/errorHandler';
 
 const grupoService = new GrupoService();
+
+/**
+ * Resuelve a qué departamento pertenece la acción que un líder/admin quiere
+ * crear (grupo o proyecto). Admin: el que venga en el body, tal cual.
+ * Líder con un solo departamento: el suyo, sin pedírselo. Líder con varios
+ * (ej. supervisa Troncal y Vehículos): debe indicar cuál en el body, y solo
+ * se acepta si es uno de los que realmente supervisa.
+ */
+function resolverDepartamentoFinal(
+  req: AuthRequest,
+  departamentoIdBody: number | string | undefined,
+): number | undefined {
+  if (!req.departamentoId) {
+    return departamentoIdBody !== undefined ? parseInt(String(departamentoIdBody), 10) : undefined;
+  }
+
+  if (req.departamentoId.length === 1) {
+    return req.departamentoId[0];
+  }
+
+  const solicitado = departamentoIdBody !== undefined ? parseInt(String(departamentoIdBody), 10) : undefined;
+  if (solicitado !== undefined && req.departamentoId.includes(solicitado)) {
+    return solicitado;
+  }
+
+  throw new OperationalError(400, 'Supervisas varios departamentos: indica a cuál de ellos pertenece');
+}
 
 export class GrupoController {
   async crear(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { nombre, departamentoId } = req.body;
-      const departamentoFinal = req.departamentoId ?? departamentoId;
+      const departamentoFinal = resolverDepartamentoFinal(req, departamentoId);
 
       if (!departamentoFinal) {
         return res.status(400).json({ mensaje: 'departamentoId es requerido' });
@@ -23,7 +51,8 @@ export class GrupoController {
 
   async obtenerTodos(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const departamentoId = req.departamentoId ?? (req.query.departamentoId ? parseInt(String(req.query.departamentoId), 10) : undefined);
+      const departamentoId =
+        req.departamentoId ?? (req.query.departamentoId ? [parseInt(String(req.query.departamentoId), 10)] : undefined);
       const grupos = await grupoService.obtenerGrupos(departamentoId);
       return res.status(200).json({ data: grupos });
     } catch (error) {
@@ -52,7 +81,7 @@ export class GrupoController {
   async crearProyectoDirecto(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { nombreProyecto, descripcion, departamentoId } = req.body;
-      const departamentoFinal = req.departamentoId ?? departamentoId;
+      const departamentoFinal = resolverDepartamentoFinal(req, departamentoId);
 
       if (!departamentoFinal) {
         return res.status(400).json({ mensaje: 'departamentoId es requerido' });
@@ -67,7 +96,8 @@ export class GrupoController {
 
   async obtenerProyectosDirectos(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const departamentoId = req.departamentoId ?? (req.query.departamentoId ? parseInt(String(req.query.departamentoId), 10) : undefined);
+      const departamentoId =
+        req.departamentoId ?? (req.query.departamentoId ? [parseInt(String(req.query.departamentoId), 10)] : undefined);
       const proyectos = await grupoService.obtenerProyectos(departamentoId);
       return res.status(200).json({ data: proyectos });
     } catch (error) {

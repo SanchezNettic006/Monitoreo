@@ -296,6 +296,23 @@ export async function inicializarColumnas() {
         }
       }
 
+      const tablaLiderDeptoExtraExiste = await queryRunner.hasTable('lider_departamento_extra');
+      if (!tablaLiderDeptoExtraExiste) {
+        console.log('⚠️ Creando tabla lider_departamento_extra...');
+        await queryRunner.query(`
+          CREATE TABLE lider_departamento_extra (
+            id SERIAL PRIMARY KEY,
+            usuario_id INTEGER NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
+            departamento_id INTEGER NOT NULL REFERENCES departamento(id) ON DELETE CASCADE,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE (usuario_id, departamento_id)
+          )
+        `);
+        console.log('✅ Tabla lider_departamento_extra creada exitosamente');
+      } else {
+        console.log('✅ Tabla lider_departamento_extra ya existe');
+      }
+
       const tablaSolicitudExiste = await queryRunner.hasTable('solicitud_tramite');
       if (tablaSolicitudExiste) {
         const columnaFotoSolicitudExiste = await queryRunner.hasColumn('solicitud_tramite', 'url_foto');

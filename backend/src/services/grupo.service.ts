@@ -20,15 +20,15 @@ export class GrupoService {
     return this.grupoRepository.save(grupo);
   }
 
-  async obtenerGrupos(departamentoId?: number) {
+  async obtenerGrupos(departamentoId?: number[]) {
     const query = this.grupoRepository
       .createQueryBuilder('grupo')
       .leftJoinAndSelect('grupo.departamento', 'departamento')
       .leftJoinAndSelect('grupo.empleados', 'empleados')
       .orderBy('grupo.nombre', 'ASC');
 
-    if (departamentoId) {
-      query.andWhere('grupo.departamento_id = :departamentoId', { departamentoId });
+    if (departamentoId?.length) {
+      query.andWhere('grupo.departamento_id IN (:...departamentoId)', { departamentoId });
     }
 
     const grupos = await query.getMany();
@@ -61,23 +61,23 @@ export class GrupoService {
     }));
   }
 
-  private async validarAccesoGrupo(grupoId: number, departamentoIdRestringido?: number) {
+  private async validarAccesoGrupo(grupoId: number, departamentoIdRestringido?: number[]) {
     const grupo = await this.grupoRepository.findOne({ where: { id: grupoId } });
     if (!grupo) {
       throw new OperationalError(404, 'Grupo no encontrado');
     }
-    if (departamentoIdRestringido && grupo.departamento_id !== departamentoIdRestringido) {
+    if (departamentoIdRestringido && !departamentoIdRestringido.includes(grupo.departamento_id)) {
       throw new OperationalError(403, 'No tienes acceso a este grupo');
     }
     return grupo;
   }
 
-  async asignarEmpleadoAGrupo(empleadoId: number, grupoId: number | null, departamentoIdRestringido?: number) {
+  async asignarEmpleadoAGrupo(empleadoId: number, grupoId: number | null, departamentoIdRestringido?: number[]) {
     const empleado = await this.empleadoRepository.findOne({ where: { id: empleadoId } });
     if (!empleado) {
       throw new OperationalError(404, 'Empleado no encontrado');
     }
-    if (departamentoIdRestringido && empleado.departamento_id !== departamentoIdRestringido) {
+    if (departamentoIdRestringido && !departamentoIdRestringido.includes(empleado.departamento_id)) {
       throw new OperationalError(403, 'No tienes acceso a este empleado');
     }
 
@@ -98,7 +98,7 @@ export class GrupoService {
     nombreProyecto: string,
     descripcion: string | undefined,
     usuarioId: number,
-    departamentoIdRestringido?: number,
+    departamentoIdRestringido?: number[],
   ) {
     if (!nombreProyecto?.trim()) {
       throw new OperationalError(400, 'El nombre del proyecto es obligatorio');
@@ -178,15 +178,15 @@ export class GrupoService {
   }
 
   /** Lista los proyectos (activos e historial) del departamento indicado, o de todos si no se pasa */
-  async obtenerProyectos(departamentoId?: number) {
+  async obtenerProyectos(departamentoId?: number[]) {
     const query = this.asignacionRepository
       .createQueryBuilder('a')
       .leftJoinAndSelect('a.departamento', 'departamento')
       .orderBy('a.fecha_fin', 'ASC', 'NULLS FIRST')
       .addOrderBy('a.fecha_inicio', 'DESC');
 
-    if (departamentoId) {
-      query.andWhere('a.departamento_id = :departamentoId', { departamentoId });
+    if (departamentoId?.length) {
+      query.andWhere('a.departamento_id IN (:...departamentoId)', { departamentoId });
     } else {
       query.andWhere('a.departamento_id IS NOT NULL');
     }
@@ -205,12 +205,12 @@ export class GrupoService {
   }
 
   /** Marca un proyecto como finalizado por su propio id */
-  async finalizarProyectoPorId(proyectoId: number, departamentoIdRestringido?: number) {
+  async finalizarProyectoPorId(proyectoId: number, departamentoIdRestringido?: number[]) {
     const proyecto = await this.asignacionRepository.findOne({ where: { id: proyectoId } });
     if (!proyecto) {
       throw new OperationalError(404, 'Proyecto no encontrado');
     }
-    if (departamentoIdRestringido && proyecto.departamento_id !== departamentoIdRestringido) {
+    if (departamentoIdRestringido && !departamentoIdRestringido.includes(proyecto.departamento_id!)) {
       throw new OperationalError(403, 'No tienes acceso a este proyecto');
     }
     if (proyecto.fecha_fin) {

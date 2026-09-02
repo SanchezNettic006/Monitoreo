@@ -72,6 +72,7 @@ export class ReportesComponent implements OnInit {
     { id: 4, nombre: 'Troncal' },
     { id: 5, nombre: 'Ventas' },
     { id: 6, nombre: 'SAC' },
+    { id: 7, nombre: 'Vehículos' },
   ];
 
   // Cumplimiento de reportes (gráfica)

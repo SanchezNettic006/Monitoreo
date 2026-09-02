@@ -220,7 +220,8 @@ export class SolicitudController {
   async obtenerSaldosVacacionesMasivo(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const anio = req.query.anio ? parseInt(String(req.query.anio), 10) : undefined;
-      const departamentoId = req.departamentoId ?? (req.query.departamentoId ? parseInt(String(req.query.departamentoId), 10) : undefined);
+      const departamentoId =
+        req.departamentoId ?? (req.query.departamentoId ? [parseInt(String(req.query.departamentoId), 10)] : undefined);
 
       const saldos = await solicitudService.obtenerSaldosVacacionesMasivo(anio, departamentoId);
 

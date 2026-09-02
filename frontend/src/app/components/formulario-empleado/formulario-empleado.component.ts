@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogModule, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -19,6 +19,7 @@ import { environment } from '../../../environments/environment';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
@@ -42,12 +43,18 @@ export class FormularioEmpleadoComponent {
     { id: 4, nombre: 'Troncal' },
     { id: 5, nombre: 'Ventas' },
     { id: 6, nombre: 'SAC' },
+    { id: 7, nombre: 'Vehículos' },
   ];
   
   // Foto
   fotoSeleccionada: File | null = null;
   previewFoto: string | null = null;
   mostrarPassword = false;
+
+  // Departamentos adicionales que supervisa este líder (además del suyo propio),
+  // ej. el líder de Troncal que también supervisa Vehículos. Solo aplica editando
+  // un empleado que ya es líder (necesita un id para guardar la relación).
+  departamentosExtraSeleccionados: number[] = [];
 
   constructor(
     private formBuilder: FormBuilder,
@@ -68,6 +75,18 @@ export class FormularioEmpleadoComponent {
       } else {
         this.previewFoto = this.data.foto_perfil;
       }
+    }
+
+    // Si es un líder, traer sus departamentos adicionales actuales (la fila de
+    // la lista no los trae, hay que pedirlos aparte)
+    if (this.editando && this.data?.usuario?.rol === 'lider') {
+      this.empleadoService.obtenerPorId(this.data.id).subscribe({
+        next: (response) => {
+          const empleado = response.data as Empleado;
+          this.departamentosExtraSeleccionados = (empleado.departamentosExtra || []).map((d) => d.id);
+        },
+        error: () => {},
+      });
     }
   }
 
@@ -118,6 +137,16 @@ export class FormularioEmpleadoComponent {
 
   get nuevaPassword() {
     return this.form.get('nuevaPassword');
+  }
+
+  get esLiderEnEdicion(): boolean {
+    return this.editando && this.form.get('rol')?.value === 'lider';
+  }
+
+  /** Departamentos disponibles para marcar como "adicionales" (todos menos el propio) */
+  get departamentosParaExtra() {
+    const propio = this.form.get('departamento_id')?.value;
+    return this.departamentos.filter((d) => d.id !== propio);
   }
 
   // Manejar selección de archivo
@@ -176,7 +205,14 @@ export class FormularioEmpleadoComponent {
       next: (response: any) => {
         const empleadoId = (response.data as Empleado).id;
         const credenciales = response.credenciales; // Solo existe si es creación
-        
+
+        // Departamentos adicionales que supervisa (solo aplica editando un líder)
+        if (this.editando && datos.rol === 'lider') {
+          this.empleadoService.actualizarDepartamentosExtra(empleadoId, this.departamentosExtraSeleccionados).subscribe({
+            error: (error) => console.error('Error al actualizar departamentos adicionales:', error),
+          });
+        }
+
         // Si hay foto, subirla
         if (this.fotoSeleccionada) {
           this.empleadoService.subirFoto(empleadoId, this.fotoSeleccionada).subscribe({

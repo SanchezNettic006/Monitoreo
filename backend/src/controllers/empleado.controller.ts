@@ -27,7 +27,7 @@ export class EmpleadoController {
       const { id } = req.params;
       const empleado = await empleadoService.obtenerEmpleado(parseInt(String(id)));
 
-      if (req.departamentoId !== undefined && empleado.departamento_id !== req.departamentoId) {
+      if (req.departamentoId !== undefined && !req.departamentoId.includes(empleado.departamento_id)) {
         throw new OperationalError(403, 'No tienes permisos para ver empleados de otro departamento');
       }
 
@@ -113,6 +113,29 @@ export class EmpleadoController {
       return res.status(200).json({
         mensaje: 'Empleado eliminado exitosamente',
         data: { id: parseInt(String(id)) },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // PUT /api/empleados/:id/departamentos-extra - Departamentos adicionales que supervisa este líder
+  async actualizarDepartamentosExtra(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const { departamentoIds } = req.body;
+
+      if (!Array.isArray(departamentoIds)) {
+        throw new OperationalError(400, 'departamentoIds debe ser un arreglo');
+      }
+
+      const resultado = await empleadoService.actualizarDepartamentosExtra(
+        parseInt(String(id)),
+        departamentoIds.map((d: any) => parseInt(String(d), 10)),
+      );
+
+      return res.status(200).json({
+        mensaje: resultado.mensaje,
       });
     } catch (error) {
       next(error);
