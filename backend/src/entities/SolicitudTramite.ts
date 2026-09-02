@@ -11,11 +11,16 @@ import { SolicitudHistorial } from './SolicitudHistorial';
 
 export type TipoTramite =
   | 'vacaciones'
-  | 'ausencia'
+  | 'ausencia' // se muestra como "Reposición"
   | 'cambio_jornada' // ya no se ofrece al crear; se deja por compatibilidad con solicitudes históricas
+  | 'permiso_personal'
+  | 'motivo_familiar'
   | 'cita_medica_programada'
   | 'cita_medica_emergencia'
-  | 'cumpleanos'; // beneficio de la empresa: no descuenta del cupo de vacaciones
+  | 'enfermedad'
+  | 'estudios_academicos'
+  | 'cumpleanos' // beneficio de la empresa: no descuenta del cupo de vacaciones
+  | 'fidelidad'; // beneficio de la empresa: no descuenta del cupo de vacaciones
 export type EstadoSolicitud = 'pendiente' | 'aprobada' | 'rechazada' | 'cancelada';
 
 @Entity('solicitud_tramite')

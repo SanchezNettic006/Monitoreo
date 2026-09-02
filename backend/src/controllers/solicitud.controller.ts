@@ -21,11 +21,15 @@ export class SolicitudController {
       }
 
       // La cita médica programada sí da tiempo de tomar foto del comprobante;
-      // la de emergencia no, así que solo se exige en la programada.
-      if (tipo === 'cita_medica_programada' && !req.file) {
+      // la de emergencia no, así que solo se exige en la programada. La
+      // enfermedad exige la foto de la suspensión emitida por el IGSS.
+      if ((tipo === 'cita_medica_programada' || tipo === 'enfermedad') && !req.file) {
         return res.status(400).json({
           exitoso: false,
-          mensaje: 'Debes adjuntar una foto del comprobante de la cita',
+          mensaje:
+            tipo === 'enfermedad'
+              ? 'Debes adjuntar una foto de la suspensión médica'
+              : 'Debes adjuntar una foto del comprobante de la cita',
         });
       }
 

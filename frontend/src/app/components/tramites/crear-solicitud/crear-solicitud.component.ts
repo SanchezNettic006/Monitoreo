@@ -14,7 +14,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { SolicitudService, SaldoVacaciones } from '../../../services/solicitud.service';
 
-const TIPOS_QUE_REQUIEREN_FOTO = ['cita_medica_programada'];
+const TIPOS_QUE_REQUIEREN_FOTO = ['cita_medica_programada', 'enfermedad'];
 
 // Por defecto Material marca un campo en rojo apenas se toca (blur) aunque el
 // usuario nunca haya intentado enviar el formulario, lo que en este formulario
@@ -65,16 +65,21 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
                 <mat-label>Tipo de Solicitud</mat-label>
                 <mat-select formControlName="tipo" required [errorStateMatcher]="matcher" (selectionChange)="onTipoChange($event.value)">
                   <mat-option value="vacaciones">Vacaciones</mat-option>
-                  <mat-option value="ausencia">Reposición</mat-option>
+                  <mat-option value="permiso_personal">Permiso Personal</mat-option>
+                  <mat-option value="motivo_familiar">Motivo Familiar</mat-option>
                   <mat-option value="cita_medica_programada">Cita Médica Programada</mat-option>
                   <mat-option value="cita_medica_emergencia">Cita Médica de Emergencia</mat-option>
+                  <mat-option value="enfermedad">Enfermedad</mat-option>
+                  <mat-option value="estudios_academicos">Estudios / Actividades Académicas</mat-option>
                   <mat-option value="cumpleanos">Cumpleaños</mat-option>
+                  <mat-option value="fidelidad">Fidelidad</mat-option>
+                  <mat-option value="ausencia">Reposición</mat-option>
                 </mat-select>
                 <mat-error>Selecciona un tipo de solicitud</mat-error>
                 <mat-hint *ngIf="formulario.get('tipo')?.value === 'vacaciones' && saldoVacaciones">
                   Te quedan {{ saldoVacaciones.diasDisponibles }} de {{ saldoVacaciones.cupoAnual }} días este {{ saldoVacaciones.anio }}
                 </mat-hint>
-                <mat-hint *ngIf="formulario.get('tipo')?.value === 'cumpleanos'">
+                <mat-hint *ngIf="formulario.get('tipo')?.value === 'cumpleanos' || formulario.get('tipo')?.value === 'fidelidad'">
                   Beneficio de la empresa: no se descuenta de tus días de vacaciones
                 </mat-hint>
               </mat-form-field>
@@ -112,18 +117,13 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
               <input matInput formControlName="motivo" placeholder="Ej: Descanso, viaje, asuntos personales" />
               <mat-hint align="end">{{ formulario.get('motivo')?.value?.length || 0 }}/100</mat-hint>
             </mat-form-field>
-
-            <mat-form-field appearance="fill" class="full-width">
-              <mat-label>Descripcion Adicional</mat-label>
-              <textarea matInput rows="4" formControlName="descripcion" placeholder="Proporciona mas detalles si es necesario..."></textarea>
-              <mat-hint align="end">{{ formulario.get('descripcion')?.value?.length || 0 }}/500</mat-hint>
-            </mat-form-field>
           </div>
 
-          <!-- Comprobante: solo obligatorio para cita médica programada, ya que
-               en la de emergencia no hay tiempo de tomar la foto antes de ir -->
-          <div class="form-section" *ngIf="formulario.get('tipo')?.value === 'cita_medica_programada'">
-            <h3 class="section-title">Comprobante de la cita</h3>
+          <!-- Comprobante: obligatorio para cita médica programada (en la de
+               emergencia no hay tiempo de tomar la foto antes de ir) y para
+               enfermedad (foto de la suspensión emitida por el IGSS) -->
+          <div class="form-section" *ngIf="formulario.get('tipo')?.value === 'cita_medica_programada' || formulario.get('tipo')?.value === 'enfermedad'">
+            <h3 class="section-title">{{ formulario.get('tipo')?.value === 'enfermedad' ? 'Comprobante de la suspensión' : 'Comprobante de la cita' }}</h3>
 
             <div class="foto-section">
               <div class="foto-preview" *ngIf="previewFoto">
@@ -135,7 +135,7 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
                 {{ previewFoto ? 'Cambiar foto' : 'Tomar/Subir foto' }}
               </button>
               <p class="foto-error" *ngIf="!previewFoto && intentoEnvio">
-                Debes adjuntar una foto del comprobante de la cita
+                {{ formulario.get('tipo')?.value === 'enfermedad' ? 'Debes adjuntar una foto de la suspensión médica' : 'Debes adjuntar una foto del comprobante de la cita' }}
               </p>
             </div>
           </div>
@@ -362,7 +362,6 @@ export class CrearSolicitudComponent {
       fecha_fin: [''],
       dias_solicitados: [0],
       motivo: [''],
-      descripcion: [''],
     });
   }
 

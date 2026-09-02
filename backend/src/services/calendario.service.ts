@@ -77,9 +77,14 @@ export class CalendarioService {
       vacaciones: 'Vacaciones',
       ausencia: 'Reposición',
       cambio_jornada: 'Cambio de jornada',
+      permiso_personal: 'Permiso personal',
+      motivo_familiar: 'Motivo familiar',
       cita_medica_programada: 'Cita médica programada',
       cita_medica_emergencia: 'Cita médica de emergencia',
+      enfermedad: 'Enfermedad',
+      estudios_academicos: 'Estudios / actividades académicas',
       cumpleanos: 'Cumpleaños',
+      fidelidad: 'Fidelidad',
     };
 
     const eventosTramites = tramitesAprobados.flatMap((t) => {

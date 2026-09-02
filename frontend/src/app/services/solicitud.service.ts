@@ -25,7 +25,18 @@ export interface Solicitud {
       email: string;
     };
   };
-  tipo: 'vacaciones' | 'ausencia' | 'cambio_jornada' | 'cita_medica_programada' | 'cita_medica_emergencia' | 'cumpleanos';
+  tipo:
+    | 'vacaciones'
+    | 'ausencia'
+    | 'cambio_jornada'
+    | 'permiso_personal'
+    | 'motivo_familiar'
+    | 'cita_medica_programada'
+    | 'cita_medica_emergencia'
+    | 'enfermedad'
+    | 'estudios_academicos'
+    | 'cumpleanos'
+    | 'fidelidad';
   estado: 'pendiente' | 'aprobada' | 'rechazada' | 'cancelada';
   fecha_inicio: Date;
   fecha_fin?: Date;

@@ -250,6 +250,11 @@ import { environment } from '../../../environments/environment';
       case 'no_laborable': return 'event_busy';
       case 'vacaciones': return 'beach_access';
       case 'ausencia': return 'medical_services';
+      case 'permiso_personal': return 'badge';
+      case 'motivo_familiar': return 'family_restroom';
+      case 'enfermedad': return 'sick';
+      case 'estudios_academicos': return 'school';
+      case 'fidelidad': return 'military_tech';
       default: return 'event';
     }
   }
@@ -261,9 +266,14 @@ import { environment } from '../../../environments/environment';
       case 'vacaciones': return 'Vacaciones';
       case 'ausencia': return 'Reposición';
       case 'cambio_jornada': return 'Cambio jornada';
+      case 'permiso_personal': return 'Permiso personal';
+      case 'motivo_familiar': return 'Motivo familiar';
       case 'cita_medica_programada': return 'Cita médica programada';
       case 'cita_medica_emergencia': return 'Cita médica de emergencia';
+      case 'enfermedad': return 'Enfermedad';
+      case 'estudios_academicos': return 'Estudios / actividades académicas';
       case 'cumpleanos': return 'Cumpleaños';
+      case 'fidelidad': return 'Fidelidad';
       default: return tipo;
     }
   }
