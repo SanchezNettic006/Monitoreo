@@ -58,10 +58,33 @@ export class EmpleadoService {
   }
 
   async obtenerTodos(departamentoId?: number[]) {
-    return await this.empleadoRepository.find({
+    const empleados: any[] = await this.empleadoRepository.find({
       where: departamentoId !== undefined ? { departamento_id: In(departamentoId) } : {},
       relations: ['usuario', 'departamento'],
     });
+
+    // Departamentos adicionales de los líderes de la lista, en una sola consulta
+    // (evita N+1) para que la columna "Departamento" pueda mostrar "Troncal/Vehículos"
+    const usuarioIdsLideres = empleados.filter((e) => e.usuario?.rol === 'lider').map((e) => e.usuario_id);
+    if (usuarioIdsLideres.length) {
+      const extras = await this.liderDeptoExtraRepository.find({
+        where: { usuario_id: In(usuarioIdsLideres) },
+        relations: ['departamento'],
+      });
+      const extrasPorUsuario = new Map<number, { id: number; nombre?: string }[]>();
+      for (const e of extras) {
+        const lista = extrasPorUsuario.get(e.usuario_id) || [];
+        lista.push({ id: e.departamento_id, nombre: e.departamento?.nombre });
+        extrasPorUsuario.set(e.usuario_id, lista);
+      }
+      for (const empleado of empleados) {
+        if (extrasPorUsuario.has(empleado.usuario_id)) {
+          empleado.departamentosExtra = extrasPorUsuario.get(empleado.usuario_id);
+        }
+      }
+    }
+
+    return empleados;
   }
 
   async crearEmpleado(datos: Partial<Empleado>, email: string, password: string, rol: string = 'empleado') {
