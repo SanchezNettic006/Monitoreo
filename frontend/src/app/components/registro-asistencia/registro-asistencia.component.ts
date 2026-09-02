@@ -88,7 +88,7 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
     private authService: AuthService,
   ) {}
 
-  /** false solo en departamentos que no trabajan con tickets/NET (ej. Vehículos) */
+  /** false solo en departamentos que no trabajan con tickets/NET (ej. Vehículos y Taller) */
   get usaTicketHorasExtra(): boolean {
     return this.authService.getCurrentUser()?.usaTicketHorasExtra ?? true;
   }

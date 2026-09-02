@@ -30,7 +30,7 @@ export class HoraExtra {
   record_asistencia_id?: number;
 
   // Instalación/avería guardan el número NET/ticket (solo dígitos); en
-  // departamentos que no usan tickets (ej. Vehículos) guarda el motivo libre.
+  // departamentos que no usan tickets (ej. Vehículos y Taller) guarda el motivo libre.
   @Column({ name: 'numero_ticket', type: 'varchar', length: 255 })
   numero_ticket!: string;
 

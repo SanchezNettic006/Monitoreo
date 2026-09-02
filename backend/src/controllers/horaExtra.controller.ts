@@ -33,7 +33,7 @@ export class HoraExtraController {
       }
 
       // Tanto el número NET (instalación) como el de ticket (avería) son solo dígitos.
-      // En departamentos que no trabajan con tickets (ej. Vehículos) este campo
+      // En departamentos que no trabajan con tickets (ej. Vehículos y Taller) este campo
       // guarda el motivo libre de la hora extra, así que no aplica esa validación.
       if (tipoTrabajo !== 'motivo' && !/^\d+$/.test(String(numeroTicket).trim())) {
         return res.status(400).json({

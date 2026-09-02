@@ -111,7 +111,7 @@ export async function inicializarColumnas() {
     console.log('🔧 Ampliando numero_ticket en hora_extra a VARCHAR(255)...');
     const tablaHoraExtraExisteParaTicket = await queryRunner.hasTable('hora_extra');
     if (tablaHoraExtraExisteParaTicket) {
-      // Ahora también guarda el motivo libre de departamentos sin tickets (ej. Vehículos)
+      // Ahora también guarda el motivo libre de departamentos sin tickets (ej. Vehículos y Taller)
       await queryRunner.query(`ALTER TABLE hora_extra ALTER COLUMN numero_ticket TYPE VARCHAR(255)`);
       console.log('✅ numero_ticket ahora admite hasta 255 caracteres');
     }
@@ -126,12 +126,18 @@ export async function inicializarColumnas() {
           `ALTER TABLE departamento ADD COLUMN usa_ticket_horas_extra BOOLEAN NOT NULL DEFAULT true`
         );
         await queryRunner.query(
-          `UPDATE departamento SET usa_ticket_horas_extra = false WHERE nombre ILIKE 'Vehículos'`
+          `UPDATE departamento SET usa_ticket_horas_extra = false WHERE nombre ILIKE 'Vehículos' OR nombre ILIKE 'Taller'`
         );
-        console.log('✅ Columna usa_ticket_horas_extra agregada y desactivada para Vehículos');
+        console.log('✅ Columna usa_ticket_horas_extra agregada y desactivada para Vehículos y Taller');
       } else {
         console.log('✅ Columna usa_ticket_horas_extra ya existe');
       }
+
+      // Corre siempre (idempotente): por si la columna ya existía de un deploy
+      // anterior a que Taller también quedara sin tickets/NET
+      await queryRunner.query(
+        `UPDATE departamento SET usa_ticket_horas_extra = false WHERE nombre ILIKE 'Taller' AND usa_ticket_horas_extra = true`
+      );
     }
 
     console.log('🔧 Verificando columna descripcion_trabajo en record_asistencia...');

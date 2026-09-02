@@ -24,7 +24,7 @@ export class Departamento {
   requiere_reporte_cierre!: boolean;
 
   // false solo en departamentos cuyo personal no trabaja con tickets/NET
-  // (ej. Vehículos); ahí la hora extra se reporta con un motivo libre en vez
+  // (ej. Vehículos y Taller); ahí la hora extra se reporta con un motivo libre en vez
   // de un número de instalación/avería
   @Column({ default: true })
   usa_ticket_horas_extra!: boolean;

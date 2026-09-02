@@ -103,7 +103,7 @@ export class AuthService {
       telefono: usuario.empleado?.telefono || null,
       departamento: usuario.empleado?.departamento?.nombre || null,
       // false solo para departamentos cuyo personal no trabaja con tickets/NET
-      // (ej. Vehículos); en ese caso la hora extra se reporta con un motivo libre
+      // (ej. Vehículos y Taller); en ese caso la hora extra se reporta con un motivo libre
       usaTicketHorasExtra: usuario.empleado?.departamento?.usa_ticket_horas_extra ?? true,
     };
   }
