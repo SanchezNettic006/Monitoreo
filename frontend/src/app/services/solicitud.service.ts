@@ -163,11 +163,13 @@ export class SolicitudService {
 
   /**
    * Obtener solicitudes aprobadas, opcionalmente filtradas por mes ('YYYY-MM')
-   * (admin: todas; líder: solo su departamento)
+   * y/o tipo de trámite (ej. 'ausencia') (admin: todas; líder: solo su departamento)
    */
-  obtenerSolicitudesAprobadas(mes?: string): Observable<any[]> {
-    let url = `${this.apiUrl}/aprobadas`;
-    if (mes) url += `?mes=${mes}`;
+  obtenerSolicitudesAprobadas(mes?: string, tipo?: string): Observable<any[]> {
+    const params: string[] = [];
+    if (mes) params.push(`mes=${mes}`);
+    if (tipo) params.push(`tipo=${tipo}`);
+    const url = `${this.apiUrl}/aprobadas` + (params.length ? `?${params.join('&')}` : '');
     return this.http.get<{ exitoso: boolean; data: any[] }>(url)
       .pipe(
         map(response => response.data || [])

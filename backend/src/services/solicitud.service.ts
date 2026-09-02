@@ -294,15 +294,10 @@ export class SolicitudService {
 
   /**
    * Obtener solicitudes aprobadas, opcionalmente filtradas por mes de inicio
-   * ('YYYY-MM'). Admin: todas; líder: solo su departamento.
+   * ('YYYY-MM') y/o tipo de trámite. Admin: todas; líder: solo su departamento.
    */
-  async obtenerSolicitudesAprobadas(departamentoId?: number[], mes?: string) {
+  async obtenerSolicitudesAprobadas(departamentoId?: number[], mes?: string, tipo?: string) {
     try {
-      const where: any = { estado: 'aprobada' };
-      if (departamentoId !== undefined) {
-        where.empleado = { departamento_id: In(departamentoId) };
-      }
-
       const solicitudes = await this.solicitudRepository
         .createQueryBuilder('s')
         .leftJoinAndSelect('s.empleado', 'empleado')
@@ -313,6 +308,7 @@ export class SolicitudService {
           departamentoId,
         })
         .andWhere(mes ? "to_char(s.fecha_inicio, 'YYYY-MM') = :mes" : '1=1', { mes })
+        .andWhere(tipo ? 's.tipo = :tipo' : '1=1', { tipo })
         .orderBy('s.fecha_inicio', 'DESC')
         .getMany();
 

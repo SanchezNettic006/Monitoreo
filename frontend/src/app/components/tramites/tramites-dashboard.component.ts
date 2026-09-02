@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -105,7 +106,7 @@ interface Resumen {
       </div>
 
       <!-- Tabs -->
-      <mat-tab-group class="tabs-section">
+      <mat-tab-group class="tabs-section" [(selectedIndex)]="tabInicial">
         <mat-tab label="Mis Solicitudes">
           <app-mis-solicitudes></app-mis-solicitudes>
         </mat-tab>
@@ -127,7 +128,7 @@ interface Resumen {
         </mat-tab>
 
         <mat-tab label="Aprobados" *ngIf="esAdminOLider">
-          <app-solicitudes-aprobadas></app-solicitudes-aprobadas>
+          <app-solicitudes-aprobadas [mesInicial]="mesInicial" [tipoFiltro]="tipoFiltroInicial"></app-solicitudes-aprobadas>
         </mat-tab>
       </mat-tab-group>
     </div>
@@ -381,10 +382,17 @@ export class TramitesDashboardComponent implements OnInit, OnDestroy {
   miSaldoVacaciones: SaldoVacaciones | null = null;
   private destroy$ = new Subject<void>();
 
+  // Al llegar desde otra pantalla (ej. Panel General → Ausencias del mes) con
+  // ?tab=aprobados&mes=YYYY-MM&tipo=ausencia, abre directo esa pestaña filtrada
+  tabInicial = 0;
+  mesInicial?: string;
+  tipoFiltroInicial?: string;
+
   constructor(
     private solicitudService: SolicitudService,
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute,
   ) {}
 
   get esAdmin(): boolean {
@@ -399,6 +407,14 @@ export class TramitesDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     console.log('🔄 [TramitesDashboard] ngOnInit iniciado');
+
+    const queryParams = this.route.snapshot.queryParamMap;
+    if (queryParams.get('tab') === 'aprobados' && this.esAdminOLider) {
+      this.tabInicial = 3;
+      this.mesInicial = queryParams.get('mes') || undefined;
+      this.tipoFiltroInicial = queryParams.get('tipo') || undefined;
+    }
+
     if (this.esAdmin) {
       this.cargarResumen();
     }

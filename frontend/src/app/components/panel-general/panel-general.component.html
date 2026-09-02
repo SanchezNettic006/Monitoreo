@@ -36,6 +36,36 @@
       </ng-template>
     </mat-card>
 
+    <!-- KPI: Ausencias del mes (clic lleva al dato real en Trámites > Aprobados) -->
+    <mat-card class="kpi-card kpi-card--clickable" (click)="verAusencias()">
+      <div class="kpi-header">
+        <div class="kpi-icon ausencias">
+          <mat-icon>event_busy</mat-icon>
+        </div>
+        <mat-form-field appearance="fill" class="mes-selector" (click)="$event.stopPropagation()">
+          <mat-label>Mes</mat-label>
+          <mat-select [(ngModel)]="mesAusencias" (selectionChange)="cargarAusencias()" (click)="$event.stopPropagation()">
+            <mat-option *ngFor="let opcion of opcionesMes" [value]="opcion.value">{{ opcion.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="kpi-body" *ngIf="!cargandoAusencias; else cargando2">
+        <span class="kpi-titulo">Ausencias del mes</span>
+        <span class="kpi-valor">{{ totalAusencias ?? 0 }}</span>
+        <span class="kpi-detalle">
+          <mat-icon>open_in_new</mat-icon>
+          Ver detalle en Trámites
+        </span>
+      </div>
+
+      <ng-template #cargando2>
+        <div class="kpi-loading">
+          <mat-spinner diameter="28"></mat-spinner>
+        </div>
+      </ng-template>
+    </mat-card>
+
     <!-- Placeholder: aquí se van agregando las próximas gráficas/KPIs que pidan -->
     <div class="kpi-placeholder">
       <mat-icon>add_circle_outline</mat-icon>

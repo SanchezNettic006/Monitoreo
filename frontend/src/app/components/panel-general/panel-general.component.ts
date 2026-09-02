@@ -9,6 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ReportesService } from '../../services/reportes.service';
+import { SolicitudService } from '../../services/solicitud.service';
 
 // Departamento PLEX (ver listas hardcodeadas de departamentos en el resto de la app)
 const DEPARTAMENTO_PLEX_ID = 2;
@@ -43,14 +44,21 @@ export class PanelGeneralComponent implements OnInit {
   ticketsAprobadosPlex: number | null = null;
   cargandoHorasPlex = false;
 
+  // KPI: Ausencias del mes (trámites tipo "ausencia"/Reposición ya aprobados)
+  mesAusencias = new Date().toISOString().slice(0, 7);
+  totalAusencias: number | null = null;
+  cargandoAusencias = false;
+
   constructor(
     private reportesService: ReportesService,
+    private solicitudService: SolicitudService,
     private router: Router,
   ) {}
 
   ngOnInit(): void {
     this.opcionesMes = this.generarOpcionesMes();
     this.cargarHorasAprobadasPlex();
+    this.cargarAusencias();
   }
 
   private generarOpcionesMes(): { value: string; label: string }[] {
@@ -79,6 +87,27 @@ export class PanelGeneralComponent implements OnInit {
         this.ticketsAprobadosPlex = null;
         this.cargandoHorasPlex = false;
       },
+    });
+  }
+
+  cargarAusencias(): void {
+    this.cargandoAusencias = true;
+    this.solicitudService.obtenerSolicitudesAprobadas(this.mesAusencias, 'ausencia').subscribe({
+      next: (data) => {
+        this.totalAusencias = data.length;
+        this.cargandoAusencias = false;
+      },
+      error: () => {
+        this.totalAusencias = null;
+        this.cargandoAusencias = false;
+      },
+    });
+  }
+
+  /** Lleva a la pestaña "Aprobados" de Trámites, ya filtrada por este mismo mes y tipo */
+  verAusencias(): void {
+    this.router.navigate(['/tramites'], {
+      queryParams: { tab: 'aprobados', mes: this.mesAusencias, tipo: 'ausencia' },
     });
   }
 

@@ -92,12 +92,14 @@ export class SolicitudController {
   /**
    * GET /api/solicitudes/aprobadas
    * Obtener solicitudes aprobadas, opcionalmente filtradas por mes de inicio
-   * (?mes=YYYY-MM). Admin: todas; líder: solo su departamento.
+   * (?mes=YYYY-MM) y/o tipo de trámite (?tipo=ausencia). Admin: todas; líder:
+   * solo su departamento.
    */
   async obtenerAprobadas(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const mes = typeof req.query.mes === 'string' ? req.query.mes : undefined;
-      const solicitudes = await solicitudService.obtenerSolicitudesAprobadas(req.departamentoId, mes);
+      const tipo = typeof req.query.tipo === 'string' ? req.query.tipo : undefined;
+      const solicitudes = await solicitudService.obtenerSolicitudesAprobadas(req.departamentoId, mes, tipo);
 
       return res.status(200).json({
         exitoso: true,

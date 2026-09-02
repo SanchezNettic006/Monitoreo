@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -64,6 +64,15 @@ interface MesComparacion {
             <mat-option *ngFor="let opcion of opcionesMes" [value]="opcion.value">{{ opcion.label }}</mat-option>
           </mat-select>
         </mat-form-field>
+
+        <!-- Filtro por tipo llegado desde otra pantalla (ej. Panel General → Ausencias del mes) -->
+        <div class="filtro-tipo-chip" *ngIf="tipoFiltro">
+          <mat-icon>filter_alt</mat-icon>
+          <span>Filtrando: {{ tipoFiltro | tipoTramite }}</span>
+          <button mat-icon-button (click)="quitarFiltroTipo()" title="Quitar filtro">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
       </div>
 
       <!-- Loading -->
@@ -209,10 +218,45 @@ interface MesComparacion {
 
       .filtros-section {
         margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
       }
 
       .filter-field {
         min-width: 220px;
+      }
+
+      .filtro-tipo-chip {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 4px 4px 12px;
+        background: #f0fbe8;
+        border: 1px solid #2b8a3e;
+        border-radius: 20px;
+        color: #2b8a3e;
+        font-size: 13px;
+        font-weight: 600;
+
+        mat-icon:first-child {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+
+        button {
+          width: 24px;
+          height: 24px;
+          line-height: 24px;
+
+          mat-icon {
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+          }
+        }
       }
 
       .loading {
@@ -305,6 +349,11 @@ interface MesComparacion {
   ],
 })
 export class SolicitudesAprobadasComponent implements OnInit {
+  /** Mes inicial ('YYYY-MM'), ej. al llegar desde Panel General con un mes específico */
+  @Input() mesInicial?: string;
+  /** Filtro de tipo de trámite (ej. 'ausencia'), ej. al llegar desde Panel General */
+  @Input() tipoFiltro?: string;
+
   solicitudes: any[] = [];
   dataSource = new MatTableDataSource<any>();
   displayedColumns: string[] = ['empleado', 'tipo', 'fechas', 'dias', 'motivo', 'acciones'];
@@ -332,8 +381,16 @@ export class SolicitudesAprobadasComponent implements OnInit {
 
   ngOnInit() {
     this.opcionesMes = this.generarOpcionesMes();
+    if (this.mesInicial) {
+      this.mesSeleccionado = this.mesInicial;
+    }
     this.cargar();
     this.cargarComparacionTresMeses();
+  }
+
+  quitarFiltroTipo() {
+    this.tipoFiltro = undefined;
+    this.cargar();
   }
 
   private generarOpcionesMes(): { value: string; label: string }[] {
@@ -350,7 +407,7 @@ export class SolicitudesAprobadasComponent implements OnInit {
 
   cargar() {
     this.loading = true;
-    this.solicitudService.obtenerSolicitudesAprobadas(this.mesSeleccionado || undefined).subscribe({
+    this.solicitudService.obtenerSolicitudesAprobadas(this.mesSeleccionado || undefined, this.tipoFiltro).subscribe({
       next: (data) => {
         this.solicitudes = data;
         this.dataSource.data = data;
