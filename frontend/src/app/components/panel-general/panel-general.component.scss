@@ -128,6 +128,93 @@
   }
 }
 
+// ============= CUMPLIMIENTO POR DEPARTAMENTO (círculos de %) =============
+
+.cumplimiento-card {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.cumplimiento-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.cumplimiento-subtitulo {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #999;
+}
+
+.circulos-loading {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.circulos-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+}
+
+.circulo-depto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #f5f9f7;
+  }
+}
+
+.circulo {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circulo-interior {
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: #333;
+}
+
+.circulo-nombre {
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+  text-align: center;
+}
+
+.sin-datos {
+  color: #999;
+  font-size: 13px;
+  padding: 10px 0;
+}
+
 @media (max-width: 600px) {
   .panel-container {
     padding: 16px 12px;
@@ -135,5 +222,21 @@
 
   .kpi-grid {
     grid-template-columns: 1fr;
+  }
+
+  .circulos-grid {
+    gap: 20px;
+    justify-content: space-around;
+  }
+
+  .circulo {
+    width: 72px;
+    height: 72px;
+  }
+
+  .circulo-interior {
+    width: 56px;
+    height: 56px;
+    font-size: 13px;
   }
 }

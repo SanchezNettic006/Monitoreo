@@ -72,4 +72,44 @@
       <span>Próximas métricas aparecerán aquí</span>
     </div>
   </div>
+
+  <!-- Cumplimiento de Reportes por Departamento (círculos de %) -->
+  <mat-card class="cumplimiento-card">
+    <div class="cumplimiento-header">
+      <div>
+        <span class="kpi-titulo">Cumplimiento de Reportes por Departamento</span>
+        <p class="cumplimiento-subtitulo">% de días laborables del mes con jornada reportada (check-out)</p>
+      </div>
+      <mat-form-field appearance="fill" class="mes-selector">
+        <mat-label>Mes</mat-label>
+        <mat-select [(ngModel)]="mesCumplimiento" (selectionChange)="cargarCumplimiento()">
+          <mat-option *ngFor="let opcion of opcionesMes" [value]="opcion.value">{{ opcion.label }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="circulos-loading" *ngIf="cargandoCumplimiento">
+      <mat-spinner diameter="28"></mat-spinner>
+    </div>
+
+    <div class="circulos-grid" *ngIf="!cargandoCumplimiento">
+      <button
+        type="button"
+        class="circulo-depto"
+        *ngFor="let depto of cumplimientoDeptos"
+        (click)="verCumplimiento()"
+        [title]="depto.diasReportados + ' de ' + depto.diasLaborables + ' días laborables reportados'"
+      >
+        <div
+          class="circulo"
+          [style.background]="'conic-gradient(' + colorCumplimiento(depto.porcentaje) + ' ' + depto.porcentaje + '%, #eee 0)'"
+        >
+          <div class="circulo-interior">{{ depto.porcentaje }}%</div>
+        </div>
+        <span class="circulo-nombre">{{ depto.departamento }}</span>
+      </button>
+
+      <p class="sin-datos" *ngIf="cumplimientoDeptos.length === 0">Sin datos para este mes</p>
+    </div>
+  </mat-card>
 </div>

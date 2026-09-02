@@ -8,7 +8,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ReportesService } from '../../services/reportes.service';
+import { ReportesService, CumplimientoDepartamento } from '../../services/reportes.service';
 import { SolicitudService } from '../../services/solicitud.service';
 
 // Departamento PLEX (ver listas hardcodeadas de departamentos en el resto de la app)
@@ -49,6 +49,11 @@ export class PanelGeneralComponent implements OnInit {
   totalAusencias: number | null = null;
   cargandoAusencias = false;
 
+  // Cumplimiento de reportes por departamento (círculos de %)
+  mesCumplimiento = new Date().toISOString().slice(0, 7);
+  cumplimientoDeptos: CumplimientoDepartamento[] = [];
+  cargandoCumplimiento = false;
+
   constructor(
     private reportesService: ReportesService,
     private solicitudService: SolicitudService,
@@ -59,6 +64,7 @@ export class PanelGeneralComponent implements OnInit {
     this.opcionesMes = this.generarOpcionesMes();
     this.cargarHorasAprobadasPlex();
     this.cargarAusencias();
+    this.cargarCumplimiento();
   }
 
   private generarOpcionesMes(): { value: string; label: string }[] {
@@ -102,6 +108,32 @@ export class PanelGeneralComponent implements OnInit {
         this.cargandoAusencias = false;
       },
     });
+  }
+
+  cargarCumplimiento(): void {
+    this.cargandoCumplimiento = true;
+    this.reportesService.obtenerCumplimiento(this.mesCumplimiento).subscribe({
+      next: (response) => {
+        this.cumplimientoDeptos = response.data.departamentos;
+        this.cargandoCumplimiento = false;
+      },
+      error: () => {
+        this.cumplimientoDeptos = [];
+        this.cargandoCumplimiento = false;
+      },
+    });
+  }
+
+  /** Color del círculo según qué tan bajo está el cumplimiento (mismo criterio que Reportes) */
+  colorCumplimiento(porcentaje: number): string {
+    if (porcentaje >= 80) return '#2b8a3e';
+    if (porcentaje >= 50) return '#f0a400';
+    return '#d32f2f';
+  }
+
+  /** Lleva a Reportes con el mismo mes, para revisar el detalle día por día */
+  verCumplimiento(): void {
+    this.router.navigate(['/reportes']);
   }
 
   /** Lleva a la pestaña "Aprobados" de Trámites, ya filtrada por este mismo mes y tipo */
