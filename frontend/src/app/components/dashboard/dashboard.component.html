@@ -43,7 +43,7 @@
 
   <!-- QUICK STATS (solo admin) -->
   <div class="stats-grid" *ngIf="resumen && esAdmin">
-    <div class="stat-card">
+    <div class="stat-card stat-card--clickable" (click)="irA('empleados')">
       <div class="stat-icon employees">
         <mat-icon>people</mat-icon>
       </div>
@@ -54,18 +54,18 @@
       </div>
     </div>
 
-    <div class="stat-card">
+    <div class="stat-card stat-card--clickable" (click)="abrirPresenteHoy()">
       <div class="stat-icon attendance">
         <mat-icon>check_circle</mat-icon>
       </div>
       <div class="stat-content">
         <h3>Presente Hoy</h3>
         <p class="stat-value">{{ resumen.presenteHoy || 0 }}</p>
-        <span class="stat-label">Registrados</span>
+        <span class="stat-label">Ver quién marcó</span>
       </div>
     </div>
 
-    <div class="stat-card">
+    <div class="stat-card stat-card--clickable" (click)="irA('horas-extras')">
       <div class="stat-icon hours">
         <mat-icon>schedule</mat-icon>
       </div>
@@ -76,14 +76,14 @@
       </div>
     </div>
 
-    <div class="stat-card">
+    <div class="stat-card stat-card--clickable" (click)="irA('reportes')">
       <div class="stat-icon departments">
         <mat-icon>domain</mat-icon>
       </div>
       <div class="stat-content">
         <h3>Departamentos</h3>
         <p class="stat-value">{{ totalDepartamentos || 0 }}</p>
-        <span class="stat-label">Total</span>
+        <span class="stat-label">Ver estadísticas</span>
       </div>
     </div>
 

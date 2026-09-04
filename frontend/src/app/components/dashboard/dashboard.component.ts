@@ -14,6 +14,7 @@ import { HoraExtraService } from '../../services/hora-extra.service';
 import { SolicitudService } from '../../services/solicitud.service';
 import { MiPerfilComponent } from '../mi-perfil/mi-perfil.component';
 import { AusenciasDepartamentoDialogComponent } from './ausencias-departamento-dialog/ausencias-departamento-dialog.component';
+import { PresenteHoyDialogComponent } from './presente-hoy-dialog/presente-hoy-dialog.component';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -150,6 +151,10 @@ import { environment } from '../../../environments/environment';
 
   abrirAusenciasPorDepartamento(): void {
     this.dialog.open(AusenciasDepartamentoDialogComponent, { width: '480px' });
+  }
+
+  abrirPresenteHoy(): void {
+    this.dialog.open(PresenteHoyDialogComponent, { width: '420px' });
   }
 
   cargarResumenEquipoHoy(): void {
