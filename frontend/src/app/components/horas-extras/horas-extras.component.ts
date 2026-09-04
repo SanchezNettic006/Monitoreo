@@ -14,6 +14,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatDialog, MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatMenuModule } from '@angular/material/menu';
 import { HoraExtraService, HoraExtraResponse } from '../../services/hora-extra.service';
 import { ReportesService, TecnicoHorasAprobadas } from '../../services/reportes.service';
 import { AuthService } from '../../services/auth.service';
@@ -40,6 +41,7 @@ import { RevisarHoraExtraDialogComponent } from './revisar-hora-extra-dialog/rev
     MatTabsModule,
     MatBadgeModule,
     MatDialogModule,
+    MatMenuModule,
   ],
   templateUrl: './horas-extras.component.html',
   styleUrl: './horas-extras.component.scss',
@@ -493,6 +495,17 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
       width: '600px',
       data: { fotos },
     });
+  }
+
+  /** true si el ticket tiene al menos una ubicación de inicio/fin registrada */
+  tieneUbicacion(extra: HoraExtraResponse): boolean {
+    return !!(extra.latitud_inicio || extra.latitud_fin);
+  }
+
+  /** Abre la ubicación (lat/lng) en Google Maps en una pestaña nueva */
+  abrirMapa(lat?: number | null, lng?: number | null): void {
+    if (!lat || !lng) return;
+    window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
   }
 }
 

@@ -10,6 +10,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatDividerModule } from '@angular/material/divider';
 import { GestionarSolicitudesComponent } from '../tramites/gestionar-solicitudes/gestionar-solicitudes.component';
 import { HorasExtrasComponent } from '../horas-extras/horas-extras.component';
 import { FotosDialogComponent } from '../reportes/reportes.component';
@@ -32,6 +34,8 @@ import { ExportarExcelService } from '../../services/exportar-excel.service';
     MatPaginatorModule,
     MatDialogModule,
     MatSnackBarModule,
+    MatMenuModule,
+    MatDividerModule,
     GestionarSolicitudesComponent,
     HorasExtrasComponent,
   ],
@@ -217,6 +221,21 @@ export class MiEquipoComponent implements OnInit {
       width: '600px',
       data: { fotos, descripcion },
     });
+  }
+
+  /** true si la fila tiene al menos una ubicación de marcaje registrada (jornada o algún ticket) */
+  tieneUbicacion(element: AsistenciaReporte): boolean {
+    return !!(
+      element.latitudEntrada ||
+      element.latitudSalida ||
+      element.ticketsUbicacion?.some((t) => t.latitudInicio || t.latitudFin)
+    );
+  }
+
+  /** Abre la ubicación (lat/lng) en Google Maps en una pestaña nueva */
+  abrirMapa(lat?: number | null, lng?: number | null): void {
+    if (!lat || !lng) return;
+    window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
   }
 
   formatearDuracion(horas?: number | null): string {

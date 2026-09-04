@@ -73,6 +73,7 @@
               <th>Horas</th>
               <th>Pausas</th>
               <th>Extras</th>
+              <th>Ubicación</th>
               <th>Reporte</th>
             </tr>
           </thead>
@@ -88,6 +89,40 @@
               <td>
                 {{ formatearDuracion(registro.horasExtras) }}
                 <span class="nota-pendiente" *ngIf="registro.horasExtrasPendiente">(pendiente)</span>
+              </td>
+              <td>
+                <button
+                  mat-icon-button
+                  [matMenuTriggerFor]="menuUbicacion"
+                  [disabled]="!tieneUbicacion(registro)"
+                  title="Ver ubicación"
+                >
+                  <mat-icon>location_on</mat-icon>
+                </button>
+                <mat-menu #menuUbicacion="matMenu">
+                  <button mat-menu-item [disabled]="!registro.latitudEntrada" (click)="abrirMapa(registro.latitudEntrada, registro.longitudEntrada)">
+                    <mat-icon>login</mat-icon>
+                    <span>Ver entrada</span>
+                  </button>
+                  <button mat-menu-item [disabled]="!registro.latitudSalida" (click)="abrirMapa(registro.latitudSalida, registro.longitudSalida)">
+                    <mat-icon>logout</mat-icon>
+                    <span>Ver salida</span>
+                  </button>
+                  <ng-container *ngIf="registro.ticketsUbicacion?.length">
+                    <mat-divider></mat-divider>
+                    <div class="menu-seccion-titulo">Horas extra</div>
+                    <ng-container *ngFor="let ticket of registro.ticketsUbicacion">
+                      <button mat-menu-item [disabled]="!ticket.latitudInicio" (click)="abrirMapa(ticket.latitudInicio, ticket.longitudInicio)">
+                        <mat-icon>login</mat-icon>
+                        <span>Ticket {{ ticket.numeroTicket }} · Inicio</span>
+                      </button>
+                      <button mat-menu-item [disabled]="!ticket.latitudFin" (click)="abrirMapa(ticket.latitudFin, ticket.longitudFin)">
+                        <mat-icon>logout</mat-icon>
+                        <span>Ticket {{ ticket.numeroTicket }} · Fin</span>
+                      </button>
+                    </ng-container>
+                  </ng-container>
+                </mat-menu>
               </td>
               <td>
                 <button

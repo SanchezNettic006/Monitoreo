@@ -118,6 +118,7 @@
                 <th>Fecha</th>
                 <th>Hora Inicio</th>
                 <th>Duración</th>
+                <th>Ubicación</th>
                 <th>Fotos</th>
                 <th>Acciones</th>
               </tr>
@@ -143,9 +144,30 @@
                 <td class="duracion-cell">
                   <span class="badge badge-duration">{{ formatearDuracion(extra.duracion) }}</span>
                 </td>
+                <td class="ubicacion-cell">
+                  <button
+                    mat-icon-button
+                    [matMenuTriggerFor]="menuUbicacionActiva"
+                    [disabled]="!tieneUbicacion(extra)"
+                    title="Ver ubicación"
+                    class="fotos-btn"
+                  >
+                    <mat-icon>location_on</mat-icon>
+                  </button>
+                  <mat-menu #menuUbicacionActiva="matMenu">
+                    <button mat-menu-item [disabled]="!extra.latitud_inicio" (click)="abrirMapa(extra.latitud_inicio, extra.longitud_inicio)">
+                      <mat-icon>login</mat-icon>
+                      <span>Ver inicio</span>
+                    </button>
+                    <button mat-menu-item [disabled]="!extra.latitud_fin" (click)="abrirMapa(extra.latitud_fin, extra.longitud_fin)">
+                      <mat-icon>logout</mat-icon>
+                      <span>Ver fin</span>
+                    </button>
+                  </mat-menu>
+                </td>
                 <td class="fotos-cell">
-                  <button 
-                    mat-icon-button 
+                  <button
+                    mat-icon-button
                     (click)="verFotos(extra.fotos)"
                     [disabled]="!extra.fotos || extra.fotos.length === 0"
                     title="Ver fotos"
@@ -156,8 +178,8 @@
                   </button>
                 </td>
                 <td class="acciones-cell">
-                  <button 
-                    mat-icon-button 
+                  <button
+                    mat-icon-button
                     (click)="verDetalles(extra)"
                     title="Ver detalles"
                   >
@@ -167,7 +189,7 @@
               </tr>
             </tbody>
           </table>
-          <mat-paginator 
+          <mat-paginator
             [length]="totalActivasRegistros"
             [pageSize]="pageSize"
             [pageSizeOptions]="[10, 20, 50, 100]"
@@ -237,6 +259,7 @@
                 <th>Fin</th>
                 <th>Duración Total</th>
                 <th>Aprobación</th>
+                <th>Ubicación</th>
                 <th>Fotos</th>
                 <th>Acciones</th>
               </tr>
@@ -279,6 +302,27 @@
                   <div class="horas-aprobadas-info" *ngIf="extra.estado_aprobacion !== 'pendiente'">
                     {{ formatearDuracion(extra.horas_aprobadas) }} de {{ formatearDuracion(extra.duracion) }}
                   </div>
+                </td>
+                <td class="ubicacion-cell">
+                  <button
+                    mat-icon-button
+                    [matMenuTriggerFor]="menuUbicacionFinalizada"
+                    [disabled]="!tieneUbicacion(extra)"
+                    title="Ver ubicación"
+                    class="fotos-btn"
+                  >
+                    <mat-icon>location_on</mat-icon>
+                  </button>
+                  <mat-menu #menuUbicacionFinalizada="matMenu">
+                    <button mat-menu-item [disabled]="!extra.latitud_inicio" (click)="abrirMapa(extra.latitud_inicio, extra.longitud_inicio)">
+                      <mat-icon>login</mat-icon>
+                      <span>Ver inicio</span>
+                    </button>
+                    <button mat-menu-item [disabled]="!extra.latitud_fin" (click)="abrirMapa(extra.latitud_fin, extra.longitud_fin)">
+                      <mat-icon>logout</mat-icon>
+                      <span>Ver fin</span>
+                    </button>
+                  </mat-menu>
                 </td>
                 <td class="fotos-cell">
                   <button
