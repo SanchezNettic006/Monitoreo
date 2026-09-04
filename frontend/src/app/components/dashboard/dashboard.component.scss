@@ -224,6 +224,10 @@
     transform: translateY(-4px);
   }
 
+  &.stat-card--clickable {
+    cursor: pointer;
+  }
+
   .stat-icon {
     width: 60px;
     height: 60px;
@@ -253,6 +257,10 @@
 
     &.vacations {
       background: linear-gradient(135deg, #94C120 0%, #7aa600 100%);
+    }
+
+    &.absences {
+      background: linear-gradient(135deg, #d32f2f 0%, #a01f1f 100%);
     }
   }
 

@@ -86,6 +86,18 @@
         <span class="stat-label">Total</span>
       </div>
     </div>
+
+    <!-- Ausencias del mes (todos los tipos de trámite aprobados): clic abre el desglose por departamento -->
+    <div class="stat-card stat-card--clickable" (click)="abrirAusenciasPorDepartamento()">
+      <div class="stat-icon absences">
+        <mat-icon>event_busy</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>Ausencias del Mes</h3>
+        <p class="stat-value">{{ totalAusenciasMes || 0 }}</p>
+        <span class="stat-label">Ver por departamento</span>
+      </div>
+    </div>
   </div>
 
   <!-- RESUMEN ASISTENCIA DE HOY (solo líder) -->

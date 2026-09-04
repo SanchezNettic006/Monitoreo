@@ -13,6 +13,7 @@ import { EmpleadoService } from '../../services/empleado.service';
 import { HoraExtraService } from '../../services/hora-extra.service';
 import { SolicitudService } from '../../services/solicitud.service';
 import { MiPerfilComponent } from '../mi-perfil/mi-perfil.component';
+import { AusenciasDepartamentoDialogComponent } from './ausencias-departamento-dialog/ausencias-departamento-dialog.component';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -45,6 +46,9 @@ import { environment } from '../../../environments/environment';
   horasExtraPendientes = 0;
   tramitesPendientes = 0;
 
+  // Ausencias del mes (todos los tipos de trámite aprobados), tarjeta clickeable
+  totalAusenciasMes = 0;
+
   constructor(
     private authService: AuthService,
     private reportesService: ReportesService,
@@ -64,6 +68,7 @@ import { environment } from '../../../environments/environment';
       this.cargarResumen();
       this.cargarDepartamentos();
       this.cargarProximosEventos();
+      this.cargarAusenciasDelMes();
     }
     if (this.esAdmin || this.esLider) {
       // Admin ve todo; líder solo lo de su departamento (scoped por el backend)
@@ -128,6 +133,23 @@ import { environment } from '../../../environments/environment';
         console.error('Error al cargar departamentos:', error);
       },
     });
+  }
+
+  /** Total de trámites aprobados (todos los tipos) del mes actual, para la tarjeta del Home */
+  cargarAusenciasDelMes(): void {
+    const mesActual = new Date().toISOString().slice(0, 7);
+    this.solicitudService.obtenerSolicitudesAprobadas(mesActual).subscribe({
+      next: (data) => {
+        this.totalAusenciasMes = data.length;
+      },
+      error: () => {
+        this.totalAusenciasMes = 0;
+      },
+    });
+  }
+
+  abrirAusenciasPorDepartamento(): void {
+    this.dialog.open(AusenciasDepartamentoDialogComponent, { width: '480px' });
   }
 
   cargarResumenEquipoHoy(): void {
