@@ -31,6 +31,20 @@ export class HoraExtraService {
     tipoTrabajo?: string,
   ): Promise<HoraExtra> {
     try {
+      // Evita duplicados por doble-tap/doble envío: si el usuario ya tiene una
+      // hora extra sin finalizar, no se crea otra (antes esto permitía dos
+      // tickets "iniciada" simultáneos con el mismo número, y el segundo podía
+      // quedar corriendo de fondo sin que el técnico lo notara).
+      const activaExistente = await this.horaExtraRepository.findOne({
+        where: { usuario_id: usuarioId, estado: 'iniciada' },
+      });
+      if (activaExistente) {
+        throw new OperationalError(
+          400,
+          `Ya tienes una hora extra activa (ticket ${activaExistente.numero_ticket}, iniciada a las ${activaExistente.hora_inicio.toLocaleTimeString('es-SV')}). Finalízala antes de iniciar otra.`,
+        );
+      }
+
       // Crear hora extra SIN RecordAsistencia pero CON usuario_id
       // Hora extra es completamente independiente
       const horaExtra = new HoraExtra();
