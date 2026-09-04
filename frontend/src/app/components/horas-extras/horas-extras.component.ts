@@ -67,6 +67,8 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
   filtroEmpleado = '';
   filtroEmpleadoHE = '';
   filtroMesHE = '';
+  /** Solo aplica a la pestaña Completadas: '' | 'pendiente' | 'aprobada' | 'rechazada' */
+  filtroAprobacionHE = '';
   opcionesMesHE: { value: string; label: string }[] = [];
   
   // Paginación
@@ -258,22 +260,27 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
     const filtroTexto = this.filtroTicket.trim().toLowerCase();
     const filtroNombre = this.filtroEmpleadoHE.trim().toLowerCase();
     const filtroMes = this.filtroMesHE;
+    const filtroAprobacion = this.filtroAprobacionHE;
 
-    if (!filtroTexto && !filtroNombre && !filtroMes) {
+    if (!filtroTexto && !filtroNombre && !filtroMes && !filtroAprobacion) {
       this.dataSourceActivas = new MatTableDataSource(this.horasExtrasActivas);
       this.dataSourceFinalizadas = new MatTableDataSource(this.horasExtrasFinalizadas);
       return;
     }
 
-    const coincide = (h: HoraExtraResponse) => {
+    const coincideBase = (h: HoraExtraResponse) => {
       const coincideTicket = !filtroTexto || h.numero_ticket.toLowerCase().includes(filtroTexto);
       const coincideNombre = !filtroNombre || (h.empleado_nombre_completo || '').toLowerCase().includes(filtroNombre);
       const coincideMes = !filtroMes || (h.hora_inicio || '').slice(0, 7) === filtroMes;
       return coincideTicket && coincideNombre && coincideMes;
     };
 
-    const activasFiltradas = this.horasExtrasActivas.filter(coincide);
-    const finalizadasFiltradas = this.horasExtrasFinalizadas.filter(coincide);
+    // El filtro de aprobación solo aplica a Completadas: en Activas todos los
+    // registros arrancan en "pendiente" por defecto, así que no distingue nada ahí.
+    const activasFiltradas = this.horasExtrasActivas.filter(coincideBase);
+    const finalizadasFiltradas = this.horasExtrasFinalizadas.filter(
+      (h) => coincideBase(h) && (!filtroAprobacion || h.estado_aprobacion === filtroAprobacion),
+    );
 
     this.dataSourceActivas = new MatTableDataSource(activasFiltradas);
     this.dataSourceFinalizadas = new MatTableDataSource(finalizadasFiltradas);
@@ -287,6 +294,7 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
     this.filtroEmpleado = '';
     this.filtroEmpleadoHE = '';
     this.filtroMesHE = '';
+    this.filtroAprobacionHE = '';
     this.cargarHorasExtras();
   }
 

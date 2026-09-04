@@ -228,6 +228,16 @@
               </mat-select>
             </mat-form-field>
 
+            <mat-form-field class="filter-field">
+              <mat-label>Aprobación</mat-label>
+              <mat-select [(ngModel)]="filtroAprobacionHE" (selectionChange)="filtrarPorTicket()">
+                <mat-option value="">Todas</mat-option>
+                <mat-option value="pendiente">Pendiente</mat-option>
+                <mat-option value="aprobada">Aprobada</mat-option>
+                <mat-option value="rechazada">Rechazada</mat-option>
+              </mat-select>
+            </mat-form-field>
+
             <button mat-stroked-button (click)="limpiarFiltros()" class="btn-clear">
               Limpiar
             </button>
