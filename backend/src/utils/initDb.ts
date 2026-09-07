@@ -273,6 +273,24 @@ export async function inicializarColumnas() {
       } else {
         console.log('✅ Columna telegram_link_code ya existe');
       }
+
+      const columnaResetTokenExiste = await queryRunner.hasColumn('usuario', 'reset_password_token');
+      if (!columnaResetTokenExiste) {
+        console.log('🔑 Agregando columna reset_password_token...');
+        await queryRunner.query(`ALTER TABLE usuario ADD COLUMN reset_password_token VARCHAR(255) NULL`);
+        console.log('✅ Columna reset_password_token agregada exitosamente');
+      } else {
+        console.log('✅ Columna reset_password_token ya existe');
+      }
+
+      const columnaResetExpiraExiste = await queryRunner.hasColumn('usuario', 'reset_password_expira');
+      if (!columnaResetExpiraExiste) {
+        console.log('🔑 Agregando columna reset_password_expira...');
+        await queryRunner.query(`ALTER TABLE usuario ADD COLUMN reset_password_expira TIMESTAMP NULL`);
+        console.log('✅ Columna reset_password_expira agregada exitosamente');
+      } else {
+        console.log('✅ Columna reset_password_expira ya existe');
+      }
     }
 
     console.log('🔧 Verificando columnas de alerta de jornada larga en record_asistencia...');

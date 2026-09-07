@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
+import { OlvidePasswordComponent } from './components/olvide-password/olvide-password.component';
+import { RestablecerPasswordComponent } from './components/restablecer-password/restablecer-password.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { ListadoEmpleadosComponent } from './components/listado-empleados/listado-empleados.component';
 import { RegistroAsistenciaComponent } from './components/registro-asistencia/registro-asistencia.component';
@@ -19,6 +21,8 @@ import { liderGuard } from './guards/lider.guard';
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
+  { path: 'olvide-password', component: OlvidePasswordComponent },
+  { path: 'restablecer-password', component: RestablecerPasswordComponent },
   { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
   { path: 'empleados', component: ListadoEmpleadosComponent, canActivate: [authGuard, adminOLiderGuard] },
   { path: 'asistencia', component: RegistroAsistenciaComponent, canActivate: [authGuard] },

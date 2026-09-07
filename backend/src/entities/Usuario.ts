@@ -38,6 +38,14 @@ export class Usuario {
   @Column({ nullable: true })
   telegram_link_code?: string;
 
+  // Token de un solo uso para crear/restablecer contraseña por correo
+  // ("¿Olvidaste tu contraseña?" y alta de cuentas nuevas como admin)
+  @Column({ nullable: true })
+  reset_password_token?: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  reset_password_expira?: Date;
+
   @OneToOne(() => Empleado, (empleado) => empleado.usuario)
   empleado!: Empleado;
 }

@@ -1,40 +1,14 @@
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import { AppDataSource } from '@config/database';
 import { Usuario } from '@entities/Usuario';
 import { generateToken } from '@utils/jwt.utils';
 import { OperationalError } from '@middleware/errorHandler';
+import { notificacionService } from '@services/notificacion.service';
+import { emailTemplates } from '@utils/emailTemplates';
 
 export class AuthService {
   private usuarioRepository = AppDataSource.getRepository(Usuario);
-
-  async registrar(email: string, contrasena: string, rol: string = 'empleado') {
-    // Verificar si el usuario ya existe
-    const existente = await this.usuarioRepository.findOne({
-      where: { email },
-    });
-
-    if (existente) {
-      throw new OperationalError(400, 'El email ya está registrado');
-    }
-
-    // Hashear contraseña
-    const hashedPassword = await bcrypt.hash(contrasena, 10);
-
-    // Crear usuario
-    const usuario = this.usuarioRepository.create({
-      email,
-      password_hash: hashedPassword,
-      rol,
-    });
-
-    await this.usuarioRepository.save(usuario);
-
-    return {
-      id: usuario.id,
-      email: usuario.email,
-      rol: usuario.rol,
-    };
-  }
 
   async login(email: string, password_hash: string) {
     // Buscar usuario
@@ -87,6 +61,47 @@ export class AuthService {
   async actualizarFotoPropia(usuarioId: number, rutaFoto: string) {
     await this.usuarioRepository.update({ id: usuarioId }, { foto_perfil: rutaFoto });
     return this.obtenerUsuario(usuarioId);
+  }
+
+  /**
+   * Genera un token de un solo uso y encola el correo para crear/restablecer
+   * la contraseña. Nunca revela si el email existe o no (mismo resultado
+   * en ambos casos), para no filtrar qué correos están registrados.
+   */
+  async solicitarRestablecerPassword(email: string) {
+    const usuario = await this.usuarioRepository.findOne({ where: { email } });
+    if (!usuario) return;
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expira = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+    await this.usuarioRepository.update(
+      { id: usuario.id },
+      { reset_password_token: token, reset_password_expira: expira },
+    );
+
+    const { asunto, cuerpo } = emailTemplates.restablecerPassword(token);
+    await notificacionService.crearNotificacion({
+      tipo: 'solicitud_creada',
+      destinatario: email,
+      asunto,
+      cuerpo,
+    });
+  }
+
+  /** Valida el token y establece la nueva contraseña; el token se invalida al usarse */
+  async restablecerPassword(token: string, nuevaPassword: string) {
+    const usuario = await this.usuarioRepository.findOne({ where: { reset_password_token: token } });
+
+    if (!usuario || !usuario.reset_password_expira || usuario.reset_password_expira < new Date()) {
+      throw new OperationalError(400, 'El enlace no es válido o ya expiró. Solicita uno nuevo.');
+    }
+
+    const passwordHasheado = await bcrypt.hash(nuevaPassword, 10);
+    await this.usuarioRepository.update(
+      { id: usuario.id },
+      { password_hash: passwordHasheado, reset_password_token: null, reset_password_expira: null } as any,
+    );
   }
 
   /** Datos de perfil expuestos al frontend (login, /perfil, actualización de foto) */

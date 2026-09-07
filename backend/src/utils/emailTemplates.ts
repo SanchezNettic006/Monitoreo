@@ -269,4 +269,48 @@ export const emailTemplates = {
       `,
     };
   },
+
+  /**
+   * Email para crear/restablecer la contraseña (link de un solo uso con expiración)
+   */
+  restablecerPassword: (token: string) => {
+    const link = `${config.cors.origin}/restablecer-password?token=${token}`;
+
+    return {
+      asunto: 'Crea tu contraseña - Sistema NETTIC',
+      cuerpo: `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #2c3e50; max-width: 600px; margin: 0 auto;">
+          <div style="background: #2c3e50; padding: 30px; color: white; border-radius: 8px 8px 0 0; text-align: center;">
+            <h1 style="margin: 0; font-size: 24px; font-weight: 300;">Crea tu contraseña</h1>
+          </div>
+
+          <div style="border: 1px solid #ecf0f1; border-top: none; padding: 30px; background: #ffffff;">
+            <p style="margin-top: 0; font-size: 14px;">Hola,</p>
+
+            <p style="font-size: 15px; margin: 15px 0;">
+              Recibimos una solicitud para crear o restablecer la contraseña de tu cuenta en el Sistema NETTIC.
+              Haz clic en el siguiente botón para elegir tu contraseña:
+            </p>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${link}"
+                 style="display: inline-block; padding: 12px 32px; background: #2c3e50; color: white; text-decoration: none; border-radius: 4px; font-weight: 500; font-size: 14px;">
+                Crear contraseña
+              </a>
+            </div>
+
+            <p style="font-size: 13px; color: #7f8c8d; margin: 15px 0;">
+              Este enlace es válido por 1 hora. Si tú no solicitaste esto, puedes ignorar este correo.
+            </p>
+
+            <hr style="border: none; border-top: 1px solid #ecf0f1; margin: 30px 0;">
+            <p style="color: #95a5a6; font-size: 12px; margin: 0; text-align: center;">
+              Sistema NETTIC - Gestión de Asistencias<br>
+              Este es un mensaje automático. Por favor, no responda a este correo.
+            </p>
+          </div>
+        </div>
+      `,
+    };
+  },
 };

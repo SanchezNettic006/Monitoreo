@@ -6,27 +6,6 @@ import { OperationalError } from '@middleware/errorHandler';
 const authService = new AuthService();
 
 export class AuthController {
-  async registrar(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { email, password, rol } = req.body;
-
-      if (!email || !password) {
-        return res.status(400).json({
-          mensaje: 'Email y contraseña son requeridos',
-        });
-      }
-
-      const usuario = await authService.registrar(email, password, rol);
-
-      return res.status(201).json({
-        mensaje: 'Usuario registrado exitosamente',
-        data: usuario,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
   async login(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, password_hash } = req.body;
@@ -81,6 +60,51 @@ export class AuthController {
         mensaje: 'Foto de perfil actualizada exitosamente',
         data: usuario,
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/auth/olvide-password
+   * Siempre responde 200 (exista o no el email) para no revelar qué correos
+   * están registrados en el sistema.
+   */
+  async olvidePassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ mensaje: 'El email es requerido' });
+      }
+
+      await authService.solicitarRestablecerPassword(email);
+
+      return res.status(200).json({
+        mensaje: 'Si el correo está registrado, recibirás un enlace para crear tu contraseña en unos minutos.',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/auth/restablecer-password
+   */
+  async restablecerPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { token, password } = req.body;
+
+      if (!token || !password) {
+        return res.status(400).json({ mensaje: 'Token y nueva contraseña son requeridos' });
+      }
+      if (password.length < 6) {
+        return res.status(400).json({ mensaje: 'La contraseña debe tener al menos 6 caracteres' });
+      }
+
+      await authService.restablecerPassword(token, password);
+
+      return res.status(200).json({ mensaje: 'Contraseña actualizada exitosamente' });
     } catch (error) {
       next(error);
     }

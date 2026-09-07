@@ -118,4 +118,14 @@ export class AuthService {
   obtenerPerfil(): Observable<{ data: Usuario }> {
     return this.http.get<{ data: Usuario }>(`${this.apiUrl}/perfil`);
   }
+
+  /** Solicita el correo con el enlace para crear/restablecer la contraseña */
+  olvidePassword(email: string): Observable<{ mensaje: string }> {
+    return this.http.post<{ mensaje: string }>(`${this.apiUrl}/olvide-password`, { email });
+  }
+
+  /** Establece la nueva contraseña usando el token recibido por correo */
+  restablecerPassword(token: string, password: string): Observable<{ mensaje: string }> {
+    return this.http.post<{ mensaje: string }>(`${this.apiUrl}/restablecer-password`, { token, password });
+  }
 }

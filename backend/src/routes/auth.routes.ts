@@ -7,8 +7,9 @@ const router = Router();
 const controller = new AuthController();
 
 // Rutas públicas
-router.post('/registrar', (req, res, next) => controller.registrar(req, res, next));
 router.post('/login', (req, res, next) => controller.login(req, res, next));
+router.post('/olvide-password', (req, res, next) => controller.olvidePassword(req, res, next));
+router.post('/restablecer-password', (req, res, next) => controller.restablecerPassword(req, res, next));
 
 // Rutas protegidas
 router.get('/perfil', authMiddleware, (req, res, next) => controller.obtenerPerfil(req, res, next));
