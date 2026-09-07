@@ -675,6 +675,12 @@ export class ReportesService {
   ): 'reportado' | 'pendiente' | 'justificado' {
     if (datos.fechasConRegistro.has(`${empleadoId}-${fecha}`)) return 'reportado';
 
+    // Los domingos no son día laborable para la mayoría de técnicos; quien sí
+    // trabaja ese día lo reporta como hora extra (ya contado arriba como 'reportado').
+    const [anio, mes, dia] = fecha.split('-').map(Number);
+    const diaSemana = new Date(anio, mes - 1, dia).getDay();
+    if (diaSemana === 0) return 'justificado';
+
     const diaEspecial = datos.diasEspeciales.find(
       (d) => formatFechaLocal(d.fecha) === fecha && !d.empleadosExceptuados?.some((e) => e.id === empleadoId),
     );
