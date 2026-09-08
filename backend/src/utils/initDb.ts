@@ -373,6 +373,22 @@ export async function inicializarColumnas() {
         } else {
           console.log('✅ Columna url_foto ya existe en solicitud_tramite');
         }
+
+        // Restricción CHECK vieja sobre la columna 'tipo' (de cuando solo existían
+        // vacaciones/ausencia/cambio_jornada) que bloquea los tipos de trámite
+        // nuevos (permiso_personal, enfermedad, etc.). La columna ya es un
+        // VARCHAR(30) libre validado en la app, así que la restricción sobra.
+        const restriccionesTipo: { conname: string }[] = await queryRunner.query(`
+          SELECT conname FROM pg_constraint
+          WHERE conrelid = 'solicitud_tramite'::regclass
+            AND contype = 'c'
+            AND pg_get_constraintdef(oid) ILIKE '%tipo%'
+        `);
+        for (const restriccion of restriccionesTipo) {
+          console.log(`⚠️ Eliminando restricción vieja ${restriccion.conname} en solicitud_tramite.tipo...`);
+          await queryRunner.query(`ALTER TABLE solicitud_tramite DROP CONSTRAINT "${restriccion.conname}"`);
+          console.log(`✅ Restricción ${restriccion.conname} eliminada`);
+        }
       }
 
       const columnaCierreAutomaticoExiste = await queryRunner.hasColumn('record_asistencia', 'cierre_automatico');
