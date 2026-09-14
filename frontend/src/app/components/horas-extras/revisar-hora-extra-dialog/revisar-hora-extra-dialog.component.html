@@ -23,6 +23,7 @@
         <div>
           <span class="info-label">Horas reportadas</span>
           <span class="info-valor destacado">{{ formatearDuracion(duracionReportada) }}</span>
+          <span class="info-nota">Se aprueba en hora entera: {{ formatearDuracion(duracionRedondeada) }}</span>
         </div>
       </div>
     </div>
@@ -41,11 +42,11 @@
         </mat-form-field>
         <div class="resultado-hm">
           <span class="resultado-valor" [class.error]="excedeReportado">{{ formatearDuracion(horasAprobadasDecimal) }}</span>
-          <span class="resultado-max">de {{ formatearDuracion(duracionReportada) }}</span>
+          <span class="resultado-max">de {{ formatearDuracion(duracionRedondeada) }}</span>
         </div>
       </div>
       <p class="error-texto" *ngIf="excedeReportado">
-        No puedes aprobar más de lo reportado ({{ formatearDuracion(duracionReportada) }})
+        No puedes aprobar más de lo reportado, redondeado a hora entera ({{ formatearDuracion(duracionRedondeada) }})
       </p>
 
       <div class="atajos">

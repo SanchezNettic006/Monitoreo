@@ -26,6 +26,8 @@ import { HoraExtraResponse } from '../../../services/hora-extra.service';
 export class RevisarHoraExtraDialogComponent {
   formulario: FormGroup;
   duracionReportada: number;
+  /** Reportado, redondeado a hora entera: desde 50min sube a la siguiente hora, si no baja a la hora completa */
+  duracionRedondeada: number;
 
   constructor(
     public dialogRef: MatDialogRef<RevisarHoraExtraDialogComponent>,
@@ -36,11 +38,11 @@ export class RevisarHoraExtraDialogComponent {
     // (que también se redondea) al aprobar el total reportado — evita que un desfase
     // de coma flotante (ej. 5min = 0.08333...) marque el total como "recorte"
     this.duracionReportada = Math.round((data.horaExtra.duracion || 0) * 100) / 100;
-    const { horas, minutos } = this.aHorasYMinutos(this.duracionReportada);
+    this.duracionRedondeada = this.redondearAHoraEntera(this.duracionReportada);
 
     this.formulario = this.fb.group({
-      horas: [horas, [Validators.required, Validators.min(0)]],
-      minutos: [minutos, [Validators.required, Validators.min(0), Validators.max(59)]],
+      horas: [this.duracionRedondeada, [Validators.required, Validators.min(0)]],
+      minutos: [0, [Validators.required, Validators.min(0), Validators.max(59)]],
       motivo: [data.horaExtra.motivo_ajuste || ''],
     });
 
@@ -53,6 +55,15 @@ export class RevisarHoraExtraDialogComponent {
     const horas = Math.floor(decimal);
     const minutos = Math.round((decimal - horas) * 60);
     return minutos === 60 ? { horas: horas + 1, minutos: 0 } : { horas, minutos };
+  }
+
+  /**
+   * Redondea una duración decimal a hora entera: 50 minutos o más sube a la
+   * siguiente hora, menos de 50 baja a la hora completa (nunca queda con minutos).
+   */
+  private redondearAHoraEntera(decimal: number): number {
+    const { horas, minutos } = this.aHorasYMinutos(decimal);
+    return minutos >= 50 ? horas + 1 : horas;
   }
 
   /** Horas aprobadas actuales, en decimal (para validar/enviar al backend) */
@@ -71,7 +82,7 @@ export class RevisarHoraExtraDialogComponent {
   }
 
   get excedeReportado(): boolean {
-    return this.horasAprobadasDecimal > this.duracionReportada + 0.001;
+    return this.horasAprobadasDecimal > this.duracionRedondeada + 0.001;
   }
 
   get esRechazoTotal(): boolean {
@@ -80,7 +91,7 @@ export class RevisarHoraExtraDialogComponent {
 
   get esRecorte(): boolean {
     const horas = this.horasAprobadasDecimal;
-    return horas > 0 && horas < this.duracionReportada - 0.001;
+    return horas > 0 && horas < this.duracionRedondeada - 0.001;
   }
 
   /** El motivo es obligatorio si se aprueban menos horas de las reportadas */
@@ -94,12 +105,11 @@ export class RevisarHoraExtraDialogComponent {
     motivoControl?.updateValueAndValidity({ emitEvent: false });
   }
 
-  /** "Aprobar todo" aprueba y cierra el diálogo de inmediato, sin requerir un segundo clic */
+  /** "Aprobar todo" aprueba el reportado redondeado a hora entera y cierra el diálogo de inmediato */
   aprobarCompleto(): void {
-    const { horas, minutos } = this.aHorasYMinutos(this.duracionReportada);
-    this.formulario.patchValue({ horas, minutos });
+    this.formulario.patchValue({ horas: this.duracionRedondeada, minutos: 0 });
     this.dialogRef.close({
-      horasAprobadas: this.duracionReportada,
+      horasAprobadas: this.duracionRedondeada,
       motivo: this.formulario.value.motivo?.trim() || undefined,
     });
   }
@@ -113,7 +123,7 @@ export class RevisarHoraExtraDialogComponent {
 
     if (this.esRecorte) {
       const confirmado = confirm(
-        `Vas a aprobar ${this.formatearDuracion(this.horasAprobadasDecimal)} de ${this.formatearDuracion(this.duracionReportada)} reportados. ¿Es correcto o querías aprobar el total?`,
+        `Vas a aprobar ${this.formatearDuracion(this.horasAprobadasDecimal)} de ${this.formatearDuracion(this.duracionRedondeada)} reportados. ¿Es correcto o querías aprobar el total?`,
       );
       if (!confirmado) return;
     }
