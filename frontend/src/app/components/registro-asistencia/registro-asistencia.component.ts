@@ -752,68 +752,30 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
       const capturadoEn = new Date().toISOString();
       const recordAsistenciaId = this.registroHoy?.id;
 
-      if (!this.conexionService.enLinea) {
-        await this.colaOfflineService.encolar({
-          tipo: 'iniciar_hora_extra',
-          capturadoEn,
-          gps,
-          foto,
-          fotoNombre: foto.name,
-          numeroTicket,
-          tipoTrabajo,
-          recordAsistenciaId,
-        });
-        this.confirmarGuardadoOffline('Inicio de hora extra');
-        this.numeroTicket = '';
-        this.mostrarFormHoraExtra = false;
-        this.limpiarFoto('horaExtra');
-        this.cargando = false;
-        return;
-      }
+      // Siempre se guarda primero en la cola local (IndexedDB) y desde ahí se
+      // intenta enviar de inmediato si hay señal. Antes se llamaba al backend
+      // directo cuando había conexión y solo se encolaba si la petición fallaba
+      // con error de red — pero si el navegador se suspende (pantalla bloqueada,
+      // celular guardado) a media petición, esa respuesta nunca llega y la acción
+      // se perdía sin dejar rastro. Pasando siempre por la cola, la acción queda
+      // guardada localmente ANTES de intentar el envío, así que si se pierde la
+      // respuesta, sigue pendiente y se reintenta sola al volver a abrir la app.
+      await this.colaOfflineService.encolar({
+        tipo: 'iniciar_hora_extra',
+        capturadoEn,
+        gps,
+        foto,
+        fotoNombre: foto.name,
+        numeroTicket,
+        tipoTrabajo,
+        recordAsistenciaId,
+      });
 
-      // Si ya existe un registro de asistencia hoy, vincular la hora extra a ese registro
-      // en vez de crear uno independiente
-      const iniciarHoraExtra$ = recordAsistenciaId
-        ? this.horaExtraService.iniciarHoraExtra(recordAsistenciaId, numeroTicket, gps?.latitud ?? null, gps?.longitud ?? null, foto, capturadoEn, tipoTrabajo)
-        : this.horaExtraService.iniciarHoraExtraDirecta(numeroTicket, gps?.latitud ?? null, gps?.longitud ?? null, foto, capturadoEn, tipoTrabajo);
-
-      // Iniciar hora extra
-      iniciarHoraExtra$.subscribe({
-          next: (response: any) => {
-            this.horaExtraActiva = response.data;
-            this.numeroTicket = '';
-            this.mostrarFormHoraExtra = false;
-            this.limpiarFoto('horaExtra');
-
-            // Solo iniciar cronómetro de hora extra
-            this.iniciarCronometroHoraExtra();
-            this.snackBar.open('✅ Hora extra iniciada correctamente', 'Cerrar', { duration: 3000 });
-            this.cargando = false;
-          },
-          error: async (error) => {
-            if (error.status === 0) {
-              await this.colaOfflineService.encolar({
-                tipo: 'iniciar_hora_extra',
-                capturadoEn,
-                gps,
-                foto,
-                fotoNombre: foto.name,
-                numeroTicket,
-                tipoTrabajo,
-                recordAsistenciaId,
-              });
-              this.confirmarGuardadoOffline('Inicio de hora extra');
-              this.numeroTicket = '';
-              this.mostrarFormHoraExtra = false;
-              this.limpiarFoto('horaExtra');
-              this.cargando = false;
-              return;
-            }
-            const mensaje = error.error?.mensaje || 'Error al iniciar hora extra';
-            this.snackBar.open(mensaje, 'Cerrar', { duration: 3000 });
-            this.cargando = false;
-          },
-        });
+      this.numeroTicket = '';
+      this.mostrarFormHoraExtra = false;
+      this.limpiarFoto('horaExtra');
+      this.snackBar.open('🕒 Registrando inicio de hora extra...', 'Cerrar', { duration: 3000 });
+      this.cargando = false;
     } catch (error) {
       this.snackBar.open(`Error: ${error}`, 'Cerrar', { duration: 3000 });
       this.cargando = false;
@@ -840,60 +802,27 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
       const horaExtraId = this.horaExtraActiva!.id;
       const capturadoEn = new Date().toISOString();
 
-      const detenerCronometroYLimpiar = () => {
-        this.horaExtraActiva = null;
-        this.tiempoHoraExtra = '00:00:00';
-        this.limpiarFoto('horaExtra');
-        if (this.intervalIdHoraExtra) {
-          clearInterval(this.intervalIdHoraExtra);
-          this.intervalIdHoraExtra = null;
-        }
-      };
+      // Igual que al iniciar: se guarda primero en la cola local y desde ahí se
+      // intenta enviar de inmediato si hay señal, para no perder el cierre si el
+      // navegador se suspende a media petición (ver comentario en iniciarHoraExtra).
+      await this.colaOfflineService.encolar({
+        tipo: 'finalizar_hora_extra',
+        capturadoEn,
+        gps,
+        foto,
+        fotoNombre: foto.name,
+        horaExtraId,
+      });
 
-      if (!this.conexionService.enLinea) {
-        await this.colaOfflineService.encolar({
-          tipo: 'finalizar_hora_extra',
-          capturadoEn,
-          gps,
-          foto,
-          fotoNombre: foto.name,
-          horaExtraId,
-        });
-        this.confirmarGuardadoOffline('Fin de hora extra');
-        detenerCronometroYLimpiar();
-        this.cargando = false;
-        return;
+      this.horaExtraActiva = null;
+      this.tiempoHoraExtra = '00:00:00';
+      this.limpiarFoto('horaExtra');
+      if (this.intervalIdHoraExtra) {
+        clearInterval(this.intervalIdHoraExtra);
+        this.intervalIdHoraExtra = null;
       }
-
-      // Finalizar hora extra
-      this.horaExtraService
-        .finalizarHoraExtra(horaExtraId, gps?.latitud ?? null, gps?.longitud ?? null, foto, capturadoEn)
-        .subscribe({
-          next: (response: any) => {
-            this.snackBar.open(`✅ Hora extra finalizada (${this.formatearDuracion(response.data.duracion)})`, 'Cerrar', { duration: 3000 });
-            detenerCronometroYLimpiar();
-            this.cargando = false;
-          },
-          error: async (error) => {
-            if (error.status === 0) {
-              await this.colaOfflineService.encolar({
-                tipo: 'finalizar_hora_extra',
-                capturadoEn,
-                gps,
-                foto,
-                fotoNombre: foto.name,
-                horaExtraId,
-              });
-              this.confirmarGuardadoOffline('Fin de hora extra');
-              detenerCronometroYLimpiar();
-              this.cargando = false;
-              return;
-            }
-            const mensaje = error.error?.mensaje || 'Error al finalizar hora extra';
-            this.snackBar.open(mensaje, 'Cerrar', { duration: 3000 });
-            this.cargando = false;
-          },
-        });
+      this.snackBar.open('🕒 Registrando fin de hora extra...', 'Cerrar', { duration: 3000 });
+      this.cargando = false;
     } catch (error) {
       this.snackBar.open(`Error: ${error}`, 'Cerrar', { duration: 3000 });
       this.cargando = false;
