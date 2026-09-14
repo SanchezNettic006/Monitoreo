@@ -36,7 +36,8 @@ export const config = {
   // Uploads
   upload: {
     dir: process.env.UPLOAD_DIR || './uploads',
-    maxSize: parseInt(process.env.MAX_FILE_SIZE || '5242880', 10),
+    // 15MB: las fotos de cámara de celular al aire libre suelen pesar 6-10MB
+    maxSize: parseInt(process.env.MAX_FILE_SIZE || '15728640', 10),
   },
 
   // Gmail SMTP

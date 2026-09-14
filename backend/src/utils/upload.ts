@@ -1,6 +1,7 @@
 import multer, { StorageEngine } from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { config } from '@config/env';
 
 // Crear carpeta uploads si no existe
 const uploadDir = path.join(process.cwd(), 'uploads');
@@ -34,10 +35,12 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
 };
 
 // Crear middleware
+// Las fotos de cámara de celular (sobre todo al aire libre, con buena luz)
+// suelen pesar 6-10MB en buena resolución, así que el límite se deja generoso.
 export const uploadFoto = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB máximo
+    fileSize: config.upload.maxSize,
   },
 });
