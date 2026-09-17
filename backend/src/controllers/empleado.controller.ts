@@ -40,6 +40,32 @@ export class EmpleadoController {
     }
   }
 
+  // PUT /api/empleados/:id/estado - Dar de baja / reactivar (líder: solo su departamento)
+  async actualizarEstado(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const { estado } = req.body;
+
+      if (estado !== 'activo' && estado !== 'inactivo') {
+        throw new OperationalError(400, "El estado debe ser 'activo' o 'inactivo'");
+      }
+
+      const empleado = await empleadoService.obtenerEmpleado(parseInt(String(id)));
+      if (req.departamentoId !== undefined && !req.departamentoId.includes(empleado.departamento_id)) {
+        throw new OperationalError(403, 'No tienes permisos para modificar empleados de otro departamento');
+      }
+
+      const empleadoActualizado = await empleadoService.actualizarEmpleado(parseInt(String(id)), { estado });
+
+      return res.status(200).json({
+        mensaje: `Empleado ${estado === 'inactivo' ? 'dado de baja' : 'reactivado'} exitosamente`,
+        data: empleadoActualizado,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   // POST /api/empleados - Crear nuevo empleado
   async crear(req: AuthRequest, res: Response, next: NextFunction) {
     try {

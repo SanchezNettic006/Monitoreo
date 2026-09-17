@@ -24,6 +24,11 @@ router.get('/:id', liderOAdminMiddleware, cargarDepartamentoLider, (req, res, ne
   controller.obtenerPorId(req, res, next),
 );
 
+// PUT /api/empleados/:id/estado - Dar de baja / reactivar (admin: cualquiera; líder: solo su departamento)
+router.put('/:id/estado', liderOAdminMiddleware, cargarDepartamentoLider, (req, res, next) =>
+  controller.actualizarEstado(req, res, next),
+);
+
 // A partir de aquí, solo administradores (crear/editar/eliminar empleados)
 router.use(adminMiddleware);
 

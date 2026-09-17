@@ -82,6 +82,13 @@ export class EmpleadoService {
   }
 
   /**
+   * Dar de baja / reactivar (admin: cualquiera; líder: solo su departamento)
+   */
+  actualizarEstado(id: number, estado: 'activo' | 'inactivo'): Observable<EmpleadoResponse> {
+    return this.http.put<EmpleadoResponse>(`${this.apiUrl}/${id}/estado`, { estado });
+  }
+
+  /**
    * Reemplaza el conjunto de departamentos adicionales que supervisa un líder
    * (ej. el líder de Troncal que también supervisa Vehículos)
    */

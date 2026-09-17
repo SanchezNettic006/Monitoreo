@@ -71,9 +71,13 @@ export class ListadoEmpleadosComponent implements OnInit, AfterViewInit {
     return this.authService.esAdmin();
   }
 
+  get esLider(): boolean {
+    return this.authService.esLider();
+  }
+
   get displayedColumns(): string[] {
     const columnas = ['id', 'nombre', 'apellido', 'cargo', 'telefono', 'departamento', 'estado', 'vacaciones'];
-    return this.esAdmin ? [...columnas, 'acciones'] : columnas;
+    return this.esAdmin || this.esLider ? [...columnas, 'acciones'] : columnas;
   }
 
   private generarOpcionesAnio(): number[] {
@@ -168,7 +172,7 @@ export class ListadoEmpleadosComponent implements OnInit, AfterViewInit {
     const accion = darDeBaja ? 'dar de baja' : 'reactivar';
     if (!confirm(`¿Seguro que quieres ${accion} a ${empleado.nombre} ${empleado.apellido}?`)) return;
 
-    this.empleadoService.actualizar(empleado.id, { estado: darDeBaja ? 'inactivo' : 'activo' }).subscribe({
+    this.empleadoService.actualizarEstado(empleado.id, darDeBaja ? 'inactivo' : 'activo').subscribe({
       next: () => {
         this.snackBar.open(`✅ Empleado ${darDeBaja ? 'dado de baja' : 'reactivado'}`, 'Cerrar', { duration: 3000 });
         this.cargarEmpleados();
