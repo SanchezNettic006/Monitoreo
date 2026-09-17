@@ -80,7 +80,7 @@ export class EmpleadoController {
   async actualizar(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const { nombre, apellido, cargo, telefono, departamento_id, rol, fecha_ingreso, dias_vacaciones_anuales, nuevaPassword } = req.body;
+      const { nombre, apellido, cargo, telefono, departamento_id, rol, fecha_ingreso, dias_vacaciones_anuales, nuevaPassword, estado } = req.body;
 
       const datosActualizar: Partial<Empleado> = {};
 
@@ -91,6 +91,9 @@ export class EmpleadoController {
       if (departamento_id) datosActualizar.departamento_id = departamento_id;
       if (fecha_ingreso !== undefined) datosActualizar.fecha_ingreso = fecha_ingreso || undefined;
       if (dias_vacaciones_anuales !== undefined) datosActualizar.dias_vacaciones_anuales = parseInt(dias_vacaciones_anuales, 10);
+      // 'Dar de baja' / reactivar: no borra su historial, solo lo excluye de
+      // cumplimiento de reportes, alertas y saldos de vacaciones (ver EmpleadoService)
+      if (estado === 'activo' || estado === 'inactivo') datosActualizar.estado = estado;
 
       const empleadoActualizado = await empleadoService.actualizarEmpleado(parseInt(String(id)), datosActualizar, rol, nuevaPassword);
 

@@ -47,6 +47,9 @@ export class ListadoEmpleadosComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<Empleado>([]);
   cargando = false;
   filtroNombre = '';
+  /** Los empleados dados de baja se quedan en la lista (para reactivarlos o exportarlos)
+   * pero ocultos por defecto, para no mezclarlos con el personal activo */
+  mostrarInactivos = false;
 
   saldosVacacionesPorEmpleado: Record<number, SaldoVacacionesEmpleado> = {};
   anioVacaciones = new Date().getFullYear();
@@ -69,7 +72,7 @@ export class ListadoEmpleadosComponent implements OnInit, AfterViewInit {
   }
 
   get displayedColumns(): string[] {
-    const columnas = ['id', 'nombre', 'apellido', 'cargo', 'telefono', 'departamento', 'vacaciones'];
+    const columnas = ['id', 'nombre', 'apellido', 'cargo', 'telefono', 'departamento', 'estado', 'vacaciones'];
     return this.esAdmin ? [...columnas, 'acciones'] : columnas;
   }
 
@@ -99,12 +102,18 @@ export class ListadoEmpleadosComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
-    this.dataSource.filterPredicate = (empleado, filtro) =>
-      `${empleado.nombre} ${empleado.apellido}`.toLowerCase().includes(filtro);
+    // El filtro combina nombre + estado en un solo string (mat-table solo permite
+    // un filtro de texto), separados por '|' para no depender de coincidencias parciales raras
+    this.dataSource.filterPredicate = (empleado, filtro) => {
+      const [nombreFiltro, soloActivos] = filtro.split('|');
+      if (soloActivos === '1' && empleado.estado === 'inactivo') return false;
+      return `${empleado.nombre} ${empleado.apellido}`.toLowerCase().includes(nombreFiltro);
+    };
+    this.aplicarFiltroNombre();
   }
 
   aplicarFiltroNombre(): void {
-    this.dataSource.filter = this.filtroNombre.trim().toLowerCase();
+    this.dataSource.filter = `${this.filtroNombre.trim().toLowerCase()}|${this.mostrarInactivos ? '0' : '1'}`;
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
@@ -148,8 +157,31 @@ export class ListadoEmpleadosComponent implements OnInit, AfterViewInit {
     this.abrirFormulario(empleado);
   }
 
+  /**
+   * Da de baja o reactiva un empleado. A diferencia de "Eliminar", esto NO borra
+   * su historial (asistencias, horas extra, trámites) — solo lo marca inactivo,
+   * lo cual ya lo excluye de cumplimiento de reportes, alertas y saldos de
+   * vacaciones. Es la forma correcta de manejar a alguien que ya no trabaja aquí.
+   */
+  toggleEstado(empleado: Empleado): void {
+    const darDeBaja = empleado.estado !== 'inactivo';
+    const accion = darDeBaja ? 'dar de baja' : 'reactivar';
+    if (!confirm(`¿Seguro que quieres ${accion} a ${empleado.nombre} ${empleado.apellido}?`)) return;
+
+    this.empleadoService.actualizar(empleado.id, { estado: darDeBaja ? 'inactivo' : 'activo' }).subscribe({
+      next: () => {
+        this.snackBar.open(`✅ Empleado ${darDeBaja ? 'dado de baja' : 'reactivado'}`, 'Cerrar', { duration: 3000 });
+        this.cargarEmpleados();
+      },
+      error: () => {
+        this.snackBar.open(`Error al ${accion} al empleado`, 'Cerrar', { duration: 3000 });
+      },
+    });
+  }
+
+  /** Borrado permanente: elimina también su historial. Usar solo para corregir un registro creado por error. */
   eliminarEmpleado(empleado: Empleado): void {
-    if (confirm(`¿Estás seguro de eliminar a ${empleado.nombre} ${empleado.apellido}?`)) {
+    if (confirm(`Esto borra PERMANENTEMENTE a ${empleado.nombre} ${empleado.apellido} y todo su historial (asistencias, horas extra, trámites). Si ya no trabaja aquí pero necesitas conservar su historial, usa "Dar de baja" en vez de esto.\n\n¿Seguro que quieres eliminarlo por completo?`)) {
       this.empleadoService.eliminar(empleado.id).subscribe({
         next: () => {
           this.snackBar.open('Empleado eliminado exitosamente', 'Cerrar', { duration: 3000 });

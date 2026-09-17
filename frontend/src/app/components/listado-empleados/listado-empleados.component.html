@@ -39,6 +39,10 @@
             <mat-option *ngFor="let anio of opcionesAnioVacaciones" [value]="anio">{{ anio }}</mat-option>
           </mat-select>
         </mat-form-field>
+        <label class="filtro-inactivos">
+          <input type="checkbox" [(ngModel)]="mostrarInactivos" (ngModelChange)="aplicarFiltroNombre()" />
+          Mostrar dados de baja
+        </label>
         <span class="spacer-filtro"></span>
         <button mat-stroked-button color="primary" (click)="exportarExcel()">
           <mat-icon>file_download</mat-icon>
@@ -87,6 +91,16 @@
             </td>
           </ng-container>
 
+          <!-- Estado Column -->
+          <ng-container matColumnDef="estado">
+            <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <td mat-cell *matCellDef="let empleado">
+              <span class="badge-estado" [class.inactivo]="empleado.estado === 'inactivo'">
+                {{ empleado.estado === 'inactivo' ? 'Baja' : 'Activo' }}
+              </span>
+            </td>
+          </ng-container>
+
           <!-- Vacaciones Column -->
           <ng-container matColumnDef="vacaciones">
             <th mat-header-cell *matHeaderCellDef>Vacaciones</th>
@@ -111,7 +125,15 @@
               <button mat-icon-button color="accent" (click)="editarEmpleado(empleado)" title="Editar">
                 <mat-icon>edit</mat-icon>
               </button>
-              <button mat-icon-button color="warn" (click)="eliminarEmpleado(empleado)" title="Eliminar">
+              <button
+                mat-icon-button
+                [color]="empleado.estado === 'inactivo' ? 'primary' : 'warn'"
+                (click)="toggleEstado(empleado)"
+                [title]="empleado.estado === 'inactivo' ? 'Reactivar' : 'Dar de baja'"
+              >
+                <mat-icon>{{ empleado.estado === 'inactivo' ? 'person_add' : 'person_off' }}</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="eliminarEmpleado(empleado)" title="Eliminar permanentemente (borra su historial)">
                 <mat-icon>delete</mat-icon>
               </button>
             </td>
