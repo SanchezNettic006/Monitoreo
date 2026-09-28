@@ -313,12 +313,16 @@ export class HoraExtraService {
       throw new OperationalError(400, 'horas_aprobadas debe ser un número mayor o igual a 0');
     }
 
+    // El máximo aprobable es el reportado redondeado a hora entera (ver
+    // redondearAHoraEntera), no el decimal exacto: el frontend ya sugiere y
+    // limita a ese redondeo, así que el backend debe aceptar el mismo tope.
     const duracionReportada = horaExtra.duracion || 0;
-    if (horasAprobadas > duracionReportada) {
+    const duracionMaxima = this.redondearAHoraEntera(duracionReportada);
+    if (horasAprobadas > duracionMaxima + 0.001) {
       throw new OperationalError(400, 'Las horas aprobadas no pueden ser mayores a las reportadas');
     }
 
-    if (horasAprobadas < duracionReportada && !motivo?.trim()) {
+    if (horasAprobadas < duracionMaxima - 0.001 && !motivo?.trim()) {
       throw new OperationalError(400, 'Debes indicar un motivo cuando apruebas menos horas de las reportadas');
     }
 
@@ -329,6 +333,19 @@ export class HoraExtraService {
     horaExtra.fecha_aprobacion = new Date();
 
     return this.horaExtraRepository.save(horaExtra);
+  }
+
+  /**
+   * Redondea una duración decimal a hora entera: 50 minutos o más sube a la
+   * siguiente hora, menos de 50 baja a la hora completa (nunca queda con
+   * minutos). Debe coincidir con la misma regla del frontend (ver
+   * revisar-hora-extra-dialog.component.ts) para que el tope que se muestra
+   * ahí sea el mismo que valida aquí.
+   */
+  private redondearAHoraEntera(decimal: number): number {
+    const horas = Math.floor(decimal);
+    const minutos = Math.round((decimal - horas) * 60);
+    return minutos >= 50 ? horas + 1 : horas;
   }
 
   /**
