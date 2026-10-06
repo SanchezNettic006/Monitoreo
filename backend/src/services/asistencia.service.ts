@@ -31,14 +31,16 @@ export class AsistenciaService {
 
     const fechaCaptura = resolverFechaCaptura(capturadoEn);
 
-    // Día laboral en la zona horaria del servidor ('YYYY-MM-DD'), no en UTC
-    const hoyStr = hoyLocal();
+    // Día de la jornada en la zona horaria del servidor ('YYYY-MM-DD'): el día en que
+    // se capturó la entrada (igual que en la salida), no necesariamente hoy si se
+    // sincronizó desde la cola offline
+    const fechaRegistro = formatFechaLocal(fechaCaptura);
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
 
-    // Verificar si ya hay un registro de hoy sin salida
+    // Verificar si ya hay un registro de ese día sin salida
     const recordExistente = await this.recordRepository.findOne({
-      where: { empleado: { id: empleado.id }, fecha: hoyStr, hora_salida: IsNull() },
+      where: { empleado: { id: empleado.id }, fecha: fechaRegistro, hora_salida: IsNull() },
     });
 
     if (recordExistente) {
@@ -48,7 +50,7 @@ export class AsistenciaService {
     // Crear registro
     const record = this.recordRepository.create({
       empleado,
-      fecha: hoyStr,
+      fecha: fechaRegistro,
       hora_entrada: fechaCaptura,
       latitud_entrada: gps?.latitud ?? null,
       longitud_entrada: gps?.longitud ?? null,
@@ -114,17 +116,27 @@ export class AsistenciaService {
       throw new OperationalError(404, 'Empleado no encontrado para este usuario');
     }
 
+    // Se busca la jornada del día en que se CAPTURÓ la salida, no el día de hoy del
+    // servidor: una salida encolada sin señal y sincronizada al día siguiente debe
+    // cerrar la jornada de su propio día, no la de hoy (antes cerraba la de hoy con
+    // una hora de salida anterior a la de entrada).
+    const fechaRegistro = formatFechaLocal(fechaCaptura);
     const record = await this.recordRepository.findOne({
-      where: { empleado: { id: empleado.id }, fecha: hoyLocal() },
+      where: { empleado: { id: empleado.id }, fecha: fechaRegistro },
       relations: ['fotos', 'empleado'],
     });
 
     if (!record) {
-      throw new OperationalError(400, 'No hay registro de entrada. Debes hacer check-in primero.');
+      throw new OperationalError(400, 'No hay registro de entrada para ese día. Debes hacer check-in primero.');
     }
 
     if (record.hora_salida) {
-      throw new OperationalError(400, 'Ya existe registro de salida para hoy');
+      throw new OperationalError(400, 'Ya existe registro de salida para ese día');
+    }
+
+    // Una salida nunca puede ser anterior a la entrada del mismo registro
+    if (new Date(record.hora_entrada).getTime() > fechaCaptura.getTime()) {
+      throw new OperationalError(400, 'La hora de salida no puede ser anterior a la hora de entrada');
     }
 
     // Actualizar salida
