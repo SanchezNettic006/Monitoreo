@@ -243,7 +243,9 @@ export class ReportesComponent implements OnInit {
     const pausas = typeof totalPausas === 'number' && !isNaN(totalPausas) ? totalPausas : 0;
     const extras = typeof horasExtras === 'number' && !isNaN(horasExtras) ? horasExtras : 0;
     
-    return horas - pausas + extras;
+    // Nunca negativo: una jornada abierta (sin check-out) aún no tiene horas
+    // trabajadas guardadas, así que restar sus pausas daría un valor sin sentido
+    return Math.max(0, horas - pausas + extras);
   }
 
   /**
@@ -392,12 +394,16 @@ export class ReportesComponent implements OnInit {
   formatearDuracion(horas: number | null | undefined): string {
     // Validar que sea un número válido
     if (typeof horas !== 'number' || isNaN(horas) || horas === 0) return '0m';
-    
-    const h = Math.floor(horas);
-    const m = Math.round((horas % 1) * 60);
-    
-    if (h === 0) return `${m}m`;
-    return `${h}h ${m}m`;
+
+    // Trabajar con el valor absoluto y poner el signo al final: floor() sobre un
+    // negativo daba "-1h -25m" en vez de "-25m"
+    const signo = horas < 0 ? '-' : '';
+    const total = Math.round(Math.abs(horas) * 60);
+    const h = Math.floor(total / 60);
+    const m = total % 60;
+
+    if (h === 0) return `${signo}${m}m`;
+    return `${signo}${h}h ${m}m`;
   }
 }
 
