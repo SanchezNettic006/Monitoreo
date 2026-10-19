@@ -135,10 +135,17 @@ interface Resumen {
   `,
   styles: [
     `
+      :host {
+        display: block;
+        min-height: 100%;
+        background: #0b1710;
+      }
+
       .tramites-container {
         padding: 24px;
         max-width: 1400px;
         margin: 0 auto;
+        color: #e7f0e5;
       }
 
       .header-section {
@@ -151,12 +158,12 @@ interface Resumen {
           margin: 0;
           font-size: 28px;
           font-weight: 600;
-          color: #2b8a3e;
+          color: #fff;
         }
 
         p {
           margin: 4px 0 0 0;
-          color: #666;
+          color: #8fa98f;
           font-size: 14px;
         }
       }
@@ -217,13 +224,13 @@ interface Resumen {
       .stat-card {
         padding: 20px;
         border-radius: 8px;
-        background: white;
+        background: #182d19 !important;
         border-left: 4px solid #94c120;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
         transition: all 0.3s ease;
 
         &:hover {
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
           transform: translateY(-2px);
         }
       }
@@ -269,7 +276,7 @@ interface Resumen {
 
         .stat-label {
           font-size: 12px;
-          color: #999;
+          color: #8fa98f;
           text-transform: uppercase;
           font-weight: 600;
         }
@@ -277,35 +284,40 @@ interface Resumen {
         .stat-value {
           font-size: 24px;
           font-weight: 700;
-          color: #2b8a3e;
+          color: #94c120;
         }
       }
 
       .tabs-section {
-        background: white;
+        background: #182d19;
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
       }
 
-      ::ng-deep .mat-mdc-tab-labels {
-        border-bottom: 1px solid #e0e0e0;
-      }
+      // Acotados a .tramites-container: un ::ng-deep sin selector delante
+      // afecta TODO mat-tab-group de la app, no solo el de esta pagina.
+      .tramites-container {
+        ::ng-deep .mat-mdc-tab-labels {
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
 
-      ::ng-deep .mat-mdc-tab-label-content {
-        padding: 0 16px;
-      }
+        ::ng-deep .mat-mdc-tab-label-content {
+          padding: 0 16px;
+          color: #8fa98f;
+        }
 
-      ::ng-deep .mat-mdc-tab-body-wrapper {
-        padding: 24px;
-      }
+        ::ng-deep .mat-mdc-tab-body-wrapper {
+          padding: 24px;
+        }
 
-      ::ng-deep .mdc-tab__indicator {
-        background-color: #2b8a3e !important;
-      }
+        ::ng-deep .mdc-tab__indicator {
+          background-color: #94c120 !important;
+        }
 
-      ::ng-deep .mdc-tab--active .mdc-tab__text-label {
-        color: #2b8a3e;
-        font-weight: 600;
+        ::ng-deep .mdc-tab--active .mdc-tab__text-label {
+          color: #94c120;
+          font-weight: 600;
+        }
       }
 
       .tab-label-with-badge {
@@ -357,13 +369,13 @@ interface Resumen {
           padding: 14px;
         }
 
-        ::ng-deep .mat-mdc-tab-body-wrapper {
+        .tramites-container ::ng-deep .mat-mdc-tab-body-wrapper {
           // Cada tab (Mis Solicitudes, Crear Solicitud) maneja su propio
           // espaciado interno; sumarle padding aquí las dejaba muy angostas.
           padding: 0;
         }
 
-        ::ng-deep .mat-mdc-tab-label-content {
+        .tramites-container ::ng-deep .mat-mdc-tab-label-content {
           padding: 0 8px;
           font-size: 13px;
         }

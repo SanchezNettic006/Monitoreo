@@ -129,6 +129,7 @@ import { TipoTramitePipe } from '../../../pipes/tipo-tramite.pipe';
     `
       .mis-solicitudes-container {
         width: 100%;
+        color: #e7f0e5;
       }
 
       .loading {
@@ -141,7 +142,7 @@ import { TipoTramitePipe } from '../../../pipes/tipo-tramite.pipe';
 
         p {
           margin-top: 16px;
-          color: #666;
+          color: #8fa98f;
         }
       }
 
@@ -153,17 +154,17 @@ import { TipoTramitePipe } from '../../../pipes/tipo-tramite.pipe';
           font-size: 64px;
           width: 64px;
           height: 64px;
-          color: #ddd;
+          color: rgba(255, 255, 255, 0.15);
           margin-bottom: 16px;
         }
 
         h3 {
           margin: 16px 0 8px;
-          color: #666;
+          color: #e7f0e5;
         }
 
         p {
-          color: #999;
+          color: #8fa98f;
           font-size: 14px;
         }
       }
@@ -171,60 +172,69 @@ import { TipoTramitePipe } from '../../../pipes/tipo-tramite.pipe';
       .table-container {
         overflow-x: auto;
         padding: 0 8px;
+        background: #182d19;
+        border-radius: 10px;
       }
 
       .solicitudes-table {
         width: 100%;
+        background: transparent;
 
         th {
-          background-color: #f5f5f5;
+          background-color: #10200f;
           font-weight: 600;
-          color: #333;
-          border-bottom: 2px solid #e0e0e0;
+          color: #8fa98f;
+          border-bottom: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         td {
           padding: 12px;
-          border-bottom: 1px solid #e0e0e0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+          color: #e7f0e5;
         }
 
         tr:hover {
-          background-color: #fafafa;
+          background-color: rgba(255, 255, 255, 0.03);
         }
 
         .fecha-fin {
           display: block;
           font-size: 12px;
-          color: #999;
+          color: #8fa98f;
           margin-top: 4px;
         }
       }
 
       mat-chip {
         &.estado-pendiente {
-          background: #fff3e0;
-          color: #f57c00;
+          background: rgba(240, 164, 0, 0.18) !important;
+          color: #f0a400 !important;
         }
 
         &.estado-aprobada {
-          background: #e8f5e9;
-          color: #2b8a3e;
+          background: rgba(148, 193, 32, 0.18) !important;
+          color: #94c120 !important;
         }
 
         &.estado-rechazada {
-          background: #ffebee;
-          color: #d32f2f;
+          background: rgba(211, 47, 47, 0.18) !important;
+          color: #ff6b6b !important;
         }
 
         &.estado-cancelada {
-          background: #f3e5f5;
-          color: #7b1fa2;
+          background: rgba(123, 31, 162, 0.22) !important;
+          color: #d9a3f0 !important;
         }
       }
 
-      ::ng-deep .mat-mdc-paginator {
+      .mis-solicitudes-container ::ng-deep .mat-mdc-paginator {
         background-color: transparent;
-        border-top: 1px solid #e0e0e0;
+        color: #8fa98f;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+        .mat-mdc-paginator-icon {
+          fill: #8fa98f;
+        }
       }
     `,
   ],

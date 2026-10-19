@@ -164,6 +164,7 @@ import { TipoTramitePipe } from '../../../pipes/tipo-tramite.pipe';
     `
       .gestionar-solicitudes-container {
         width: 100%;
+        color: #e7f0e5;
       }
 
       .loading {
@@ -176,7 +177,7 @@ import { TipoTramitePipe } from '../../../pipes/tipo-tramite.pipe';
 
         p {
           margin-top: 16px;
-          color: #666;
+          color: #8fa98f;
         }
       }
 
@@ -188,53 +189,57 @@ import { TipoTramitePipe } from '../../../pipes/tipo-tramite.pipe';
           font-size: 64px;
           width: 64px;
           height: 64px;
-          color: #ddd;
+          color: rgba(255, 255, 255, 0.15);
           margin-bottom: 16px;
         }
 
         h3 {
           margin: 16px 0 8px;
-          color: #666;
+          color: #e7f0e5;
         }
 
         p {
-          color: #999;
+          color: #8fa98f;
           font-size: 14px;
         }
       }
 
       .table-container {
         overflow-x: auto;
+        background: #182d19;
+        border-radius: 10px;
       }
 
       .solicitudes-table {
         width: 100%;
+        background: transparent;
 
         th {
-          background-color: #f5f5f5;
+          background-color: #10200f;
           font-weight: 600;
-          color: #333;
-          border-bottom: 2px solid #e0e0e0;
+          color: #8fa98f;
+          border-bottom: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         td {
           padding: 12px;
-          border-bottom: 1px solid #e0e0e0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+          color: #e7f0e5;
         }
 
         tr:hover {
-          background-color: #fafafa;
+          background-color: rgba(255, 255, 255, 0.03);
         }
 
         .empleado-info {
           .empleado-nombre {
             font-weight: 500;
-            color: #333;
+            color: #e7f0e5;
           }
 
           .empleado-departamento {
             font-size: 12px;
-            color: #999;
+            color: #8fa98f;
             margin-top: 2px;
           }
         }
@@ -242,18 +247,18 @@ import { TipoTramitePipe } from '../../../pipes/tipo-tramite.pipe';
         .fecha-fin {
           display: block;
           font-size: 12px;
-          color: #999;
+          color: #8fa98f;
           margin-top: 4px;
         }
 
         .saldo-vacaciones {
           font-size: 11px;
-          color: #2b8a3e;
+          color: #94c120;
           margin-top: 2px;
           white-space: nowrap;
 
           &.saldo-insuficiente {
-            color: #d32f2f;
+            color: #ff6b6b;
             font-weight: 600;
           }
         }
@@ -261,17 +266,17 @@ import { TipoTramitePipe } from '../../../pipes/tipo-tramite.pipe';
 
       mat-chip {
         &.estado-pendiente {
-          background: #fff3e0;
-          color: #f57c00;
+          background: rgba(240, 164, 0, 0.18) !important;
+          color: #f0a400 !important;
         }
       }
 
       .aprobar-icon {
-        color: #2b8a3e;
+        color: #94c120;
       }
 
       .rechazar-icon {
-        color: #d32f2f;
+        color: #ff6b6b;
       }
 
       button[disabled] {
@@ -279,9 +284,16 @@ import { TipoTramitePipe } from '../../../pipes/tipo-tramite.pipe';
         cursor: not-allowed !important;
       }
 
-      ::ng-deep .mat-mdc-paginator {
+      // Acotado a este componente: ver nota sobre ::ng-deep sin scope en
+      // las otras paginas repintadas (filtra a toda la app si no se acota).
+      .gestionar-solicitudes-container ::ng-deep .mat-mdc-paginator {
         background-color: transparent;
-        border-top: 1px solid #e0e0e0;
+        color: #8fa98f;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+        .mat-mdc-paginator-icon {
+          fill: #8fa98f;
+        }
       }
     `,
   ],

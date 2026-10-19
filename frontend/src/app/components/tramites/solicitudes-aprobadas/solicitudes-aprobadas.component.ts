@@ -153,11 +153,12 @@ interface MesComparacion {
     `
       .solicitudes-aprobadas-container {
         width: 100%;
+        color: #e7f0e5;
       }
 
       .comparacion-section {
-        background: white;
-        border: 1px solid #eee;
+        background: #182d19;
+        border: 1px solid rgba(255, 255, 255, 0.06);
         border-radius: 10px;
         padding: 20px;
         margin-bottom: 20px;
@@ -167,7 +168,7 @@ interface MesComparacion {
         margin: 0 0 16px;
         font-size: 14px;
         font-weight: 700;
-        color: #333;
+        color: #fff;
       }
 
       .comparacion-chart {
@@ -190,7 +191,7 @@ interface MesComparacion {
       .comparacion-valor {
         font-size: 13px;
         font-weight: 700;
-        color: #2b8a3e;
+        color: #94c120;
         margin-bottom: 6px;
       }
 
@@ -199,12 +200,14 @@ interface MesComparacion {
         width: 100%;
         display: flex;
         align-items: flex-end;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 4px 4px 0 0;
       }
 
       .comparacion-fill {
         width: 100%;
         min-height: 4px;
-        background: #2b8a3e;
+        background: linear-gradient(180deg, #94c120 0%, #2b8a3e 100%);
         border-radius: 4px 4px 0 0;
         transition: height 0.3s ease;
       }
@@ -212,7 +215,7 @@ interface MesComparacion {
       .comparacion-mes {
         margin-top: 8px;
         font-size: 12px;
-        color: #666;
+        color: #8fa98f;
         text-align: center;
       }
 
@@ -233,10 +236,10 @@ interface MesComparacion {
         align-items: center;
         gap: 4px;
         padding: 4px 4px 4px 12px;
-        background: #f0fbe8;
-        border: 1px solid #2b8a3e;
+        background: rgba(148, 193, 32, 0.14);
+        border: 1px solid #94c120;
         border-radius: 20px;
-        color: #2b8a3e;
+        color: #94c120;
         font-size: 13px;
         font-weight: 600;
 
@@ -269,7 +272,7 @@ interface MesComparacion {
 
         p {
           margin-top: 16px;
-          color: #666;
+          color: #8fa98f;
         }
       }
 
@@ -281,17 +284,17 @@ interface MesComparacion {
           font-size: 64px;
           width: 64px;
           height: 64px;
-          color: #ddd;
+          color: rgba(255, 255, 255, 0.15);
           margin-bottom: 16px;
         }
 
         h3 {
           margin: 16px 0 8px;
-          color: #666;
+          color: #e7f0e5;
         }
 
         p {
-          color: #999;
+          color: #8fa98f;
           font-size: 14px;
         }
       }
@@ -299,36 +302,40 @@ interface MesComparacion {
       .table-container {
         overflow-x: auto;
         padding: 0 8px;
+        background: #182d19;
+        border-radius: 10px;
       }
 
       .solicitudes-table {
         width: 100%;
+        background: transparent;
 
         th {
-          background-color: #f5f5f5;
+          background-color: #10200f;
           font-weight: 600;
-          color: #333;
-          border-bottom: 2px solid #e0e0e0;
+          color: #8fa98f;
+          border-bottom: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         td {
           padding: 12px;
-          border-bottom: 1px solid #e0e0e0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+          color: #e7f0e5;
         }
 
         tr:hover {
-          background-color: #fafafa;
+          background-color: rgba(255, 255, 255, 0.03);
         }
 
         .empleado-info {
           .empleado-nombre {
             font-weight: 500;
-            color: #333;
+            color: #e7f0e5;
           }
 
           .empleado-departamento {
             font-size: 12px;
-            color: #999;
+            color: #8fa98f;
             margin-top: 2px;
           }
         }
@@ -336,14 +343,34 @@ interface MesComparacion {
         .fecha-fin {
           display: block;
           font-size: 12px;
-          color: #999;
+          color: #8fa98f;
           margin-top: 4px;
         }
       }
 
-      ::ng-deep .mat-mdc-paginator {
+      .solicitudes-aprobadas-container ::ng-deep .mat-mdc-paginator {
         background-color: transparent;
-        border-top: 1px solid #e0e0e0;
+        color: #8fa98f;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+        .mat-mdc-paginator-icon {
+          fill: #8fa98f;
+        }
+      }
+
+      .solicitudes-aprobadas-container ::ng-deep .mat-mdc-form-field {
+        .mat-mdc-text-field-wrapper {
+          background-color: #182d19;
+        }
+
+        .mat-mdc-form-field-label,
+        .mat-mdc-select-value {
+          color: #e7f0e5;
+        }
+
+        .mat-mdc-select-arrow {
+          color: #8fa98f;
+        }
       }
     `,
   ],

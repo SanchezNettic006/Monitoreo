@@ -169,15 +169,15 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
   styles: [`
     .crear-solicitud-container {
       padding: 20px;
-      background: #f5f9f7;
+      background: #0b1710;
       min-height: 100vh;
     }
     .form-wrapper {
       max-width: 700px;
       margin: 0 auto;
-      background: white;
+      background: #182d19;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
       overflow: hidden;
     }
     .form-header {
@@ -223,7 +223,7 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
       margin: 0;
       font-size: 14px;
       font-weight: 700;
-      color: #2b8a3e;
+      color: #94c120;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -246,24 +246,24 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
         max-width: 200px;
         max-height: 200px;
         border-radius: 6px;
-        border: 1px solid #ddd;
+        border: 1px solid rgba(255, 255, 255, 0.15);
         display: block;
       }
     }
     .foto-error {
       margin: 0;
-      color: #d32f2f;
+      color: #ff6b6b;
       font-size: 12px;
     }
     .info-box {
-      background: #f0fbe8;
+      background: rgba(148, 193, 32, 0.1);
       border-radius: 6px;
       padding: 12px 16px;
       display: flex;
       gap: 12px;
     }
     .info-box mat-icon {
-      color: #2b8a3e;
+      color: #94c120;
       flex-shrink: 0;
       font-size: 20px;
       width: 20px;
@@ -271,7 +271,7 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
     }
     .info-box strong {
       display: block;
-      color: #2b8a3e;
+      color: #94c120;
       margin-bottom: 6px;
       font-size: 13px;
     }
@@ -279,7 +279,7 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
       margin: 0;
       padding-left: 18px;
       font-size: 12px;
-      color: #555;
+      color: #c3d4c0;
       line-height: 1.5;
     }
     .info-box li {
@@ -299,20 +299,32 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
       font-size: 14px;
     }
     .btn-cancel {
-      border-color: #ddd;
-      color: #666;
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #8fa98f;
       min-width: 100px;
       font-size: 14px;
     }
     mat-spinner {
       display: inline-block;
     }
-    ::ng-deep {
+    // Acotado a este componente: un ::ng-deep sin selector delante afecta
+    // TODO mat-form-field "fill" de la app, no solo el de este formulario.
+    .crear-solicitud-container ::ng-deep {
       .mat-mdc-form-field-fill .mat-mdc-text-field-wrapper {
-        background-color: #f9f9f9;
+        background-color: #10200f;
       }
       .mat-mdc-form-field-fill.mat-focused .mat-mdc-text-field-wrapper {
-        background-color: white;
+        background-color: #152a16;
+      }
+      .mat-mdc-form-field-label,
+      .mat-mdc-select-value,
+      input.mat-mdc-input-element,
+      textarea.mat-mdc-input-element {
+        color: #e7f0e5;
+      }
+      .mat-mdc-select-arrow,
+      .mat-datepicker-toggle-default-icon {
+        color: #8fa98f;
       }
     }
     @media (max-width: 600px) {
