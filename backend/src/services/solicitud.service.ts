@@ -481,6 +481,13 @@ export class SolicitudService {
       if (emailSupervisor) destinatarios.add(emailSupervisor);
       if (config.notificaciones.emailRrhh) destinatarios.add(config.notificaciones.emailRrhh);
 
+      // Cuando quien pide el permiso es un líder (no un empleado normal), además
+      // de RRHH se avisa a este correo fijo, porque un líder no tiene un supervisor
+      // configurado en su propio departamento que revise su solicitud.
+      if (empleado.usuario?.rol === 'lider') {
+        destinatarios.add('mixcoy@nettic.com.gt');
+      }
+
       if (destinatarios.size === 0) {
         console.warn('⚠️ Solicitud creada sin destinatarios de notificación (falta email_supervisor y RRHH_EMAIL)');
         return;
