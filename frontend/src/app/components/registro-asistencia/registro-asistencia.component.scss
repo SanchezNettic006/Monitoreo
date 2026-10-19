@@ -12,14 +12,16 @@ $verde-claro: #94c120;
 $ambar: #f0a400;
 $ambar-oscuro: #c98700;
 $rojo: #d32f2f;
-$texto: #26312c;
-$texto-suave: #6b7a72;
-$fondo-suave: #f6f8f6;
+$texto: #e7f0e5;
+$texto-suave: #8fa98f;
+$fondo-suave: #10200f;
+// Superficie "elevada" sobre $fondo-suave (equivalente al "white" del tema claro)
+$superficie: #182d19;
 
 :host {
   display: block;
   min-height: 100%;
-  background: linear-gradient(180deg, #eef6ea 0%, #f7faf5 45%, #fdf6e8 100%);
+  background: #0b1710;
 }
 
 .attendance-container {
@@ -67,14 +69,14 @@ $fondo-suave: #f6f8f6;
   transition: all 0.2s ease;
 
   &.active {
-    background: white;
-    color: $verde;
-    box-shadow: 0 2px 8px rgba(43, 138, 62, 0.15);
+    background: $superficie;
+    color: $verde-claro;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   }
 
   &--amber.active {
-    color: $ambar-oscuro;
-    box-shadow: 0 2px 8px rgba(240, 164, 0, 0.15);
+    color: $ambar;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   }
 }
 
@@ -110,8 +112,8 @@ $fondo-suave: #f6f8f6;
   padding: 8px 14px;
   border: none;
   border-radius: 999px;
-  background: rgba(43, 138, 62, 0.08);
-  color: $verde;
+  background: rgba(148, 193, 32, 0.14);
+  color: $verde-claro;
   font-size: 12px;
   font-weight: 700;
   font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
@@ -119,15 +121,15 @@ $fondo-suave: #f6f8f6;
   transition: background 0.2s ease;
 
   &:hover {
-    background: rgba(43, 138, 62, 0.14);
+    background: rgba(148, 193, 32, 0.2);
   }
 
   &--amber {
-    background: rgba(240, 164, 0, 0.1);
-    color: $ambar-oscuro;
+    background: rgba(240, 164, 0, 0.16);
+    color: $ambar;
 
     &:hover {
-      background: rgba(240, 164, 0, 0.16);
+      background: rgba(240, 164, 0, 0.24);
     }
   }
 }
@@ -155,11 +157,11 @@ $fondo-suave: #f6f8f6;
 
 // ============= TARJETA BASE =============
 .app-card {
-  background: white;
+  background: $superficie;
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 12px 32px rgba(43, 138, 62, 0.12);
-  border: 1px solid rgba(43, 138, 62, 0.1);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .app-card-header {
@@ -167,8 +169,8 @@ $fondo-suave: #f6f8f6;
   justify-content: space-between;
   align-items: flex-start;
   padding: 22px 24px 18px;
-  background: linear-gradient(135deg, rgba(43, 138, 62, 0.08) 0%, rgba(148, 193, 32, 0.05) 100%);
-  border-bottom: 1px solid rgba(43, 138, 62, 0.08);
+  background: linear-gradient(135deg, rgba(43, 138, 62, 0.18) 0%, rgba(148, 193, 32, 0.08) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 
   h1 {
     display: flex;
@@ -177,11 +179,11 @@ $fondo-suave: #f6f8f6;
     font-size: 22px;
     font-weight: 700;
     margin: 0;
-    color: $verde;
+    color: #fff;
     letter-spacing: -0.3px;
 
     mat-icon {
-      color: $ambar-oscuro;
+      color: $ambar;
     }
   }
 
@@ -194,11 +196,11 @@ $fondo-suave: #f6f8f6;
 }
 
 .app-card--amber .app-card-header {
-  background: linear-gradient(135deg, rgba(240, 164, 0, 0.1) 0%, rgba(240, 164, 0, 0.04) 100%);
-  border-bottom-color: rgba(240, 164, 0, 0.12);
+  background: linear-gradient(135deg, rgba(240, 164, 0, 0.2) 0%, rgba(240, 164, 0, 0.06) 100%);
+  border-bottom-color: rgba(240, 164, 0, 0.18);
 
   h1 {
-    color: $ambar-oscuro;
+    color: #fff;
   }
 }
 
@@ -223,19 +225,19 @@ $fondo-suave: #f6f8f6;
   }
 
   &.is-active {
-    background: rgba(148, 193, 32, 0.18);
-    color: #6f9500;
+    background: rgba(148, 193, 32, 0.2);
+    color: $verde-claro;
   }
 
   &.is-done {
-    background: rgba(43, 138, 62, 0.15);
-    color: $verde;
+    background: rgba(148, 193, 32, 0.18);
+    color: $verde-claro;
   }
 }
 
 .app-card--amber {
   .app-card-header h1 mat-icon {
-    color: $ambar-oscuro;
+    color: $ambar;
   }
 }
 
@@ -282,18 +284,18 @@ $fondo-suave: #f6f8f6;
     position: absolute;
     inset: var(--ring-thickness);
     border-radius: 50%;
-    background: white;
+    background: $superficie;
   }
 
   &.ring--idle {
     box-shadow: none;
 
     &::before {
-      background: rgba(43, 138, 62, 0.22);
+      background: rgba(148, 193, 32, 0.25);
     }
 
     &.ring--amber::before {
-      background: rgba(240, 164, 0, 0.22);
+      background: rgba(240, 164, 0, 0.25);
     }
   }
 
@@ -346,7 +348,7 @@ $fondo-suave: #f6f8f6;
   margin-bottom: 2px;
 
   .ring--done & {
-    color: $verde;
+    color: $verde-claro;
   }
 }
 
@@ -388,7 +390,7 @@ $fondo-suave: #f6f8f6;
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: $fondo-suave;
+  background: $superficie;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
@@ -398,11 +400,11 @@ $fondo-suave: #f6f8f6;
     font-size: 15px;
     width: 15px;
     height: 15px;
-    color: $verde;
+    color: $verde-claro;
   }
 
   &.chip--amber mat-icon {
-    color: $ambar-oscuro;
+    color: $ambar;
   }
 }
 
@@ -418,7 +420,7 @@ $fondo-suave: #f6f8f6;
   height: 96px;
   border-radius: 50%;
   background: $fondo-suave;
-  border: 2px dashed rgba(43, 138, 62, 0.3);
+  border: 2px dashed rgba(148, 193, 32, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -428,7 +430,7 @@ $fondo-suave: #f6f8f6;
     font-size: 40px;
     width: 40px;
     height: 40px;
-    color: rgba(43, 138, 62, 0.35);
+    color: rgba(148, 193, 32, 0.45);
   }
 
   img {
@@ -462,7 +464,7 @@ $fondo-suave: #f6f8f6;
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  border: 3px solid white;
+  border: 3px solid $superficie;
   background: linear-gradient(135deg, #{$verde} 0%, #1a5a2a 100%);
   color: white;
   display: flex;
@@ -499,7 +501,7 @@ $fondo-suave: #f6f8f6;
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  border: 2px solid white;
+  border: 2px solid $superficie;
   background: $rojo;
   color: white;
   display: flex;
@@ -574,9 +576,9 @@ $fondo-suave: #f6f8f6;
   justify-content: center;
   gap: 8px;
   border-radius: 999px;
-  border: 2px solid $verde;
-  background: white;
-  color: $verde;
+  border: 2px solid $verde-claro;
+  background: $superficie;
+  color: $verde-claro;
   font-weight: 700;
   font-size: 13px;
   text-transform: uppercase;
@@ -591,7 +593,7 @@ $fondo-suave: #f6f8f6;
   }
 
   &:hover:not(:disabled) {
-    background: rgba(43, 138, 62, 0.06);
+    background: rgba(148, 193, 32, 0.12);
   }
 
   &:disabled {
@@ -646,7 +648,7 @@ $fondo-suave: #f6f8f6;
   letter-spacing: 0.3px;
 
   .pausas-total {
-    background: white;
+    background: $superficie;
     padding: 3px 10px;
     border-radius: 999px;
     font-size: 12px;
@@ -662,10 +664,10 @@ $fondo-suave: #f6f8f6;
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  background: rgba(148, 193, 32, 0.15);
+  background: rgba(148, 193, 32, 0.18);
   border-radius: 999px;
   font-size: 13px;
-  color: $verde;
+  color: $verde-claro;
 
   mat-icon {
     font-size: 18px;
@@ -680,15 +682,15 @@ $fondo-suave: #f6f8f6;
     height: 28px;
     border-radius: 50%;
     border: none;
-    background: white;
-    color: $verde;
+    background: $superficie;
+    color: $verde-claro;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
 
     mat-icon {
-      color: $verde;
+      color: $verde-claro;
       font-size: 16px;
       width: 16px;
       height: 16px;
@@ -708,7 +710,7 @@ $fondo-suave: #f6f8f6;
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: white;
+  background: $superficie;
   border-radius: 10px;
   font-size: 12px;
   color: $texto-suave;
@@ -753,8 +755,8 @@ $fondo-suave: #f6f8f6;
 
   .pausa-dur {
     font-weight: 700;
-    color: $verde;
-    background: rgba(43, 138, 62, 0.08);
+    color: $verde-claro;
+    background: rgba(148, 193, 32, 0.15);
     padding: 2px 8px;
     border-radius: 999px;
   }
@@ -768,7 +770,7 @@ $fondo-suave: #f6f8f6;
   padding: 12px 24px;
   font-size: 12px;
   font-weight: 600;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 
   mat-icon {
     font-size: 18px;
@@ -777,20 +779,20 @@ $fondo-suave: #f6f8f6;
   }
 
   &.is-on {
-    color: $verde;
-    background: rgba(43, 138, 62, 0.04);
+    color: $verde-claro;
+    background: rgba(148, 193, 32, 0.08);
 
     mat-icon {
-      color: $verde;
+      color: $verde-claro;
     }
   }
 
   &.is-off {
-    color: #b71c1c;
-    background: rgba(211, 47, 47, 0.04);
+    color: #ff6b6b;
+    background: rgba(211, 47, 47, 0.12);
 
     mat-icon {
-      color: $rojo;
+      color: #ff6b6b;
     }
   }
 }
@@ -801,12 +803,11 @@ $fondo-suave: #f6f8f6;
   align-items: flex-start;
   gap: 14px;
   padding: 18px 20px;
-  background: linear-gradient(135deg, #fff9ec 0%, #fbedcf 100%);
-  border: 2px solid $ambar;
+  background: $ambar;
   border-radius: 20px;
 
   mat-icon {
-    color: $ambar-oscuro;
+    color: #1a1400;
     font-size: 24px;
     width: 24px;
     height: 24px;
@@ -816,24 +817,25 @@ $fondo-suave: #f6f8f6;
   strong {
     display: block;
     font-size: 14px;
-    color: #8a5c00;
+    color: #1a1400;
     margin-bottom: 4px;
   }
 
   p {
     margin: 0 0 4px;
     font-size: 13px;
-    color: #8a5c00;
+    color: rgba(26, 20, 0, 0.75);
     line-height: 1.5;
   }
 
   .warning-strong {
     font-weight: 700;
-    color: #b71c1c;
-    background: rgba(211, 47, 47, 0.1);
+    color: #fff;
+    background: rgba(26, 20, 0, 0.3);
     padding: 6px 10px;
     border-radius: 8px;
     margin-top: 6px;
+    display: inline-block;
   }
 }
 
