@@ -16,6 +16,33 @@ $superficie: #182d19;
 .mis-horas-container {
   padding: 24px;
   color: $texto;
+
+  // Repintado de Material vía las variables que sus propios componentes
+  // leen (input/select, paginador, tabs) — más confiable que pelear con la
+  // especificidad de las clases internas de Material. Antes el texto
+  // escrito en los filtros quedaba casi negro (el valor por defecto del
+  // tema es rgba(0,0,0,.87), pensado para fondo claro).
+  --mdc-filled-text-field-container-color: #{$superficie};
+  --mdc-filled-text-field-label-text-color: #{$texto-suave};
+  --mdc-filled-text-field-hover-label-text-color: #{$texto-suave};
+  --mdc-filled-text-field-focus-label-text-color: #{$verde-claro};
+  --mdc-filled-text-field-input-text-color: #{$texto};
+  --mdc-filled-text-field-input-text-placeholder-color: #6b8a6b;
+  --mdc-filled-text-field-active-indicator-color: rgba(255, 255, 255, 0.3);
+  --mdc-filled-text-field-hover-active-indicator-color: rgba(255, 255, 255, 0.5);
+  --mdc-filled-text-field-focus-active-indicator-color: #{$verde-claro};
+  --mat-form-field-enabled-select-arrow-color: #{$texto-suave};
+  --mat-form-field-focus-select-arrow-color: #{$verde-claro};
+  --mat-select-enabled-trigger-text-color: #{$texto};
+  --mat-select-enabled-arrow-color: #{$texto-suave};
+  --mat-select-placeholder-text-color: #6b8a6b;
+  --mat-paginator-container-background-color: transparent;
+  --mat-paginator-container-text-color: #{$texto-suave};
+  --mat-paginator-enabled-icon-color: #{$texto-suave};
+  --mat-tab-header-active-label-text-color: #{$verde-claro};
+  --mat-tab-header-inactive-label-text-color: #{$texto-suave};
+  --mat-tab-header-divider-color: rgba(255, 255, 255, 0.08);
+  --mdc-tab-indicator-active-indicator-color: #{$verde-claro};
 }
 
 .header {
@@ -177,49 +204,12 @@ $superficie: #182d19;
   }
 }
 
-// ===== Chrome de Material (tabs, paginador, filtros): persistente en la
-// pantalla, así que se repinta también. Los popups transitorios (el panel
-// desplegable del mes) se quedan con el estilo claro de Material por ahora.
+// El resto del chrome de Material (texto de filtros, paginador, pestañas) ya
+// queda repintado por las variables CSS definidas en .mis-horas-container.
+// Solo lo que esas variables no cubren queda acá.
 ::ng-deep .mis-horas-container {
-  .mat-mdc-tab-header {
-    border-bottom-color: rgba(255, 255, 255, 0.08);
-  }
-
-  .mat-mdc-tab .mdc-tab__text-label {
-    color: $texto-suave;
-  }
-
-  .mat-mdc-tab-label-active .mdc-tab__text-label {
-    color: $verde-claro !important;
-  }
-
   .mat-mdc-tab-body-wrapper {
     background: transparent;
-  }
-
-  .mat-mdc-form-field {
-    .mat-mdc-text-field-wrapper {
-      background-color: $superficie;
-    }
-
-    .mat-mdc-form-field-label,
-    .mat-mdc-select-value,
-    input.mat-mdc-input-element {
-      color: $texto;
-    }
-
-    .mat-mdc-select-arrow {
-      color: $texto-suave;
-    }
-  }
-
-  .mat-mdc-paginator {
-    background: transparent;
-    color: $texto-suave;
-
-    .mat-mdc-paginator-icon {
-      fill: $texto-suave;
-    }
   }
 }
 

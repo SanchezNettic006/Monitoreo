@@ -14,6 +14,34 @@ $superficie: #182d19;
   background: #0b1710;
   color: $texto;
   position: relative;
+
+  // Repintado de Material vía las variables que SUS PROPIOS componentes ya
+  // leen (input/select, paginador, tabs) — esto es más confiable que pelear
+  // con la especificidad de las clases internas de Material: la variable se
+  // hereda a cualquier descendiente sin importar qué selector la consuma.
+  // Antes el texto escrito en los filtros quedaba casi negro (el valor por
+  // defecto del tema es rgba(0,0,0,.87), pensado para fondo claro).
+  --mdc-filled-text-field-container-color: #{$superficie};
+  --mdc-filled-text-field-label-text-color: #{$texto-suave};
+  --mdc-filled-text-field-hover-label-text-color: #{$texto-suave};
+  --mdc-filled-text-field-focus-label-text-color: #{$verde-claro};
+  --mdc-filled-text-field-input-text-color: #{$texto};
+  --mdc-filled-text-field-input-text-placeholder-color: #6b8a6b;
+  --mdc-filled-text-field-active-indicator-color: rgba(255, 255, 255, 0.3);
+  --mdc-filled-text-field-hover-active-indicator-color: rgba(255, 255, 255, 0.5);
+  --mdc-filled-text-field-focus-active-indicator-color: #{$verde-claro};
+  --mat-form-field-enabled-select-arrow-color: #{$texto-suave};
+  --mat-form-field-focus-select-arrow-color: #{$verde-claro};
+  --mat-select-enabled-trigger-text-color: #{$texto};
+  --mat-select-enabled-arrow-color: #{$texto-suave};
+  --mat-select-placeholder-text-color: #6b8a6b;
+  --mat-paginator-container-background-color: transparent;
+  --mat-paginator-container-text-color: #{$texto-suave};
+  --mat-paginator-enabled-icon-color: #{$texto-suave};
+  --mat-tab-header-active-label-text-color: #{$verde-claro};
+  --mat-tab-header-inactive-label-text-color: #{$texto-suave};
+  --mat-tab-header-divider-color: rgba(255, 255, 255, 0.08);
+  --mdc-tab-indicator-active-indicator-color: #{$verde-claro};
 }
 
 // ============= LOADING OVERLAY =============
@@ -472,7 +500,11 @@ $superficie: #182d19;
 .table-wrapper {
   background: $superficie;
   border-radius: 10px;
-  overflow: hidden;
+  // La tabla tiene muchas columnas (ticket, empleado, fechas, ubicación,
+  // fotos, acciones...); con overflow:hidden se recortaba en vez de
+  // scrollear apenas el sidebar nuevo le quitó ancho a esta pantalla.
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
@@ -489,6 +521,7 @@ $superficie: #182d19;
 
 .data-table {
   width: 100%;
+  min-width: 920px;
   border-collapse: collapse;
 
   thead {
@@ -626,36 +659,10 @@ $superficie: #182d19;
   }
 }
 
-// ============= CAMPOS DE FILTRO (mat-form-field) =============
-.horas-extras-container ::ng-deep .mat-mdc-form-field {
-  .mat-mdc-text-field-wrapper {
-    background-color: $superficie;
-  }
-
-  .mat-mdc-form-field-label,
-  .mat-mdc-select-value,
-  input.mat-mdc-input-element {
-    color: $texto;
-  }
-
-  .mat-mdc-select-arrow {
-    color: $texto-suave;
-  }
-}
-
-// ============= PAGINATOR =============
-// Acotado a esta pagina (ver nota en Mis Horas): un ::ng-deep sin selector
-// delante se vuelve global y afectaria el paginador de paginas que aun no
-// se repintan.
-.horas-extras-container ::ng-deep .mat-mdc-paginator {
-  background: transparent;
-  color: $texto-suave;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-
-  .mat-mdc-paginator-icon {
-    fill: $texto-suave;
-  }
-}
+// Los campos de filtro y el paginador ya quedan repintados por las
+// variables CSS definidas en .horas-extras-container (ver arriba) — es el
+// mecanismo que Material realmente usa para sus colores, más confiable que
+// pelear con la especificidad de sus clases internas.
 
 // ============= RESPONSIVE =============
 @media (max-width: 768px) {

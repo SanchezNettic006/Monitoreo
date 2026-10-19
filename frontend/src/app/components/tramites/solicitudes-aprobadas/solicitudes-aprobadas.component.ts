@@ -154,6 +154,28 @@ interface MesComparacion {
       .solicitudes-aprobadas-container {
         width: 100%;
         color: #e7f0e5;
+
+        // Repintado de Material vía sus propias variables (filtros,
+        // paginador): más confiable que pelear con la especificidad de sus
+        // clases internas. Antes el texto escrito quedaba casi negro (el
+        // valor por defecto del tema es rgba(0,0,0,.87), para fondo claro).
+        --mdc-filled-text-field-container-color: #182d19;
+        --mdc-filled-text-field-label-text-color: #8fa98f;
+        --mdc-filled-text-field-hover-label-text-color: #8fa98f;
+        --mdc-filled-text-field-focus-label-text-color: #94c120;
+        --mdc-filled-text-field-input-text-color: #e7f0e5;
+        --mdc-filled-text-field-input-text-placeholder-color: #6b8a6b;
+        --mdc-filled-text-field-active-indicator-color: rgba(255, 255, 255, 0.3);
+        --mdc-filled-text-field-hover-active-indicator-color: rgba(255, 255, 255, 0.5);
+        --mdc-filled-text-field-focus-active-indicator-color: #94c120;
+        --mat-form-field-enabled-select-arrow-color: #8fa98f;
+        --mat-form-field-focus-select-arrow-color: #94c120;
+        --mat-select-enabled-trigger-text-color: #e7f0e5;
+        --mat-select-enabled-arrow-color: #8fa98f;
+        --mat-select-placeholder-text-color: #6b8a6b;
+        --mat-paginator-container-background-color: transparent;
+        --mat-paginator-container-text-color: #8fa98f;
+        --mat-paginator-enabled-icon-color: #8fa98f;
       }
 
       .comparacion-section {

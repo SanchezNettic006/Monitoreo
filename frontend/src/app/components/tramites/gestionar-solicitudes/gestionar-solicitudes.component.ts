@@ -165,6 +165,12 @@ import { TipoTramitePipe } from '../../../pipes/tipo-tramite.pipe';
       .gestionar-solicitudes-container {
         width: 100%;
         color: #e7f0e5;
+
+        // Repintado de Material vía sus propias variables (paginador): más
+        // confiable que pelear con la especificidad de sus clases internas.
+        --mat-paginator-container-background-color: transparent;
+        --mat-paginator-container-text-color: #8fa98f;
+        --mat-paginator-enabled-icon-color: #8fa98f;
       }
 
       .loading {
