@@ -79,22 +79,24 @@
         <a class="panel-link" (click)="irA('calendario')">Calendario completo →</a>
       </div>
 
-      <div class="semana-dias" *ngIf="!cargandoSemana">
-        <div class="dia-col" *ngFor="let dia of semana" [class.hoy]="dia.esHoy" [class.feriado]="!!dia.feriado">
-          <span class="dia-label">{{ dia.diaLabel }}{{ dia.esHoy ? ' · hoy' : '' }}</span>
-          <span class="dia-numero">{{ dia.numero }}</span>
-          <span class="dia-chip" *ngIf="dia.feriado">{{ dia.feriado }}</span>
+      <div class="semana-scroll">
+        <div class="semana-dias" *ngIf="!cargandoSemana">
+          <div class="dia-col" *ngFor="let dia of semana" [class.hoy]="dia.esHoy" [class.feriado]="!!dia.feriado">
+            <span class="dia-label">{{ dia.diaLabel }}{{ dia.esHoy ? ' · hoy' : '' }}</span>
+            <span class="dia-numero">{{ dia.numero }}</span>
+            <span class="dia-chip" *ngIf="dia.feriado">{{ dia.feriado }}</span>
+          </div>
         </div>
-      </div>
 
-      <div class="semana-barras" *ngIf="barrasSemana.length > 0">
-        <div
-          class="barra"
-          *ngFor="let barra of barrasSemana"
-          [style.grid-column]="(barra.colIni + 1) + ' / ' + (barra.colFin + 2)"
-        >
-          <span class="barra-titulo">{{ barra.titulo }}</span>
-          <span class="barra-rango">{{ barra.rango }}</span>
+        <div class="semana-barras" *ngIf="barrasSemana.length > 0">
+          <div
+            class="barra"
+            *ngFor="let barra of barrasSemana"
+            [style.grid-column]="(barra.colIni + 1) + ' / ' + (barra.colFin + 2)"
+          >
+            <span class="barra-titulo">{{ barra.titulo }}</span>
+            <span class="barra-rango">{{ barra.rango }}</span>
+          </div>
         </div>
       </div>
     </div>

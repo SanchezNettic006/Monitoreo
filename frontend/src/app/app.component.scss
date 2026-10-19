@@ -27,4 +27,17 @@
   app-sidebar ::ng-deep .item {
     justify-content: center;
   }
+
+  app-sidebar ::ng-deep .marca {
+    justify-content: center;
+    padding: 20px 8px 16px;
+  }
+
+  // El pie (avatar + email + logout) también asumía los 240px del sidebar
+  // completo; a 64px, avatar + botón de salir ya no caben lado a lado
+  app-sidebar ::ng-deep .pie {
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 6px;
+  }
 }
