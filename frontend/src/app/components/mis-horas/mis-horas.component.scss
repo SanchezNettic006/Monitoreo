@@ -1,17 +1,33 @@
+// Mismo tema oscuro del resto de la app (ver Home / Registro de Asistencia):
+// fondo verde-casi-negro, superficie elevada para tarjetas/tablas, acento
+// lima/ambar. Solo repintado — misma estructura y funcionalidad de siempre.
+$verde-claro: #94c120;
+$ambar: #f0a400;
+$texto: #e7f0e5;
+$texto-suave: #8fa98f;
+$superficie: #182d19;
+
+:host {
+  display: block;
+  min-height: 100%;
+  background: #0b1710;
+}
+
 .mis-horas-container {
   padding: 24px;
+  color: $texto;
 }
 
 .header {
   margin-bottom: 20px;
 
   h1 {
-    color: #2B8A3E;
+    color: #fff;
     margin-bottom: 4px;
   }
 
   p {
-    color: #666;
+    color: $texto-suave;
   }
 }
 
@@ -25,13 +41,13 @@
 .stat-nota {
   margin: 2px 0 0;
   font-size: 11px;
-  color: #f0a400;
+  color: $ambar;
 }
 
 .nota-pendiente {
   display: block;
   font-size: 11px;
-  color: #f0a400;
+  color: $ambar;
 }
 
 .stat-card {
@@ -39,6 +55,10 @@
   align-items: center;
   gap: 14px;
   padding: 16px !important;
+  background: $superficie !important;
+  color: $texto !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+  min-width: 0;
 
   .stat-icon {
     width: 44px;
@@ -58,7 +78,7 @@
   .stat-label {
     margin: 0;
     font-size: 12px;
-    color: #888;
+    color: $texto-suave;
     text-transform: uppercase;
   }
 
@@ -66,7 +86,7 @@
     margin: 2px 0 0;
     font-size: 20px;
     font-weight: 700;
-    color: #333;
+    color: #fff;
   }
 }
 
@@ -79,14 +99,14 @@
 }
 
 .tabla-section {
-  background: white;
-  border: 1px solid #eee;
+  background: $superficie;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
   padding: 20px;
 
   h3 {
     margin-top: 0;
-    color: #333;
+    color: #fff;
   }
 }
 
@@ -104,22 +124,23 @@
   th {
     text-align: left;
     font-size: 12px;
-    color: #888;
+    color: $texto-suave;
     text-transform: uppercase;
     padding: 10px 8px;
-    border-bottom: 2px solid #eee;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
   }
 
   td {
     padding: 10px 8px;
-    border-bottom: 1px solid #f2f2f2;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     font-size: 14px;
+    color: $texto;
   }
 }
 
 .loading, .sin-datos {
   text-align: center;
-  color: #888;
+  color: $texto-suave;
   padding: 30px 0;
 }
 
@@ -141,18 +162,64 @@
   letter-spacing: 0.3px;
 
   &.badge-pendiente {
-    background: #FFF4E6;
-    color: #F0A400;
+    background: rgba(240, 164, 0, 0.18);
+    color: $ambar;
   }
 
   &.badge-aprobada {
-    background: #E8F5E9;
-    color: #4CAF50;
+    background: rgba(148, 193, 32, 0.18);
+    color: $verde-claro;
   }
 
   &.badge-rechazada {
-    background: #FDECEA;
-    color: #D32F2F;
+    background: rgba(211, 47, 47, 0.18);
+    color: #ff6b6b;
+  }
+}
+
+// ===== Chrome de Material (tabs, paginador, filtros): persistente en la
+// pantalla, así que se repinta también. Los popups transitorios (el panel
+// desplegable del mes) se quedan con el estilo claro de Material por ahora.
+::ng-deep .mis-horas-container {
+  .mat-mdc-tab-header {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .mat-mdc-tab .mdc-tab__text-label {
+    color: $texto-suave;
+  }
+
+  .mat-mdc-tab-label-active .mdc-tab__text-label {
+    color: $verde-claro !important;
+  }
+
+  .mat-mdc-tab-body-wrapper {
+    background: transparent;
+  }
+
+  .mat-mdc-form-field {
+    .mat-mdc-text-field-wrapper {
+      background-color: $superficie;
+    }
+
+    .mat-mdc-form-field-label,
+    .mat-mdc-select-value,
+    input.mat-mdc-input-element {
+      color: $texto;
+    }
+
+    .mat-mdc-select-arrow {
+      color: $texto-suave;
+    }
+  }
+
+  .mat-mdc-paginator {
+    background: transparent;
+    color: $texto-suave;
+
+    .mat-mdc-paginator-icon {
+      fill: $texto-suave;
+    }
   }
 }
 
