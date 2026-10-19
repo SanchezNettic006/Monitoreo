@@ -1,7 +1,18 @@
+// Mismo tema oscuro del resto de la app. Solo repintado — misma
+// estructura, clases y funcionalidad de siempre.
+$verde-claro: #94c120;
+$ambar: #f0a400;
+$rojo-claro: #ff6b6b;
+$texto: #e7f0e5;
+$texto-suave: #8fa98f;
+$fondo-suave: #10200f;
+$superficie: #182d19;
+
 // ============= CONTAINER =============
 .horas-extras-container {
   min-height: 100vh;
-  background: #f8f9fb;
+  background: #0b1710;
+  color: $texto;
   position: relative;
 }
 
@@ -15,7 +26,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.5);
   z-index: 1000;
 }
 
@@ -28,7 +39,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 24px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 
   .header-content {
     flex: 1;
@@ -51,7 +62,7 @@
   .btn-crear {
     white-space: nowrap;
     font-weight: 600;
-    
+
     mat-icon {
       margin-right: 8px;
     }
@@ -64,7 +75,7 @@
 
     .nav-btn {
       color: rgba(255, 255, 255, 0.9) !important;
-      
+
       &:hover {
         background: rgba(255, 255, 255, 0.15) !important;
       }
@@ -82,46 +93,47 @@
   padding: 0 20px;
 
   .stat-card {
-    background: white;
+    background: $superficie;
     padding: 28px 24px;
     border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    border-top: 4px solid #ddd;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    border-top: 4px solid rgba(255, 255, 255, 0.15);
     transition: all 0.3s ease;
+    min-width: 0;
 
     &:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
       transform: translateY(-2px);
     }
 
     .stat-value {
       font-size: 42px;
       font-weight: 700;
-      color: #2B8A3E;
+      color: $verde-claro;
       margin: 0 0 8px 0;
     }
 
     .stat-label {
       font-size: 14px;
-      color: #666;
+      color: $texto-suave;
       font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     &.active {
-      border-top-color: #F0A400;
+      border-top-color: $ambar;
 
       .stat-value {
-        color: #F0A400;
+        color: $ambar;
       }
     }
 
     &.completed {
-      border-top-color: #4CAF50;
+      border-top-color: $verde-claro;
 
       .stat-value {
-        color: #4CAF50;
+        color: $verde-claro;
       }
     }
   }
@@ -132,10 +144,10 @@
   max-width: 1200px;
   margin: 20px auto;
   padding: 32px;
-  background: white;
+  background: $superficie;
   border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  border-left: 5px solid #F0A400;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  border-left: 5px solid $ambar;
 
   .card-header {
     display: flex;
@@ -153,25 +165,25 @@
         margin: 0 0 4px 0;
         font-size: 20px;
         font-weight: 600;
-        color: #2B8A3E;
+        color: #fff;
       }
 
       .ticket-info {
         margin: 0;
         font-size: 14px;
-        color: #666;
+        color: $texto-suave;
         font-weight: 500;
 
         strong {
-          color: #F0A400;
+          color: $ambar;
           font-weight: 600;
         }
       }
     }
 
     .status-badge {
-      background: #F0A400;
-      color: white;
+      background: $ambar;
+      color: #1a1400;
       padding: 8px 16px;
       border-radius: 6px;
       font-size: 12px;
@@ -189,14 +201,14 @@
       text-align: center;
       margin-bottom: 24px;
       padding: 32px 24px;
-      background: #f8f9fb;
+      background: $fondo-suave;
       border-radius: 8px;
       border: none;
 
       .timer-label {
         margin: 0 0 12px 0;
         font-size: 13px;
-        color: #999;
+        color: $texto-suave;
         font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -206,7 +218,7 @@
         font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
         font-size: 48px;
         font-weight: 700;
-        color: #2B8A3E;
+        color: $verde-claro;
         margin: 0;
         letter-spacing: 3px;
       }
@@ -232,7 +244,7 @@
         .info-label {
           font-size: 12px;
           font-weight: 600;
-          color: #999;
+          color: $texto-suave;
           text-transform: uppercase;
           letter-spacing: 0.5px;
           margin-bottom: 6px;
@@ -241,7 +253,7 @@
         .info-value {
           font-size: 15px;
           font-weight: 500;
-          color: #333;
+          color: $texto;
         }
       }
     }
@@ -254,7 +266,7 @@
 
     .btn-finalizar {
       font-weight: 600;
-      
+
       mat-icon {
         margin-right: 6px;
       }
@@ -312,17 +324,17 @@
   font-size: 14px;
   margin: 0 0 20px;
   padding: 14px 18px;
-  background: white;
+  background: $superficie;
   border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 
   .label {
-    color: #666;
+    color: $texto-suave;
   }
 
   .value {
     font-weight: 700;
-    color: #2B8A3E;
+    color: $verde-claro;
     font-size: 18px;
   }
 }
@@ -338,7 +350,7 @@
 
   ::ng-deep {
     .mat-mdc-tab-header {
-      border-bottom: 1px solid #e0e0e0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: none;
       background: transparent;
     }
@@ -363,12 +375,18 @@
         text-transform: none;
         letter-spacing: 0;
         padding: 16px 0;
+        color: $texto-suave;
+      }
+
+      &.mdc-tab--active .tab-label {
+        color: $verde-claro;
       }
 
       .mdc-tab__text-label {
         display: flex;
         align-items: center;
         gap: 8px;
+        color: inherit;
       }
     }
 
@@ -384,26 +402,26 @@
 
 // ============= SECTION CARD =============
 .section-card {
-  background: white;
+  background: $superficie;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   overflow: hidden;
   margin-bottom: 32px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 
   .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 24px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    background: #f8f9fa;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: $fondo-suave;
 
     h2 {
       margin: 0;
       font-size: 18px;
       font-weight: 600;
-      color: #2B8A3E;
+      color: #fff;
     }
 
     .count-badge {
@@ -426,13 +444,13 @@
   align-items: center;
   justify-content: center;
   padding: 80px 20px;
-  color: #999;
+  color: $texto-suave;
 
   mat-icon {
     font-size: 56px;
     width: 56px;
     height: 56px;
-    opacity: 0.2;
+    opacity: 0.25;
     margin-bottom: 20px;
   }
 
@@ -440,29 +458,29 @@
     margin: 0 0 8px 0;
     font-size: 18px;
     font-weight: 600;
-    color: #666;
+    color: $texto;
   }
 
   p {
     margin: 0;
     font-size: 14px;
-    color: #999;
+    color: $texto-suave;
   }
 }
 
 // ============= TABLE =============
 .table-wrapper {
-  background: white;
+  background: $superficie;
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .table-toolbar {
   display: flex;
   justify-content: flex-end;
   padding: 12px 16px;
-  border-bottom: 1px solid #f0f1f3;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 
   mat-icon {
     margin-right: 6px;
@@ -474,8 +492,8 @@
   border-collapse: collapse;
 
   thead {
-    background: #f8f9fb;
-    border-bottom: 1px solid #e5e8ec;
+    background: $fondo-suave;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 
     tr {
       th {
@@ -483,7 +501,7 @@
         text-align: left;
         font-size: 12px;
         font-weight: 600;
-        color: #666;
+        color: $texto-suave;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         white-space: nowrap;
@@ -493,11 +511,11 @@
 
   tbody {
     tr {
-      border-bottom: 1px solid #f0f1f3;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       transition: background 0.2s ease;
 
       &:hover {
-        background: #f8f9fb;
+        background: rgba(255, 255, 255, 0.03);
       }
 
       &:last-child {
@@ -507,7 +525,7 @@
       td {
         padding: 16px;
         font-size: 14px;
-        color: #333;
+        color: $texto;
 
         &.ticket-cell {
           .badge {
@@ -520,13 +538,13 @@
             letter-spacing: 0.3px;
 
             &.badge-active {
-              background: #FFF4E6;
-              color: #F0A400;
+              background: rgba(240, 164, 0, 0.18);
+              color: $ambar;
             }
 
             &.badge-completed {
-              background: #E8F5E9;
-              color: #4CAF50;
+              background: rgba(148, 193, 32, 0.18);
+              color: $verde-claro;
             }
           }
 
@@ -534,25 +552,25 @@
             display: block;
             margin-top: 4px;
             font-size: 11px;
-            color: #888;
+            color: $texto-suave;
           }
         }
 
         &.empleado-cell {
           font-weight: 500;
-          color: #2B8A3E;
+          color: $verde-claro;
         }
 
         &.hora-cell {
           font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
           font-weight: 500;
-          color: #333;
+          color: $texto;
           font-size: 13px;
         }
 
         &.duracion-cell {
           font-weight: 600;
-          color: #2B8A3E;
+          color: $verde-claro;
         }
 
         &.aprobacion-cell {
@@ -566,25 +584,25 @@
             letter-spacing: 0.3px;
 
             &.badge-pendiente {
-              background: #FFF4E6;
-              color: #F0A400;
+              background: rgba(240, 164, 0, 0.18);
+              color: $ambar;
             }
 
             &.badge-aprobada {
-              background: #E8F5E9;
-              color: #4CAF50;
+              background: rgba(148, 193, 32, 0.18);
+              color: $verde-claro;
             }
 
             &.badge-rechazada {
-              background: #FDECEA;
-              color: #D32F2F;
+              background: rgba(211, 47, 47, 0.18);
+              color: $rojo-claro;
             }
           }
 
           .horas-aprobadas-info {
             margin-top: 4px;
             font-size: 11px;
-            color: #888;
+            color: $texto-suave;
           }
         }
 
@@ -594,12 +612,12 @@
           justify-content: center;
 
           .btn-info {
-            color: #999;
+            color: $texto-suave;
             transition: all 0.2s ease;
 
             &:hover {
-              color: #2B8A3E;
-              background: rgba(43, 138, 62, 0.08);
+              color: $verde-claro;
+              background: rgba(148, 193, 32, 0.12);
             }
           }
         }
@@ -608,10 +626,35 @@
   }
 }
 
+// ============= CAMPOS DE FILTRO (mat-form-field) =============
+.horas-extras-container ::ng-deep .mat-mdc-form-field {
+  .mat-mdc-text-field-wrapper {
+    background-color: $superficie;
+  }
+
+  .mat-mdc-form-field-label,
+  .mat-mdc-select-value,
+  input.mat-mdc-input-element {
+    color: $texto;
+  }
+
+  .mat-mdc-select-arrow {
+    color: $texto-suave;
+  }
+}
+
 // ============= PAGINATOR =============
-::ng-deep .mat-mdc-paginator {
-  background: #f8f9fb;
-  border-top: 1px solid #e5e8ec;
+// Acotado a esta pagina (ver nota en Mis Horas): un ::ng-deep sin selector
+// delante se vuelve global y afectaria el paginador de paginas que aun no
+// se repintan.
+.horas-extras-container ::ng-deep .mat-mdc-paginator {
+  background: transparent;
+  color: $texto-suave;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+  .mat-mdc-paginator-icon {
+    fill: $texto-suave;
+  }
 }
 
 // ============= RESPONSIVE =============
@@ -643,7 +686,7 @@
         border-left: 3px solid transparent;
 
         &.active {
-          border-left-color: #2B8A3E;
+          border-left-color: $verde-claro;
           border-bottom-color: transparent;
         }
       }
