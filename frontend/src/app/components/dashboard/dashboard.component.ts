@@ -1,54 +1,58 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService, Usuario } from '../../services/auth.service';
-import { ReportesService, ResumenReportes, DepartamentoStats, AsistenciaReporte } from '../../services/reportes.service';
+import { ReportesService, ResumenReportes, AsistenciaReporte } from '../../services/reportes.service';
 import { CalendarioService, EventoProximo } from '../../services/calendario.service';
 import { EmpleadoService } from '../../services/empleado.service';
 import { HoraExtraService } from '../../services/hora-extra.service';
 import { SolicitudService } from '../../services/solicitud.service';
-import { MiPerfilComponent } from '../mi-perfil/mi-perfil.component';
 import { AusenciasDepartamentoDialogComponent } from './ausencias-departamento-dialog/ausencias-departamento-dialog.component';
 import { PresenteHoyDialogComponent } from './presente-hoy-dialog/presente-hoy-dialog.component';
-import { environment } from '../../../environments/environment';
+
+interface DiaSemana {
+  fecha: string;
+  numero: number;
+  diaLabel: string;
+  esHoy: boolean;
+  feriado?: string;
+}
+
+interface BarraSemana {
+  titulo: string;
+  colIni: number;
+  colFin: number;
+  rango: string;
+}
+
+const NOMBRES_DIA = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'];
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatToolbarModule,
-    MatButtonModule,
-    MatIconModule,
-    MatCardModule,
-    MatDialogModule
-  ],
+  imports: [CommonModule, MatIconModule, MatDialogModule],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss'
- })
- export class DashboardComponent implements OnInit {
+  styleUrl: './dashboard.component.scss',
+})
+export class DashboardComponent implements OnInit {
   currentUser: Usuario | null = null;
   resumen: ResumenReportes | null = null;
   totalDepartamentos = 0;
-  proximosEventos: EventoProximo[] = [];
-  gruposEventos: { label: string; eventos: (EventoProximo & { diasExtra?: string[] })[] }[] = [];
-  cargandoEventos = true;
+
+  horasExtraPendientes = 0;
+  tramitesPendientes = 0;
+  totalAusenciasMes = 0;
 
   cargandoResumenEquipo = false;
   empleadosIniciadosHoy: string[] = [];
   empleadosPendientesHoy: string[] = [];
   totalEmpleadosEquipo = 0;
 
-  horasExtraPendientes = 0;
-  tramitesPendientes = 0;
-
-  // Ausencias del mes (todos los tipos de trámite aprobados), tarjeta clickeable
-  totalAusenciasMes = 0;
+  semana: DiaSemana[] = [];
+  barrasSemana: BarraSemana[] = [];
+  cargandoSemana = true;
 
   constructor(
     private authService: AuthService,
@@ -58,27 +62,67 @@ import { environment } from '../../../environments/environment';
     private horaExtraService: HoraExtraService,
     private solicitudService: SolicitudService,
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe((usuario) => {
       this.currentUser = usuario;
     });
+
     if (this.esAdmin) {
       this.cargarResumen();
       this.cargarDepartamentos();
-      this.cargarProximosEventos();
       this.cargarAusenciasDelMes();
+      this.cargarEstaSemana();
     }
     if (this.esAdmin || this.esLider) {
-      // Admin ve todo; líder solo lo de su departamento (scoped por el backend)
       this.cargarHorasExtraPendientes();
       this.cargarTramitesPendientes();
     }
     if (this.esLider) {
       this.cargarResumenEquipoHoy();
     }
+  }
+
+  get esAdmin(): boolean {
+    return this.authService.esAdmin();
+  }
+
+  get esLider(): boolean {
+    return this.authService.esLider();
+  }
+
+  get fechaHoyLabel(): string {
+    const hoy = new Date();
+    const texto = hoy.toLocaleDateString('es-SV', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    // "lunes, 19 de octubre de 2026" (o sin coma) -> "LUNES 19 · OCTUBRE 2026"
+    const partes = texto.match(/^(\p{L}+),?\s*(\d+) de (\p{L}+) de (\d+)$/u);
+    if (!partes) return texto.toUpperCase();
+    const [, nombreDia, dia, mes, anio] = partes;
+    return `${nombreDia.toUpperCase()} ${dia} · ${mes.toUpperCase()} ${anio}`;
+  }
+
+  get primerNombre(): string {
+    return this.currentUser?.email.split('@')[0] || '';
+  }
+
+  get empleadosSinMarcar(): number {
+    if (!this.resumen) return 0;
+    return Math.max(0, (this.resumen.totalEmpleados || 0) - (this.resumen.presenteHoy || 0));
+  }
+
+  get hayPendientes(): boolean {
+    return this.horasExtraPendientes > 0 || this.tramitesPendientes > 0;
+  }
+
+  /** El líder revisa horas extra desde "Mi Equipo", no desde este panel, así que aquí solo cuentan los trámites */
+  get hayPendientesLider(): boolean {
+    return this.tramitesPendientes > 0;
+  }
+
+  revisarTodo(): void {
+    this.irA(this.horasExtraPendientes > 0 ? 'horas-extras' : 'tramites');
   }
 
   cargarHorasExtraPendientes(): void {
@@ -104,14 +148,6 @@ import { environment } from '../../../environments/environment';
         this.tramitesPendientes = 0;
       },
     });
-  }
-
-  get esAdmin(): boolean {
-    return this.authService.esAdmin();
-  }
-
-  get esLider(): boolean {
-    return this.authService.esLider();
   }
 
   cargarResumen(): void {
@@ -208,136 +244,109 @@ import { environment } from '../../../environments/environment';
     return `${y}-${m}-${d}`;
   }
 
-  cargarProximosEventos(): void {
-    this.cargandoEventos = true;
+  /**
+   * Trae los eventos (festivos y trámites aprobados) de los próximos ~15 días,
+   * suficiente para cubrir cualquier día restante de la semana en curso, y arma
+   * la franja "Esta semana": festivos marcados por día y trámites de varios días
+   * (vacaciones, reposición, etc.) como una barra continua.
+   */
+  cargarEstaSemana(): void {
+    this.cargandoSemana = true;
     this.calendarioService.obtenerProximosEventos(60).subscribe({
       next: (response) => {
         const eventos = (response.data || []).filter((e) => !!e.titulo && !!e.fecha && !!e.tipo);
-        this.proximosEventos = this.filtrarMesActual(eventos);
-        this.gruposEventos = this.agruparPorMes(this.proximosEventos);
-        this.cargandoEventos = false;
+        this.construirSemana(eventos);
+        this.cargandoSemana = false;
       },
-      error: (error) => {
-        console.error('Error al cargar próximos eventos:', error);
-        this.proximosEventos = [];
-        this.gruposEventos = [];
-        this.cargandoEventos = false;
+      error: () => {
+        this.construirSemana([]);
+        this.cargandoSemana = false;
       },
     });
   }
 
-  /** Solo eventos del mes en curso, para no saturar el panel con meses futuros */
-  private filtrarMesActual(eventos: EventoProximo[]): EventoProximo[] {
+  private construirSemana(eventos: EventoProximo[]): void {
     const hoy = new Date();
-    const mesActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
-    return eventos.filter((e) => e.fecha.slice(0, 7) === mesActual);
-  }
+    const diaSemanaHoy = hoy.getDay(); // 0 = domingo .. 6 = sábado
+    const offsetLunes = diaSemanaHoy === 0 ? -6 : 1 - diaSemanaHoy;
+    const lunes = new Date(hoy);
+    lunes.setDate(hoy.getDate() + offsetLunes);
+    lunes.setHours(0, 0, 0, 0);
 
-  private agruparPorMes(eventos: EventoProximo[]): { label: string; eventos: (EventoProximo & { diasExtra?: string[] })[] }[] {
-    const grupos: { label: string; eventos: (EventoProximo & { diasExtra?: string[] })[] }[] = [];
+    const hoyStr = this.aFechaLocal(hoy);
+    const dias: DiaSemana[] = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(lunes);
+      d.setDate(lunes.getDate() + i);
+      const fecha = this.aFechaLocal(d);
+      dias.push({ fecha, numero: d.getDate(), diaLabel: NOMBRES_DIA[i], esHoy: fecha === hoyStr });
+    }
 
+    // Festivos / días no laborables de esta semana, como chip bajo el día
     for (const evento of eventos) {
-      // Parsear como fecha UTC (sin hora) para no desplazar el día por zona horaria
-      const fecha = new Date(`${evento.fecha.slice(0, 10)}T00:00:00Z`);
-      const label = fecha.toLocaleDateString('es-SV', { month: 'long', year: 'numeric', timeZone: 'UTC' });
-
-      let grupo = grupos.find((g) => g.label === label);
-      if (!grupo) {
-        grupo = { label, eventos: [] };
-        grupos.push(grupo);
-      }
-
-      // Si es el día siguiente consecutivo del mismo evento (mismo tipo y título), lo agrupamos
-      // como chip adicional en vez de repetir toda la fila
-      const anterior = grupo.eventos[grupo.eventos.length - 1];
-      const ultimaFecha = anterior?.diasExtra?.length ? anterior.diasExtra[anterior.diasExtra.length - 1] : anterior?.fecha;
-      if (anterior && ultimaFecha && anterior.tipo === evento.tipo && anterior.titulo === evento.titulo && this.esDiaSiguiente(ultimaFecha, evento.fecha)) {
-        anterior.diasExtra = [...(anterior.diasExtra || []), evento.fecha];
-      } else {
-        grupo.eventos.push({ ...evento });
-      }
+      if (evento.tipo !== 'festivo' && evento.tipo !== 'no_laborable') continue;
+      const fecha = evento.fecha.slice(0, 10);
+      const dia = dias.find((d) => d.fecha === fecha);
+      if (dia) dia.feriado = evento.titulo;
     }
 
-    return grupos;
-  }
-
-  private esDiaSiguiente(fechaBase: string, fechaSiguiente: string): boolean {
-    const base = new Date(`${fechaBase.slice(0, 10)}T00:00:00Z`);
-    base.setUTCDate(base.getUTCDate() + 1);
-    return base.toISOString().slice(0, 10) === fechaSiguiente.slice(0, 10);
-  }
-
-  diaDelEvento(fecha: string): number {
-    return parseInt(fecha.slice(8, 10), 10);
-  }
-
-  iconoEvento(tipo: string): string {
-    switch (tipo) {
-      case 'festivo': return 'celebration';
-      case 'no_laborable': return 'event_busy';
-      case 'vacaciones': return 'beach_access';
-      case 'ausencia': return 'medical_services';
-      case 'permiso_personal': return 'badge';
-      case 'motivo_familiar': return 'family_restroom';
-      case 'enfermedad': return 'sick';
-      case 'estudios_academicos': return 'school';
-      case 'fidelidad': return 'military_tech';
-      default: return 'event';
+    // Trámites de varios días dentro de esta semana, agrupados por título en una barra continua
+    const fechasPorTitulo = new Map<string, string[]>();
+    for (const evento of eventos) {
+      if (evento.tipo === 'festivo' || evento.tipo === 'no_laborable') continue;
+      const fecha = evento.fecha.slice(0, 10);
+      if (!dias.some((d) => d.fecha === fecha)) continue;
+      const lista = fechasPorTitulo.get(evento.titulo) || [];
+      lista.push(fecha);
+      fechasPorTitulo.set(evento.titulo, lista);
     }
-  }
 
-  etiquetaEvento(tipo: string): string {
-    switch (tipo) {
-      case 'festivo': return 'Festivo';
-      case 'no_laborable': return 'No laborable';
-      case 'vacaciones': return 'Vacaciones';
-      case 'ausencia': return 'Reposición';
-      case 'cambio_jornada': return 'Cambio jornada';
-      case 'permiso_personal': return 'Permiso personal';
-      case 'motivo_familiar': return 'Motivo familiar';
-      case 'cita_medica_programada': return 'Cita médica programada';
-      case 'cita_medica_emergencia': return 'Cita médica de emergencia';
-      case 'enfermedad': return 'Enfermedad';
-      case 'estudios_academicos': return 'Estudios / actividades académicas';
-      case 'cumpleanos': return 'Cumpleaños';
-      case 'fidelidad': return 'Fidelidad';
-      default: return tipo;
+    const barras: BarraSemana[] = [];
+    for (const [titulo, fechas] of fechasPorTitulo) {
+      fechas.sort();
+      const colIni = dias.findIndex((d) => d.fecha === fechas[0]);
+      const colFin = dias.findIndex((d) => d.fecha === fechas[fechas.length - 1]);
+      if (colIni === -1 || colFin === -1) continue;
+      barras.push({
+        titulo: titulo.replace(' - ', ' · '),
+        colIni,
+        colFin,
+        rango: this.formatearRangoDias(fechas[0], fechas[fechas.length - 1]),
+      });
     }
+
+    this.semana = dias;
+    this.barrasSemana = barras.sort((a, b) => a.colIni - b.colIni);
   }
 
-  abrirMiPerfil(): void {
-    this.dialog.open(MiPerfilComponent, { width: '420px' });
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+  private formatearRangoDias(inicio: string, fin: string): string {
+    const opciones: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', timeZone: 'UTC' };
+    const fInicio = new Date(`${inicio}T00:00:00Z`);
+    const fFin = new Date(`${fin}T00:00:00Z`);
+    if (inicio === fin) return fInicio.toLocaleDateString('es-SV', opciones);
+    const diaInicio = fInicio.getUTCDate();
+    const textoFin = fFin.toLocaleDateString('es-SV', opciones);
+    return `${diaInicio}-${textoFin}`;
   }
 
   irA(ruta: string): void {
     this.router.navigate([`/${ruta}`]);
   }
 
-  getAvatarUrl(fotoUrl?: string): string {
-    if (!fotoUrl) return '';
-    
-    // Si es una ruta relativa, construir URL completa
-    if (fotoUrl.startsWith('/')) {
-      return `${environment.apiUrl.replace('/api', '')}${fotoUrl}`;
-    }
-    return fotoUrl;
+  /** Genera un arreglo de `n` elementos para dibujar la matriz de puntos de "Presentes ahora" */
+  rangoDots(n: number | undefined): number[] {
+    return Array.from({ length: Math.max(0, n || 0) });
   }
 
-  /**
-   * Formatear duración en horas/minutos
-   */
+  /** Formatear duración en horas/minutos */
   formatearDuracion(horas: number | null | undefined): string {
-    if (typeof horas !== 'number' || isNaN(horas) || horas === 0) return '0m';
-    
+    if (typeof horas !== 'number' || isNaN(horas) || horas === 0) return '0h';
+
     const h = Math.floor(horas);
     const m = Math.round((horas % 1) * 60);
-    
+
     if (h === 0) return `${m}m`;
+    if (m === 0) return `${h}h`;
     return `${h}h ${m}m`;
   }
 }

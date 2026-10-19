@@ -1,15 +1,30 @@
-.btn-volver-dashboard {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+.app-shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
 }
 
-@media (max-width: 600px) {
-  .btn-volver-dashboard {
-    bottom: 16px;
-    right: 16px;
-    transform: scale(0.9);
+.app-content {
+  flex: 1;
+  height: 100vh;
+  overflow-y: auto;
+  background: #f3f5f2;
+}
+
+@media (max-width: 768px) {
+  app-sidebar ::ng-deep .sidebar {
+    width: 64px;
+  }
+
+  app-sidebar ::ng-deep .marca-texto,
+  app-sidebar ::ng-deep .grupo-titulo,
+  app-sidebar ::ng-deep .item-label,
+  app-sidebar ::ng-deep .item-badge,
+  app-sidebar ::ng-deep .pie-usuario {
+    display: none;
+  }
+
+  app-sidebar ::ng-deep .item {
+    justify-content: center;
   }
 }

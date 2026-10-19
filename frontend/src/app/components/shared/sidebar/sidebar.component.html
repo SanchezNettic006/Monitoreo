@@ -1,0 +1,42 @@
+<aside class="sidebar">
+  <div class="marca">
+    <div class="marca-icono">N</div>
+    <div class="marca-texto">
+      <span class="marca-nombre">nettic</span>
+      <span class="marca-tag">Asistencia</span>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <ng-container *ngFor="let grupo of grupos">
+      <div class="grupo" *ngIf="grupoTieneItemsVisibles(grupo)">
+        <span class="grupo-titulo">{{ grupo.titulo }}</span>
+        <a
+          *ngFor="let item of grupo.items"
+          class="item"
+          [hidden]="!visible(item)"
+          [routerLink]="item.ruta"
+          routerLinkActive="activo"
+        >
+          <mat-icon class="item-icono">{{ item.icono }}</mat-icon>
+          <span class="item-label">{{ item.label }}</span>
+          <span class="item-badge" *ngIf="badgeDe(item) > 0">{{ badgeDe(item) }}</span>
+        </a>
+      </div>
+    </ng-container>
+  </nav>
+
+  <div class="pie" *ngIf="currentUser">
+    <div class="pie-avatar" (click)="abrirMiPerfil()" title="Mi perfil">
+      <img *ngIf="currentUser.foto_perfil" [src]="getAvatarUrl(currentUser.foto_perfil)" alt="Avatar" />
+      <mat-icon *ngIf="!currentUser.foto_perfil">account_circle</mat-icon>
+    </div>
+    <div class="pie-usuario">
+      <span class="pie-email">{{ currentUser.email }}</span>
+      <span class="pie-rol">{{ currentUser.rol === 'admin' ? 'Administrador' : currentUser.rol === 'lider' ? 'Líder' : 'Empleado' }}</span>
+    </div>
+    <button class="pie-logout" (click)="logout()" title="Cerrar sesión">
+      <mat-icon>logout</mat-icon>
+    </button>
+  </div>
+</aside>

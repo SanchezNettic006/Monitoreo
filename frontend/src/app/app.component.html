@@ -1,13 +1,12 @@
 <app-estado-conexion-banner></app-estado-conexion-banner>
-<router-outlet></router-outlet>
 
-<button
-  mat-fab
-  color="primary"
-  class="btn-volver-dashboard"
-  *ngIf="mostrarBotonDashboard"
-  (click)="irADashboard()"
-  title="Volver al Dashboard"
->
-  <mat-icon>home</mat-icon>
-</button>
+<div class="app-shell" *ngIf="mostrarSidebar; else soloContenido">
+  <app-sidebar></app-sidebar>
+  <main class="app-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>
+
+<ng-template #soloContenido>
+  <router-outlet></router-outlet>
+</ng-template>
