@@ -1,11 +1,43 @@
+// Mismo tema oscuro del resto de la app. Solo repintado — misma
+// estructura, clases y funcionalidad de siempre.
+$verde-claro: #94c120;
+$ambar: #f0a400;
+$rojo-claro: #ff6b6b;
+$texto: #e7f0e5;
+$texto-suave: #8fa98f;
+$fondo-suave: #10200f;
+$superficie: #182d19;
+
+:host {
+  display: block;
+  min-height: 100%;
+  background: #0b1710;
+}
+
 .panel-container {
   padding: 24px 20px;
   max-width: 1400px;
   margin: 0 auto;
+  color: $texto;
+
+  // Repintado de Material vía sus propias variables (los selectores de mes):
+  // más confiable que pelear con la especificidad de sus clases internas.
+  --mdc-filled-text-field-container-color: #{$fondo-suave};
+  --mdc-filled-text-field-label-text-color: #{$texto-suave};
+  --mdc-filled-text-field-hover-label-text-color: #{$texto-suave};
+  --mdc-filled-text-field-focus-label-text-color: #{$verde-claro};
+  --mdc-filled-text-field-input-text-color: #{$texto};
+  --mdc-filled-text-field-active-indicator-color: rgba(255, 255, 255, 0.3);
+  --mdc-filled-text-field-hover-active-indicator-color: rgba(255, 255, 255, 0.5);
+  --mdc-filled-text-field-focus-active-indicator-color: #{$verde-claro};
+  --mat-form-field-enabled-select-arrow-color: #{$texto-suave};
+  --mat-form-field-focus-select-arrow-color: #{$verde-claro};
+  --mat-select-enabled-trigger-text-color: #{$texto};
+  --mat-select-enabled-arrow-color: #{$texto-suave};
 }
 
 .panel-subtitle {
-  color: #666;
+  color: $texto-suave;
   font-size: 14px;
   margin: 0 0 24px;
 }
@@ -30,10 +62,11 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: white;
+  background: $superficie;
   border-radius: 10px;
   padding: 14px 16px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  min-width: 0;
 }
 
 .stat-tile-icon {
@@ -47,13 +80,13 @@
   flex-shrink: 0;
 
   &.extras {
-    background: #fff3e0;
-    color: #e08900;
+    background: rgba(240, 164, 0, 0.18);
+    color: $ambar;
   }
 
   &.pausas {
-    background: #f3e5f5;
-    color: #8e24aa;
+    background: rgba(142, 36, 170, 0.22);
+    color: #d896e8;
   }
 }
 
@@ -67,12 +100,12 @@
 .stat-tile-valor {
   font-size: 20px;
   font-weight: 700;
-  color: #333;
+  color: #fff;
 }
 
 .stat-tile-label {
   font-size: 12px;
-  color: #999;
+  color: $texto-suave;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -85,9 +118,13 @@
 }
 
 .kpi-card {
+  background: $superficie !important;
+  color: $texto !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
   padding: 20px;
   border-radius: 10px;
-  border-left: 4px solid #2b8a3e;
+  border-left: 4px solid $verde-claro;
+  min-width: 0;
 }
 
 .kpi-card--clickable {
@@ -95,7 +132,7 @@
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
     transform: translateY(-2px);
   }
 }
@@ -118,22 +155,18 @@
   flex-shrink: 0;
 
   &.plex {
-    background: #e8f5e9;
-    color: #2b8a3e;
+    background: rgba(148, 193, 32, 0.18);
+    color: $verde-claro;
   }
 
   &.ausencias {
-    background: #fdecea;
-    color: #d32f2f;
+    background: rgba(211, 47, 47, 0.18);
+    color: $rojo-claro;
   }
 }
 
 .mes-selector {
   width: 160px;
-
-  ::ng-deep .mat-mdc-text-field-wrapper {
-    background-color: #f9f9f9;
-  }
 }
 
 .kpi-body {
@@ -144,7 +177,7 @@
 
 .kpi-titulo {
   font-size: 13px;
-  color: #666;
+  color: $texto-suave;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
@@ -152,12 +185,12 @@
 .kpi-valor {
   font-size: 32px;
   font-weight: 700;
-  color: #2b8a3e;
+  color: $verde-claro;
 }
 
 .kpi-detalle {
   font-size: 13px;
-  color: #999;
+  color: $texto-suave;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -183,9 +216,9 @@
   justify-content: center;
   gap: 8px;
   padding: 30px 20px;
-  border: 2px dashed #ddd;
+  border: 2px dashed rgba(255, 255, 255, 0.15);
   border-radius: 10px;
-  color: #aaa;
+  color: $texto-suave;
   font-size: 13px;
   text-align: center;
 
@@ -199,9 +232,13 @@
 // ============= CUMPLIMIENTO POR DEPARTAMENTO (círculos de %) =============
 
 .cumplimiento-card {
+  background: $superficie !important;
+  color: $texto !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
   margin-top: 20px;
   padding: 20px;
   border-radius: 10px;
+  min-width: 0;
 }
 
 .cumplimiento-header {
@@ -216,7 +253,7 @@
 .cumplimiento-subtitulo {
   margin: 4px 0 0;
   font-size: 13px;
-  color: #999;
+  color: $texto-suave;
 }
 
 .circulos-loading {
@@ -244,7 +281,7 @@
   transition: background-color 0.2s ease;
 
   &:hover {
-    background-color: #f5f9f7;
+    background-color: rgba(255, 255, 255, 0.04);
   }
 }
 
@@ -261,24 +298,24 @@
   width: 66px;
   height: 66px;
   border-radius: 50%;
-  background: white;
+  background: $superficie;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 15px;
   font-weight: 700;
-  color: #333;
+  color: #fff;
 }
 
 .circulo-nombre {
   font-size: 13px;
-  color: #666;
+  color: $texto-suave;
   font-weight: 500;
   text-align: center;
 }
 
 .sin-datos {
-  color: #999;
+  color: $texto-suave;
   font-size: 13px;
   padding: 10px 0;
 }

@@ -1,11 +1,51 @@
+// Mismo tema oscuro del resto de la app. Solo repintado — misma
+// estructura, clases y funcionalidad de siempre.
+$verde-claro: #94c120;
+$ambar: #f0a400;
+$rojo-claro: #ff6b6b;
+$texto: #e7f0e5;
+$texto-suave: #8fa98f;
+$fondo-suave: #10200f;
+$superficie: #182d19;
+
+:host {
+  display: block;
+  min-height: 100%;
+  background: #0b1710;
+}
+
 .container {
   padding: 20px;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
+  color: $texto;
+
+  // Repintado de Material vía sus propias variables (filtros, paginador):
+  // más confiable que pelear con la especificidad de sus clases internas.
+  // El valor por defecto del tema (rgba(0,0,0,.87)) deja el texto escrito
+  // casi negro, pensado para fondo claro.
+  --mdc-filled-text-field-container-color: #{$superficie};
+  --mdc-filled-text-field-label-text-color: #{$texto-suave};
+  --mdc-filled-text-field-hover-label-text-color: #{$texto-suave};
+  --mdc-filled-text-field-focus-label-text-color: #{$verde-claro};
+  --mdc-filled-text-field-input-text-color: #{$texto};
+  --mdc-filled-text-field-input-text-placeholder-color: #6b8a6b;
+  --mdc-filled-text-field-active-indicator-color: rgba(255, 255, 255, 0.3);
+  --mdc-filled-text-field-hover-active-indicator-color: rgba(255, 255, 255, 0.5);
+  --mdc-filled-text-field-focus-active-indicator-color: #{$verde-claro};
+  --mat-form-field-enabled-select-arrow-color: #{$texto-suave};
+  --mat-form-field-focus-select-arrow-color: #{$verde-claro};
+  --mat-select-enabled-trigger-text-color: #{$texto};
+  --mat-select-enabled-arrow-color: #{$texto-suave};
+  --mat-select-placeholder-text-color: #6b8a6b;
+  --mat-paginator-container-background-color: transparent;
+  --mat-paginator-container-text-color: #{$texto-suave};
+  --mat-paginator-enabled-icon-color: #{$texto-suave};
 }
 
 .empleados-card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: $superficie;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 mat-card-header {
@@ -31,26 +71,27 @@ mat-card-title {
 
 .empleados-table {
   width: 100%;
-  background-color: white;
+  min-width: 900px;
+  background-color: $superficie;
   border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 
   th {
-    background-color: #f5f5f5;
+    background-color: $fondo-suave;
     font-weight: 600;
-    color: #333;
+    color: $texto-suave;
   }
 
   tr {
     &:hover {
-      background-color: #f9f9f9;
+      background-color: rgba(255, 255, 255, 0.03);
     }
   }
 
   td, th {
     padding: 12px 16px;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    color: $texto;
   }
 }
 
@@ -64,7 +105,7 @@ mat-card-title {
 
   p {
     margin: 0;
-    color: #666;
+    color: $texto-suave;
     font-size: 14px;
   }
 }
@@ -72,13 +113,13 @@ mat-card-title {
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: #999;
+  color: $texto-suave;
 
   .empty-icon {
     font-size: 64px;
     width: 64px;
     height: 64px;
-    opacity: 0.5;
+    opacity: 0.3;
     margin: 0 auto 16px;
   }
 
@@ -116,7 +157,7 @@ mat-card-title {
     align-items: center;
     gap: 6px;
     font-size: 14px;
-    color: #555;
+    color: $texto-suave;
     cursor: pointer;
     white-space: nowrap;
   }
@@ -128,13 +169,13 @@ mat-card-title {
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
-  background: rgba(43, 138, 62, 0.1);
-  color: #2b8a3e;
+  background: rgba(148, 193, 32, 0.18);
+  color: $verde-claro;
   white-space: nowrap;
 
   &.inactivo {
-    background: rgba(153, 153, 153, 0.15);
-    color: #666;
+    background: rgba(153, 153, 153, 0.18);
+    color: $texto-suave;
   }
 }
 
@@ -144,13 +185,13 @@ mat-card-title {
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
-  background: rgba(43, 138, 62, 0.1);
-  color: #2b8a3e;
+  background: rgba(148, 193, 32, 0.18);
+  color: $verde-claro;
   white-space: nowrap;
 
   &.bajo {
-    background: rgba(211, 47, 47, 0.1);
-    color: #d32f2f;
+    background: rgba(211, 47, 47, 0.18);
+    color: $rojo-claro;
   }
 }
 
