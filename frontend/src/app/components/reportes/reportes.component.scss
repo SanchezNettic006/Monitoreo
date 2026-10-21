@@ -1,4 +1,15 @@
-// Título de sección dentro del menú de ubicación (separa jornada de tickets)
+// Mismo tema oscuro del resto de la app. Solo repintado — misma
+// estructura, clases y funcionalidad de siempre.
+$verde-claro: #94c120;
+$ambar: #f0a400;
+$rojo-claro: #ff6b6b;
+$texto: #e7f0e5;
+$texto-suave: #8fa98f;
+$fondo-suave: #10200f;
+$superficie: #182d19;
+
+// Título de sección dentro del menú de ubicación (overlay transitorio: se
+// deja con el estilo claro de Material, como los demás paneles desplegables)
 ::ng-deep .menu-seccion-titulo {
   padding: 4px 16px;
   font-size: 11px;
@@ -8,11 +19,40 @@
   color: #999;
 }
 
+:host {
+  display: block;
+  min-height: 100%;
+  background: #0b1710;
+}
+
 // ============= CONTAINER =============
 .reports-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 24px 20px;
+  color: $texto;
+
+  // Repintado de Material vía sus propias variables (filtros, selects,
+  // paginador): más confiable que pelear con la especificidad de sus clases
+  // internas. El valor por defecto del tema (rgba(0,0,0,.87)) deja el texto
+  // escrito casi negro, pensado para fondo claro.
+  --mdc-filled-text-field-container-color: #{$superficie};
+  --mdc-filled-text-field-label-text-color: #{$texto-suave};
+  --mdc-filled-text-field-hover-label-text-color: #{$texto-suave};
+  --mdc-filled-text-field-focus-label-text-color: #{$verde-claro};
+  --mdc-filled-text-field-input-text-color: #{$texto};
+  --mdc-filled-text-field-input-text-placeholder-color: #6b8a6b;
+  --mdc-filled-text-field-active-indicator-color: rgba(255, 255, 255, 0.3);
+  --mdc-filled-text-field-hover-active-indicator-color: rgba(255, 255, 255, 0.5);
+  --mdc-filled-text-field-focus-active-indicator-color: #{$verde-claro};
+  --mat-form-field-enabled-select-arrow-color: #{$texto-suave};
+  --mat-form-field-focus-select-arrow-color: #{$verde-claro};
+  --mat-select-enabled-trigger-text-color: #{$texto};
+  --mat-select-enabled-arrow-color: #{$texto-suave};
+  --mat-select-placeholder-text-color: #6b8a6b;
+  --mat-paginator-container-background-color: transparent;
+  --mat-paginator-container-text-color: #{$texto-suave};
+  --mat-paginator-enabled-icon-color: #{$texto-suave};
 }
 
 // ============= HEADER =============
@@ -22,13 +62,13 @@
   h1 {
     font-size: 32px;
     font-weight: 700;
-    color: #2B8A3E;
+    color: #fff;
     margin: 0 0 8px 0;
   }
 
   p {
     font-size: 16px;
-    color: #666;
+    color: $texto-suave;
     margin: 0;
   }
 }
@@ -46,14 +86,15 @@
   align-items: center;
   gap: 16px;
   padding: 20px;
-  background: white;
+  background: $superficie;
   border-radius: 12px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   transition: all 0.3s ease;
+  min-width: 0;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
   }
 
   .stat-icon {
@@ -64,6 +105,7 @@
     height: 56px;
     border-radius: 12px;
     color: white;
+    flex-shrink: 0;
 
     mat-icon {
       font-size: 28px;
@@ -91,10 +133,11 @@
   .stat-content {
     display: flex;
     flex-direction: column;
+    min-width: 0;
 
     .stat-label {
       font-size: 13px;
-      color: #999;
+      color: $texto-suave;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-bottom: 4px;
@@ -103,7 +146,7 @@
     .stat-value {
       font-size: 24px;
       font-weight: 700;
-      color: #2B8A3E;
+      color: $verde-claro;
     }
   }
 }
@@ -112,14 +155,14 @@
 .filters-section {
   margin-bottom: 32px;
   padding: 20px;
-  background: white;
+  background: $superficie;
   border-radius: 12px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 
   h3 {
     font-size: 18px;
     font-weight: 600;
-    color: #2B8A3E;
+    color: #fff;
     margin: 0 0 16px 0;
   }
 
@@ -160,8 +203,8 @@
     }
 
     .btn-clear {
-      border: 2px solid #ddd !important;
-      color: #666 !important;
+      border: 2px solid rgba(255, 255, 255, 0.15) !important;
+      color: $texto-suave !important;
 
       mat-icon {
         margin-right: 8px;
@@ -174,14 +217,14 @@
 .table-section {
   margin-bottom: 32px;
   padding: 20px;
-  background: white;
+  background: $superficie;
   border-radius: 12px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 
   h3 {
     font-size: 18px;
     font-weight: 600;
-    color: #2B8A3E;
+    color: #fff;
     margin: 0 0 16px 0;
   }
 
@@ -204,18 +247,23 @@
   .table-wrapper {
     overflow-x: auto;
     margin-bottom: 16px;
+    -webkit-overflow-scrolling: touch;
 
     .table-asistencias {
       width: 100%;
+      // 13 columnas (fecha, empleado, departamento, proyecto, entrada,
+      // salida, horas, pausas, extras, netas, motivo, ubicación, fotos): con
+      // un minimo generoso caben sin cortarse en una pantalla de escritorio.
+      min-width: 1320px;
       border-collapse: collapse;
 
       th {
-        background: #f8f9fa;
+        background: $fondo-suave;
         padding: 16px;
         text-align: left;
         font-weight: 600;
-        color: #2B8A3E;
-        border-bottom: 2px solid #e0e0e0;
+        color: $texto-suave;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
         font-size: 13px;
         text-transform: uppercase;
         letter-spacing: 0.3px;
@@ -223,9 +271,9 @@
 
       td {
         padding: 14px 16px;
-        border-bottom: 1px solid #f0f0f0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         font-size: 14px;
-        color: #333;
+        color: $texto;
 
         .badge {
           display: inline-block;
@@ -237,36 +285,36 @@
           letter-spacing: 0.3px;
 
           &.badge-horas {
-            background: rgba(43, 138, 62, 0.1);
-            color: #2B8A3E;
+            background: rgba(148, 193, 32, 0.18);
+            color: $verde-claro;
           }
 
           &.badge-pausas {
-            background: rgba(156, 39, 176, 0.1);
-            color: #6A1B9A;
+            background: rgba(142, 36, 170, 0.22);
+            color: #d896e8;
           }
 
           &.badge-netas {
-            background: rgba(76, 175, 80, 0.1);
-            color: #2E7D32;
+            background: rgba(148, 193, 32, 0.22);
+            color: $verde-claro;
             font-weight: 600;
           }
 
           &.badge-extras {
-            background: rgba(255, 152, 0, 0.1);
-            color: #E65100;
+            background: rgba(240, 164, 0, 0.18);
+            color: $ambar;
           }
 
           &.badge-motivo {
-            background: rgba(25, 113, 194, 0.1);
-            color: #1971C2;
+            background: rgba(33, 150, 243, 0.18);
+            color: #7fc2ff;
             text-transform: none;
             white-space: normal;
           }
 
           &.badge-proyecto {
-            background: rgba(240, 164, 0, 0.12);
-            color: #b97e00;
+            background: rgba(240, 164, 0, 0.18);
+            color: $ambar;
             text-transform: none;
             white-space: normal;
           }
@@ -274,19 +322,7 @@
       }
 
       tr:hover {
-        background: #f8f9fa;
-      }
-    }
-  }
-
-  ::ng-deep {
-    .mat-mdc-paginator {
-      background: #f8f9fa;
-      border-top: 1px solid #e0e0e0;
-
-      .mat-mdc-paginator-container {
-        padding: 0;
-        min-height: 56px;
+        background: rgba(255, 255, 255, 0.03);
       }
     }
   }
@@ -295,14 +331,14 @@
 // ============= DEPARTAMENTOS SECTION =============
 .departamentos-section {
   padding: 20px;
-  background: white;
+  background: $superficie;
   border-radius: 12px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 
   h3 {
     font-size: 18px;
     font-weight: 600;
-    color: #2B8A3E;
+    color: #fff;
     margin: 0 0 16px 0;
   }
 
@@ -313,14 +349,15 @@
 
     .depto-card {
       padding: 16px;
-      background: linear-gradient(135deg, #f8f9fa 0%, #f0f0f0 100%);
+      background: $fondo-suave;
       border-radius: 8px;
-      border-left: 4px solid #2B8A3E;
+      border-left: 4px solid $verde-claro;
+      min-width: 0;
 
       h4 {
         font-size: 15px;
         font-weight: 600;
-        color: #2B8A3E;
+        color: $verde-claro;
         margin: 0 0 12px 0;
       }
 
@@ -329,7 +366,7 @@
         justify-content: space-between;
         align-items: center;
         padding: 8px 0;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         font-size: 13px;
 
         &:last-child {
@@ -337,12 +374,12 @@
         }
 
         .label {
-          color: #666;
+          color: $texto-suave;
           font-weight: 500;
         }
 
         .value {
-          color: #2B8A3E;
+          color: $verde-claro;
           font-weight: 700;
         }
       }
@@ -352,12 +389,12 @@
 
 // ============= CUMPLIMIENTO DE REPORTES =============
 .cumplimiento-section {
-  background: white;
+  background: $superficie;
   border-radius: 12px;
   padding: 24px;
   margin-top: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .cumplimiento-header {
@@ -370,14 +407,14 @@
 
   h3 {
     margin: 0 0 4px;
-    color: #2b8a3e;
+    color: #fff;
     font-size: 17px;
   }
 
   .subtitle {
     margin: 0;
     font-size: 13px;
-    color: #777;
+    color: $texto-suave;
   }
 
   .mes-selector {
@@ -390,7 +427,7 @@
   gap: 16px;
   margin-bottom: 16px;
   font-size: 12px;
-  color: #666;
+  color: $texto-suave;
 
   .item {
     display: flex;
@@ -403,13 +440,13 @@
     height: 10px;
     border-radius: 50%;
 
-    &.reportado { background: #2b8a3e; }
-    &.pendiente { background: #f0a400; }
+    &.reportado { background: $verde-claro; }
+    &.pendiente { background: $ambar; }
   }
 }
 
 .btn-volver {
-  color: #2b8a3e !important;
+  color: $verde-claro !important;
   margin-bottom: 8px;
 
   mat-icon {
@@ -434,13 +471,13 @@
   transition: background 0.15s ease;
 
   &:hover {
-    background: #f6f8f6;
+    background: rgba(255, 255, 255, 0.04);
   }
 
   .fila-nombre {
     font-size: 13px;
     font-weight: 500;
-    color: #333;
+    color: $texto;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -449,14 +486,14 @@
   .fila-porcentaje {
     font-size: 13px;
     font-weight: 700;
-    color: #333;
+    color: $texto;
     text-align: right;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
   }
 
   .fila-icono {
-    color: #ccc;
+    color: $texto-suave;
     font-size: 20px;
     width: 20px;
     height: 20px;
@@ -468,7 +505,7 @@
   height: 20px;
   border-radius: 10px;
   overflow: hidden;
-  background: #eee;
+  background: rgba(255, 255, 255, 0.08);
 
   .segmento {
     height: 100%;
@@ -478,28 +515,27 @@
     min-width: 0;
 
     &.reportado {
-      background: #2b8a3e;
-      border-right: 2px solid white;
+      background: $verde-claro;
+      border-right: 2px solid $superficie;
     }
 
     &.pendiente {
-      background: #f0a400;
+      background: $ambar;
     }
   }
 
   .segmento-texto {
-    color: white;
+    color: #0b1710;
     font-size: 10px;
     font-weight: 700;
     white-space: nowrap;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
   }
 }
 
 .cumplimiento-section .sin-datos {
   text-align: center;
   padding: 24px;
-  color: #999;
+  color: $texto-suave;
   font-size: 13px;
 }
 
