@@ -1,115 +1,134 @@
 <div class="reports-container">
   <!-- Header -->
   <div class="reports-header">
-    <h1>Reportes de Asistencia</h1>
-    <p>Análisis y estadísticas de asistencia</p>
+    <span class="eyebrow">General</span>
+    <h1>Reportes</h1>
   </div>
 
-  <!-- Stats Cards -->
-  <div class="stats-grid" *ngIf="resumen">
-    <div class="stat-card">
-      <div class="stat-icon presente">
-        <mat-icon>people</mat-icon>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label">Presente Hoy</span>
-        <span class="stat-value">{{ resumen.presenteHoy || 0 }}</span>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon empleados">
-        <mat-icon>person_add</mat-icon>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label">Total Empleados</span>
-        <span class="stat-value">{{ resumen.totalEmpleados || 0 }}</span>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon extras">
-        <mat-icon>schedule</mat-icon>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label">Horas Extras (Mes)</span>
-        <span class="stat-value">{{ formatearDuracion(resumen.horasExtrasAlMes) || '0m' }}</span>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon pausas">
-        <mat-icon>pause_circle</mat-icon>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label">Promedio Pausas</span>
-        <span class="stat-value">{{ formatearDuracion(resumen.promedioPausas) || '0m' }}</span>
-      </div>
+  <!-- Pestañas -->
+  <div class="tabs-row">
+    <div
+      class="tab-card"
+      *ngFor="let tab of tabs"
+      [class.activo]="tabActiva === tab.id"
+      (click)="seleccionarTab(tab.id)"
+    >
+      <span class="tab-label">{{ tab.label }}</span>
+      <span class="tab-desc">{{ tab.descripcion }}</span>
     </div>
   </div>
 
-  <!-- Filtros Section -->
-  <div class="filters-section">
-    <h3>Filtros</h3>
-    <div class="filters-grid">
-      <mat-form-field class="filter-field">
-        <mat-label>Fecha Inicio</mat-label>
-        <input
-          matInput
-          [matDatepicker]="pickerInicio"
-          [(ngModel)]="filtroFechaInicio"
-          placeholder="Seleccionar fecha"
-        />
-        <mat-datepicker-toggle matIconSuffix [for]="pickerInicio"></mat-datepicker-toggle>
-        <mat-datepicker #pickerInicio></mat-datepicker>
-      </mat-form-field>
+  <ng-container *ngIf="tabActiva === 'asistencia'; else proximamente">
+    <!-- Filtros -->
+    <div class="filters-section">
+      <div class="filters-grid">
+        <mat-form-field appearance="fill" class="filter-field">
+          <mat-label>Desde</mat-label>
+          <input
+            matInput
+            [matDatepicker]="pickerInicio"
+            [(ngModel)]="filtroFechaInicio"
+            placeholder="Seleccionar fecha"
+          />
+          <mat-datepicker-toggle matIconSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+          <mat-datepicker #pickerInicio></mat-datepicker>
+        </mat-form-field>
 
-      <mat-form-field class="filter-field">
-        <mat-label>Fecha Fin</mat-label>
-        <input
-          matInput
-          [matDatepicker]="pickerFin"
-          [(ngModel)]="filtroFechaFin"
-          placeholder="Seleccionar fecha"
-        />
-        <mat-datepicker-toggle matIconSuffix [for]="pickerFin"></mat-datepicker-toggle>
-        <mat-datepicker #pickerFin></mat-datepicker>
-      </mat-form-field>
+        <mat-form-field appearance="fill" class="filter-field">
+          <mat-label>Hasta</mat-label>
+          <input
+            matInput
+            [matDatepicker]="pickerFin"
+            [(ngModel)]="filtroFechaFin"
+            placeholder="Seleccionar fecha"
+          />
+          <mat-datepicker-toggle matIconSuffix [for]="pickerFin"></mat-datepicker-toggle>
+          <mat-datepicker #pickerFin></mat-datepicker>
+        </mat-form-field>
 
-      <mat-form-field class="filter-field">
-        <mat-label>Buscar empleado</mat-label>
-        <input matInput [(ngModel)]="filtroNombreEmpleado" placeholder="Nombre o apellido" />
-      </mat-form-field>
+        <mat-form-field appearance="fill" class="filter-field">
+          <mat-label>Buscar empleado</mat-label>
+          <input matInput [(ngModel)]="filtroNombreEmpleado" placeholder="Nombre o apellido" />
+        </mat-form-field>
 
-      <mat-form-field class="filter-field">
-        <mat-label>Departamento</mat-label>
-        <mat-select [(ngModel)]="filtroDepartamentoId">
-          <mat-option [value]="null">Todos los departamentos</mat-option>
-          <mat-option *ngFor="let depto of listaDepartamentos" [value]="depto.id">{{ depto.nombre }}</mat-option>
-        </mat-select>
-      </mat-form-field>
+        <mat-form-field appearance="fill" class="filter-field filter-depto">
+          <mat-label>Departamento</mat-label>
+          <mat-select [(ngModel)]="filtroDepartamentoId">
+            <mat-option [value]="null">Todos ({{ listaDepartamentos.length }})</mat-option>
+            <mat-option *ngFor="let depto of listaDepartamentos" [value]="depto.id">{{ depto.nombre }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="filter-actions">
+          <button mat-stroked-button (click)="exportarPDF()" class="btn-pdf">
+            <mat-icon>picture_as_pdf</mat-icon>
+            PDF
+          </button>
+          <button mat-raised-button (click)="exportarExcel()" [disabled]="exportando" class="btn-excel">
+            <mat-icon>file_download</mat-icon>
+            {{ exportando ? 'Exportando...' : 'Excel' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-actions-aplicar">
+        <button mat-raised-button color="primary" (click)="aplicarFiltros()" class="btn-apply">
+          <mat-icon>search</mat-icon>
+          Aplicar Filtros
+        </button>
+        <button mat-stroked-button (click)="limpiarFiltros()" class="btn-clear">
+          <mat-icon>clear</mat-icon>
+          Limpiar
+        </button>
+      </div>
     </div>
 
-    <div class="filter-actions">
-      <button mat-raised-button color="primary" (click)="aplicarFiltros()" class="btn-apply">
-        <mat-icon>search</mat-icon>
-        Aplicar Filtros
-      </button>
-      <button mat-stroked-button (click)="limpiarFiltros()" class="btn-clear">
-        <mat-icon>clear</mat-icon>
-        Limpiar
-      </button>
+    <!-- Vista previa -->
+    <div class="vista-previa-section">
+      <div class="vista-previa-header">
+        <h3>Vista previa · Asistencia</h3>
+        <span class="rango">{{ labelVistaPrevia }}</span>
+      </div>
+
+      <div class="loading" *ngIf="cargandoVistaPrevia">Cargando...</div>
+
+      <div class="vista-previa-wrapper" *ngIf="!cargandoVistaPrevia && vistaPrevia.length > 0">
+        <table class="tabla-vista-previa">
+          <thead>
+            <tr>
+              <th>Departamento</th>
+              <th>Días laborados</th>
+              <th>Asistencia</th>
+              <th>Horas extra</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of vistaPrevia">
+              <td class="col-depto">{{ d.departamento }}</td>
+              <td>{{ d.diasLaborados }}</td>
+              <td class="col-asistencia">{{ d.asistenciaPorcentaje }}%</td>
+              <td class="col-extra">{{ formatearDuracion(d.horasExtra) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="sin-datos" *ngIf="!cargandoVistaPrevia && vistaPrevia.length === 0">Sin datos para este rango</p>
     </div>
-  </div>
+  </ng-container>
+
+  <ng-template #proximamente>
+    <div class="proximamente-section">
+      <mat-icon>hourglass_empty</mat-icon>
+      <h3>Próximamente</h3>
+      <p>Este reporte todavía no está disponible.</p>
+    </div>
+  </ng-template>
 
   <!-- Tabla de Asistencias -->
-  <div class="table-section">
+  <div class="table-section" *ngIf="tabActiva === 'asistencia'">
     <div class="table-section-header">
       <h3>Registros de Asistencia</h3>
-      <button mat-stroked-button color="primary" (click)="exportarExcel()" [disabled]="exportando">
-        <mat-icon>file_download</mat-icon>
-        {{ exportando ? 'Exportando...' : 'Exportar a Excel' }}
-      </button>
     </div>
 
     <div class="table-wrapper" *ngIf="asistencias.data.length > 0">
@@ -126,7 +145,6 @@
             <th>Pausas</th>
             <th>Extras</th>
             <th>Horas Netas</th>
-            <th>Motivo</th>
             <th>Ubicación</th>
             <th>Fotos</th>
           </tr>
@@ -175,11 +193,6 @@
               <span *ngIf="element.tipo === 'asistencia'" class="badge badge-netas">{{ formatearDuracion(calcularHorasNetas(element.horasTrabajadas, element.totalPausas, element.horasExtras)) }}</span>
               <span *ngIf="element.tipo === 'horaExtra'" class="badge badge-netas">{{ formatearDuracion(element.duracionHoraExtra) }}</span>
               <span *ngIf="element.tipo === 'evento'" style="color: #999;">-</span>
-            </td>
-            <!-- Motivo (solo para días no trabajados por feriado/permiso) -->
-            <td>
-              <span *ngIf="element.tipo === 'evento'" class="badge badge-motivo">{{ element.motivo }}</span>
-              <span *ngIf="element.tipo !== 'evento'">-</span>
             </td>
             <!-- Ubicación de marcaje (entrada/salida en asistencia, inicio/fin en hora extra) -->
             <td>
@@ -249,7 +262,7 @@
   </div>
 
   <!-- Departamentos Stats -->
-  <div class="departamentos-section" *ngIf="departamentos.length > 0">
+  <div class="departamentos-section" *ngIf="tabActiva === 'asistencia' && departamentos.length > 0">
     <h3>Estadísticas por Departamento</h3>
     <div class="departamentos-grid">
       <div class="depto-card" *ngFor="let depto of departamentos">
@@ -275,7 +288,7 @@
   </div>
 
   <!-- Cumplimiento de Reportes -->
-  <div class="cumplimiento-section">
+  <div class="cumplimiento-section" *ngIf="tabActiva === 'asistencia'">
     <div class="cumplimiento-header">
       <div>
         <h3>Cumplimiento de Reportes</h3>

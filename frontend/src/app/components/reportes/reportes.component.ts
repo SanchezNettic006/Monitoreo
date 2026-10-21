@@ -26,6 +26,14 @@ import {
   DetalleCumplimientoEmpleado,
 } from '../../services/reportes.service';
 import { ExportarExcelService } from '../../services/exportar-excel.service';
+import { EmpleadoService } from '../../services/empleado.service';
+
+export interface VistaPreviaDepartamento {
+  departamento: string;
+  diasLaborados: number;
+  asistenciaPorcentaje: number;
+  horasExtra: number;
+}
 
 @Component({
   selector: 'app-reportes',
@@ -52,11 +60,24 @@ import { ExportarExcelService } from '../../services/exportar-excel.service';
   styleUrl: './reportes.component.scss',
 })
 export class ReportesComponent implements OnInit {
+  // Pestañas del encabezado — por ahora solo "Asistencia" está construida
+  tabs: { id: string; label: string; descripcion: string }[] = [
+    { id: 'asistencia', label: 'Asistencia', descripcion: 'Días y porcentaje por empleado' },
+    { id: 'puntualidad', label: 'Puntualidad', descripcion: 'Llegadas tarde y promedio de entrada' },
+    { id: 'horas-extra', label: 'Horas extra', descripcion: 'Aprobadas y pendientes por persona' },
+    { id: 'ausencias', label: 'Ausencias', descripcion: 'Vacaciones, permisos y faltas' },
+  ];
+  tabActiva = 'asistencia';
+
   // Datos
   asistencias = new MatTableDataSource<AsistenciaReporte>([]);
   resumen: ResumenReportes | null = null;
   departamentos: DepartamentoStats[] = [];
   cargando = false;
+
+  // Vista previa (resumen por departamento del rango de fechas filtrado)
+  vistaPrevia: VistaPreviaDepartamento[] = [];
+  cargandoVistaPrevia = false;
 
   // Paginación
   page = 1;
@@ -99,6 +120,7 @@ export class ReportesComponent implements OnInit {
     'horasNetas',
     'fotos',
   ];
+  // Nota: la columna "Motivo" se quitó de la tabla — siempre venía vacía
 
   exportando = false;
 
@@ -107,14 +129,20 @@ export class ReportesComponent implements OnInit {
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private exportarExcelService: ExportarExcelService,
+    private empleadoService: EmpleadoService,
   ) {}
 
   ngOnInit(): void {
     this.cargarResumen();
     this.cargarAsistencias();
     this.cargarDepartamentos();
+    this.cargarVistaPrevia();
     this.opcionesMesCumplimiento = this.generarOpcionesMes();
     this.cargarCumplimiento();
+  }
+
+  seleccionarTab(id: string): void {
+    this.tabActiva = id;
   }
 
   private generarOpcionesMes(): { value: string; label: string }[] {
@@ -263,6 +291,7 @@ export class ReportesComponent implements OnInit {
   aplicarFiltros(): void {
     this.page = 1;
     this.cargarAsistencias();
+    this.cargarVistaPrevia();
   }
 
   /**
@@ -275,6 +304,118 @@ export class ReportesComponent implements OnInit {
     this.filtroDepartamentoId = null;
     this.page = 1;
     this.cargarAsistencias();
+    this.cargarVistaPrevia();
+  }
+
+  /** Rango de fechas efectivo para la vista previa: lo filtrado, o el mes en curso hasta hoy */
+  private rangoVistaPrevia(): { desde: Date; hasta: Date } {
+    const hoy = new Date();
+    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    return {
+      desde: this.filtroFechaInicio || inicioMes,
+      hasta: this.filtroFechaFin || hoy,
+    };
+  }
+
+  /** Cantidad de días del rango que no son domingo (los técnicos no laboran ese día) */
+  private contarDiasLaborados(desde: Date, hasta: Date): number {
+    let dias = 0;
+    const cursor = new Date(desde.getFullYear(), desde.getMonth(), desde.getDate());
+    const fin = new Date(hasta.getFullYear(), hasta.getMonth(), hasta.getDate());
+    while (cursor <= fin) {
+      if (cursor.getDay() !== 0) dias++;
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    return dias;
+  }
+
+  get labelVistaPrevia(): string {
+    const { desde, hasta } = this.rangoVistaPrevia();
+    const fmt = (f: Date) => f.toLocaleDateString('es-SV', { day: 'numeric', month: 'short' });
+    return `${fmt(desde)} – ${hasta.toLocaleDateString('es-SV', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+  }
+
+  /**
+   * Resumen por departamento del rango filtrado: días laborados (calendario,
+   * igual para todos), % de asistencia (días-persona con entrada marcada
+   * sobre los días-persona esperados) y horas extra totales.
+   */
+  cargarVistaPrevia(): void {
+    this.cargandoVistaPrevia = true;
+    const { desde, hasta } = this.rangoVistaPrevia();
+    const diasLaborados = this.contarDiasLaborados(desde, hasta);
+
+    this.empleadoService.obtenerTodos().subscribe({
+      next: (empResponse) => {
+        const todos = Array.isArray(empResponse.data) ? empResponse.data : [empResponse.data];
+        const empleados = todos.filter((e: any) => e.estado !== 'inactivo' && e.usuario?.rol !== 'lider');
+
+        this.reportesService
+          .obtenerAsistencias(1, 10000, undefined, desde, hasta, this.filtroDepartamentoId || undefined, this.filtroNombreEmpleado || undefined)
+          .subscribe({
+            next: (response) => {
+              const registros: AsistenciaReporte[] = response.data || [];
+
+              const porDepto = new Map<
+                string,
+                { diasPersonaPresentes: Set<string>; empleados: Set<string>; horasExtra: number }
+              >();
+
+              for (const e of empleados) {
+                const nombreDepto = e.departamento?.nombre || 'Sin departamento';
+                const grupo = porDepto.get(nombreDepto) || {
+                  diasPersonaPresentes: new Set<string>(),
+                  empleados: new Set<string>(),
+                  horasExtra: 0,
+                };
+                grupo.empleados.add(`${e.nombre} ${e.apellido}`);
+                porDepto.set(nombreDepto, grupo);
+              }
+
+              for (const r of registros) {
+                const nombreDepto = r.departamento || 'Sin departamento';
+                const grupo = porDepto.get(nombreDepto);
+                if (!grupo) continue;
+
+                if (r.tipo === 'asistencia' && r.entrada) {
+                  grupo.diasPersonaPresentes.add(`${r.empleado}|${this.formatearFecha(r.fecha)}`);
+                  grupo.horasExtra += r.horasExtras || 0;
+                } else if (r.tipo === 'horaExtra') {
+                  grupo.horasExtra += r.duracionHoraExtra || 0;
+                }
+              }
+
+              this.vistaPrevia = Array.from(porDepto.entries())
+                .map(([departamento, g]) => {
+                  const esperados = g.empleados.size * diasLaborados;
+                  const asistenciaPorcentaje = esperados > 0 ? Math.round((g.diasPersonaPresentes.size / esperados) * 100) : 0;
+                  return {
+                    departamento,
+                    diasLaborados,
+                    asistenciaPorcentaje,
+                    horasExtra: g.horasExtra,
+                  };
+                })
+                .sort((a, b) => b.asistenciaPorcentaje - a.asistenciaPorcentaje);
+
+              this.cargandoVistaPrevia = false;
+            },
+            error: () => {
+              this.vistaPrevia = [];
+              this.cargandoVistaPrevia = false;
+            },
+          });
+      },
+      error: () => {
+        this.vistaPrevia = [];
+        this.cargandoVistaPrevia = false;
+      },
+    });
+  }
+
+  /** Genera el PDF usando el diálogo de impresión del navegador (Guardar como PDF) */
+  exportarPDF(): void {
+    window.print();
   }
 
   /**
