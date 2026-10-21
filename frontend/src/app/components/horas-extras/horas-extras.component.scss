@@ -116,7 +116,7 @@ $superficie: #182d19;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 28px auto;
   padding: 0 20px;
 
@@ -169,7 +169,7 @@ $superficie: #182d19;
 
 // ============= ACTIVE HORA EXTRA CARD =============
 .active-hora-extra-card {
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 20px auto;
   padding: 32px;
   background: $superficie;
@@ -304,7 +304,7 @@ $superficie: #182d19;
 
 // ============= FILTERS SECTION =============
 .filters-section {
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 24px auto;
   padding: 0 20px;
 
@@ -369,7 +369,7 @@ $superficie: #182d19;
 
 // ============= TABS =============
 .tabs-section {
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 24px auto;
   padding: 0 20px 40px 20px;
   background: transparent;
@@ -521,7 +521,11 @@ $superficie: #182d19;
 
 .data-table {
   width: 100%;
-  min-width: 920px;
+  // La tabla de "Completadas" es la que más columnas tiene (ticket, empleado,
+  // departamento, fecha, inicio, fin, duración, aprobación, ubicación, fotos,
+  // acciones); con un mínimo más generoso caben todas sin cortarse en una
+  // pantalla de escritorio normal, y solo scrollea en pantallas angostas.
+  min-width: 1180px;
   border-collapse: collapse;
 
   thead {
