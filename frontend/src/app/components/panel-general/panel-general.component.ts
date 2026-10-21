@@ -1,24 +1,32 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
-import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
+import { FormsModule } from '@angular/forms';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ReportesService, CumplimientoDepartamento, ResumenReportes } from '../../services/reportes.service';
+import { ReportesService, ResumenReportes, AsistenciaReporte } from '../../services/reportes.service';
 import { SolicitudService } from '../../services/solicitud.service';
+import { EmpleadoService } from '../../services/empleado.service';
+import { HoraExtraService } from '../../services/hora-extra.service';
 
-// Departamento PLEX (ver listas hardcodeadas de departamentos en el resto de la app)
-const DEPARTAMENTO_PLEX_ID = 2;
+interface AsistenciaDepto {
+  departamento: string;
+  presentes: number;
+  total: number;
+}
+
+interface SemanaHoras {
+  label: string;
+  horas: number;
+}
 
 /**
- * Panel General: vista tipo dashboard/BI con varias tarjetas KPI y gráficas,
- * pensada para ir agregando aquí las métricas que pidan a futuro. Solo admin.
- * Los gráficos puntuales dentro de cada módulo (ej. "Aprobados por mes" en
- * Trámites) se quedan donde están; este panel los complementa, no los reemplaza.
+ * Panel General: una sola pantalla con los KPIs del día a día — empleados,
+ * presentes hoy, horas extra del mes, ausencias y lo pendiente de aprobar —
+ * más dos vistazos rápidos: quién ha marcado hoy por departamento, y cómo se
+ * repartieron las horas extra del mes por semana. Solo admin.
  */
 @Component({
   selector: 'app-panel-general',
@@ -26,9 +34,7 @@ const DEPARTAMENTO_PLEX_ID = 2;
   imports: [
     CommonModule,
     FormsModule,
-    MatToolbarModule,
     MatIconModule,
-    MatCardModule,
     MatFormFieldModule,
     MatSelectModule,
     MatProgressSpinnerModule,
@@ -37,39 +43,43 @@ const DEPARTAMENTO_PLEX_ID = 2;
   styleUrl: './panel-general.component.scss',
 })
 export class PanelGeneralComponent implements OnInit {
-  // KPI: Horas Extra Aprobadas - PLEX
-  mesHorasPlex = new Date().toISOString().slice(0, 7);
-  opcionesMes: { value: string; label: string }[] = [];
-  horasAprobadasPlex: number | null = null;
-  ticketsAprobadosPlex: number | null = null;
-  cargandoHorasPlex = false;
+  periodo = new Date().toISOString().slice(0, 7);
+  opcionesPeriodo: { value: string; label: string }[] = [];
 
-  // KPI: Ausencias del mes (trámites tipo "ausencia"/Reposición ya aprobados)
-  mesAusencias = new Date().toISOString().slice(0, 7);
-  totalAusencias: number | null = null;
-  cargandoAusencias = false;
-
-  // Cumplimiento de reportes por departamento (círculos de %)
-  mesCumplimiento = new Date().toISOString().slice(0, 7);
-  cumplimientoDeptos: CumplimientoDepartamento[] = [];
-  cargandoCumplimiento = false;
-
-  // Estadísticas rápidas generales (presentes hoy, horas extra del mes, pausas)
   resumen: ResumenReportes | null = null;
   cargandoResumen = false;
+
+  totalAusenciasMes: number | null = null;
+  horasExtraPendientes = 0;
+  tramitesPendientes = 0;
+  cargandoPorAprobar = false;
+
+  asistenciaPorDepto: AsistenciaDepto[] = [];
+  cargandoAsistenciaDepto = false;
+
+  semanasHoras: SemanaHoras[] = [];
+  cargandoHorasSemana = false;
 
   constructor(
     private reportesService: ReportesService,
     private solicitudService: SolicitudService,
+    private empleadoService: EmpleadoService,
+    private horaExtraService: HoraExtraService,
     private router: Router,
   ) {}
 
   ngOnInit(): void {
-    this.opcionesMes = this.generarOpcionesMes();
-    this.cargarHorasAprobadasPlex();
-    this.cargarAusencias();
-    this.cargarCumplimiento();
+    this.opcionesPeriodo = this.generarOpcionesMes();
+    this.cargarTodo();
+  }
+
+  /** Recarga todo lo que depende del período seleccionado */
+  cargarTodo(): void {
     this.cargarResumen();
+    this.cargarAusenciasDelMes();
+    this.cargarPorAprobar();
+    this.cargarAsistenciaPorDepartamento();
+    this.cargarHorasPorSemana();
   }
 
   private generarOpcionesMes(): { value: string; label: string }[] {
@@ -84,35 +94,11 @@ export class PanelGeneralComponent implements OnInit {
     return opciones;
   }
 
-  cargarHorasAprobadasPlex(): void {
-    this.cargandoHorasPlex = true;
-    this.reportesService.obtenerHorasAprobadas(this.mesHorasPlex, DEPARTAMENTO_PLEX_ID).subscribe({
-      next: (response) => {
-        const plex = response.data.departamentos.find((d) => d.departamentoId === DEPARTAMENTO_PLEX_ID);
-        this.horasAprobadasPlex = plex?.totalHoras ?? 0;
-        this.ticketsAprobadosPlex = plex?.tecnicos.reduce((sum, t) => sum + t.totalTickets, 0) ?? 0;
-        this.cargandoHorasPlex = false;
-      },
-      error: () => {
-        this.horasAprobadasPlex = null;
-        this.ticketsAprobadosPlex = null;
-        this.cargandoHorasPlex = false;
-      },
-    });
-  }
-
-  cargarAusencias(): void {
-    this.cargandoAusencias = true;
-    this.solicitudService.obtenerSolicitudesAprobadas(this.mesAusencias, 'ausencia').subscribe({
-      next: (data) => {
-        this.totalAusencias = data.length;
-        this.cargandoAusencias = false;
-      },
-      error: () => {
-        this.totalAusencias = null;
-        this.cargandoAusencias = false;
-      },
-    });
+  private aFechaLocal(fecha: Date): string {
+    const y = fecha.getFullYear();
+    const m = String(fecha.getMonth() + 1).padStart(2, '0');
+    const d = String(fecha.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   cargarResumen(): void {
@@ -129,51 +115,195 @@ export class PanelGeneralComponent implements OnInit {
     });
   }
 
-  cargarCumplimiento(): void {
-    this.cargandoCumplimiento = true;
-    this.reportesService.obtenerCumplimiento(this.mesCumplimiento).subscribe({
-      next: (response) => {
-        this.cumplimientoDeptos = response.data.departamentos;
-        this.cargandoCumplimiento = false;
+  /** Trámites aprobados (todos los tipos) del período seleccionado — mismo criterio que la tarjeta del Home */
+  cargarAusenciasDelMes(): void {
+    this.solicitudService.obtenerSolicitudesAprobadas(this.periodo).subscribe({
+      next: (data) => {
+        this.totalAusenciasMes = data.length;
       },
       error: () => {
-        this.cumplimientoDeptos = [];
-        this.cargandoCumplimiento = false;
+        this.totalAusenciasMes = null;
       },
     });
   }
 
-  /** Color del círculo según qué tan bajo está el cumplimiento (mismo criterio que Reportes) */
-  colorCumplimiento(porcentaje: number): string {
-    if (porcentaje >= 80) return '#2b8a3e';
-    if (porcentaje >= 50) return '#f0a400';
-    return '#d32f2f';
-  }
+  cargarPorAprobar(): void {
+    this.cargandoPorAprobar = true;
+    this.horaExtraService.obtenerTodasHorasExtras().subscribe({
+      next: (response: any) => {
+        const tickets = response.data || [];
+        this.horasExtraPendientes = tickets.filter(
+          (h: any) => h.estado === 'finalizada' && h.estado_aprobacion === 'pendiente',
+        ).length;
+        this.cargandoPorAprobar = false;
+      },
+      error: () => {
+        this.horasExtraPendientes = 0;
+        this.cargandoPorAprobar = false;
+      },
+    });
 
-  /** Lleva a Reportes con el mismo mes, para revisar el detalle día por día */
-  verCumplimiento(): void {
-    this.router.navigate(['/reportes']);
-  }
-
-  /** Lleva a la pestaña "Aprobados" de Trámites, ya filtrada por este mismo mes y tipo */
-  verAusencias(): void {
-    this.router.navigate(['/tramites'], {
-      queryParams: { tab: 'aprobados', mes: this.mesAusencias, tipo: 'ausencia' },
+    this.solicitudService.obtenerSolicitudesPendientes().subscribe({
+      next: (solicitudes) => {
+        this.tramitesPendientes = solicitudes.length;
+      },
+      error: () => {
+        this.tramitesPendientes = 0;
+      },
     });
   }
 
-  volver(): void {
-    this.router.navigate(['/dashboard']);
+  get totalPorAprobar(): number {
+    return this.horasExtraPendientes + this.tramitesPendientes;
   }
 
-  /** Mismo formato usado en Reportes: "2h 30m" en vez de un decimal crudo como "0.03h" */
+  /** Quién ha marcado entrada hoy, agrupado por departamento (excluye líderes e inactivos) */
+  cargarAsistenciaPorDepartamento(): void {
+    this.cargandoAsistenciaDepto = true;
+    this.empleadoService.obtenerTodos().subscribe({
+      next: (response) => {
+        const todos = Array.isArray(response.data) ? response.data : [response.data];
+        const empleados = todos.filter((e: any) => e.estado !== 'inactivo' && e.usuario?.rol !== 'lider');
+
+        if (empleados.length === 0) {
+          this.asistenciaPorDepto = [];
+          this.cargandoAsistenciaDepto = false;
+          return;
+        }
+
+        const hoy = this.aFechaLocal(new Date());
+        this.reportesService.obtenerAsistencias(1, 1000, undefined, hoy, hoy).subscribe({
+          next: (resp) => {
+            const registros: AsistenciaReporte[] = resp.data || [];
+            const nombresConEntrada = new Set(
+              registros.filter((r) => r.tipo === 'asistencia' && r.entrada).map((r) => r.empleado),
+            );
+
+            const porDepto = new Map<string, AsistenciaDepto>();
+            for (const e of empleados) {
+              const nombreDepto = e.departamento?.nombre || 'Sin departamento';
+              const nombreCompleto = `${e.nombre} ${e.apellido}`;
+              const grupo = porDepto.get(nombreDepto) || { departamento: nombreDepto, presentes: 0, total: 0 };
+              grupo.total++;
+              if (nombresConEntrada.has(nombreCompleto)) grupo.presentes++;
+              porDepto.set(nombreDepto, grupo);
+            }
+
+            this.asistenciaPorDepto = Array.from(porDepto.values()).sort((a, b) => b.total - a.total);
+            this.cargandoAsistenciaDepto = false;
+          },
+          error: () => {
+            this.asistenciaPorDepto = [];
+            this.cargandoAsistenciaDepto = false;
+          },
+        });
+      },
+      error: () => {
+        this.asistenciaPorDepto = [];
+        this.cargandoAsistenciaDepto = false;
+      },
+    });
+  }
+
+  /**
+   * Horas extra aprobadas del período seleccionado, repartidas por semana
+   * (lunes a domingo, recortada a los límites del mes y al día de hoy si el
+   * mes está en curso). La suma de las barras coincide con la tarjeta
+   * "Horas extra" de arriba, porque usa el mismo criterio: horas_aprobadas
+   * de tickets con estado_aprobacion 'aprobada'.
+   */
+  cargarHorasPorSemana(): void {
+    this.cargandoHorasSemana = true;
+    this.horaExtraService.obtenerTodasHorasExtras().subscribe({
+      next: (response: any) => {
+        const tickets = response.data || [];
+        const [anio, mes] = this.periodo.split('-').map(Number);
+        const semanas = this.construirSemanasDelMes(anio, mes);
+
+        for (const semana of semanas) {
+          const enRango = tickets.filter((t: any) => {
+            if (t.estado_aprobacion !== 'aprobada' || !t.hora_inicio) return false;
+            const fecha = new Date(t.hora_inicio);
+            return fecha >= semana.inicio && fecha <= semana.finDia;
+          });
+          semana.horas = enRango.reduce((sum: number, t: any) => sum + (parseFloat(t.horas_aprobadas) || 0), 0);
+        }
+
+        this.semanasHoras = semanas.map((s) => ({ label: s.label, horas: s.horas }));
+        this.cargandoHorasSemana = false;
+      },
+      error: () => {
+        this.semanasHoras = [];
+        this.cargandoHorasSemana = false;
+      },
+    });
+  }
+
+  private construirSemanasDelMes(
+    anio: number,
+    mes: number,
+  ): { inicio: Date; finDia: Date; label: string; horas: number }[] {
+    const primerDia = new Date(anio, mes - 1, 1);
+    const ultimoDiaMes = new Date(anio, mes, 0);
+    const hoy = new Date();
+    hoy.setHours(23, 59, 59, 999);
+    const limiteFin = anio === hoy.getFullYear() && mes - 1 === hoy.getMonth() && ultimoDiaMes > hoy ? hoy : ultimoDiaMes;
+
+    const mesCorto = primerDia.toLocaleDateString('es-SV', { month: 'short' }).replace('.', '');
+    const semanas: { inicio: Date; finDia: Date; label: string; horas: number }[] = [];
+
+    let cursor = new Date(primerDia);
+    while (cursor <= limiteFin) {
+      const diaSemana = cursor.getDay(); // 0 = domingo .. 6 = sábado
+      const diasHastaDomingo = diaSemana === 0 ? 0 : 7 - diaSemana;
+      let finSemana = new Date(cursor);
+      finSemana.setDate(cursor.getDate() + diasHastaDomingo);
+      if (finSemana > limiteFin) finSemana = new Date(limiteFin);
+
+      const finDia = new Date(finSemana);
+      finDia.setHours(23, 59, 59, 999);
+
+      const label =
+        cursor.getDate() === finSemana.getDate()
+          ? `${cursor.getDate()} ${mesCorto}`
+          : `${cursor.getDate()}-${finSemana.getDate()} ${mesCorto}`;
+
+      semanas.push({ inicio: new Date(cursor), finDia, label, horas: 0 });
+
+      cursor = new Date(finSemana);
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    return semanas;
+  }
+
+  get labelPeriodo(): string {
+    return this.opcionesPeriodo.find((o) => o.value === this.periodo)?.label || '';
+  }
+
+  get maxHorasSemana(): number {
+    return Math.max(1, ...this.semanasHoras.map((s) => s.horas));
+  }
+
+  /** Lleva a la pestaña "Aprobados" de Trámites del mismo período */
+  verAusencias(): void {
+    this.router.navigate(['/tramites'], { queryParams: { tab: 'aprobados', mes: this.periodo } });
+  }
+
+  /** Lleva a revisar lo pendiente: horas extra si hay, si no trámites */
+  verPorAprobar(): void {
+    this.router.navigate([this.horasExtraPendientes > 0 ? '/horas-extras' : '/tramites']);
+  }
+
+  /** Mismo formato usado en Reportes/Home: "2h 30m" en vez de un decimal crudo */
   formatearDuracion(horas: number | null | undefined): string {
-    if (typeof horas !== 'number' || isNaN(horas) || horas === 0) return '0m';
+    if (typeof horas !== 'number' || isNaN(horas) || horas === 0) return '0h';
 
     const h = Math.floor(horas);
     const m = Math.round((horas % 1) * 60);
 
     if (h === 0) return `${m}m`;
+    if (m === 0) return `${h}h`;
     return `${h}h ${m}m`;
   }
 }

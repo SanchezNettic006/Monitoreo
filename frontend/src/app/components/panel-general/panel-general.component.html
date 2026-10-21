@@ -1,138 +1,89 @@
-<mat-toolbar color="primary">
-  <button mat-icon-button (click)="volver()" title="Volver">
-    <mat-icon>arrow_back</mat-icon>
-  </button>
-  <span>📊 Panel General</span>
-</mat-toolbar>
-
 <div class="panel-container">
-  <p class="panel-subtitle">Vista general con KPIs y gráficas de distintos módulos, en una sola pantalla.</p>
+  <div class="panel-header">
+    <div>
+      <span class="eyebrow">General</span>
+      <h1>Panel general</h1>
+    </div>
 
-  <!-- Estadísticas rápidas generales -->
-  <div class="stat-tiles-row" *ngIf="!cargandoResumen && resumen">
-    <div class="stat-tile">
-      <mat-icon class="stat-tile-icon extras">schedule</mat-icon>
-      <div class="stat-tile-texto">
-        <span class="stat-tile-valor">{{ formatearDuracion(resumen.horasExtrasAlMes) }}</span>
-        <span class="stat-tile-label">Horas Extra · Todos los deptos</span>
+    <mat-form-field appearance="fill" class="periodo-selector">
+      <mat-label>Período</mat-label>
+      <mat-select [(ngModel)]="periodo" (selectionChange)="cargarAusenciasDelMes(); cargarHorasPorSemana()">
+        <mat-option *ngFor="let opcion of opcionesPeriodo" [value]="opcion.value">{{ opcion.label }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- TILES -->
+  <div class="tiles-row">
+    <div class="tile">
+      <span class="tile-label">Empleados</span>
+      <span class="tile-valor" *ngIf="resumen">{{ resumen.totalEmpleados || 0 }}</span>
+    </div>
+    <div class="tile">
+      <span class="tile-label">Presentes hoy</span>
+      <span class="tile-valor verde" *ngIf="resumen">{{ resumen.presenteHoy || 0 }}</span>
+    </div>
+    <div class="tile">
+      <span class="tile-label">Horas extra</span>
+      <span class="tile-valor ambar" *ngIf="resumen">{{ formatearDuracion(resumen.horasExtrasAlMes) }}</span>
+    </div>
+    <div class="tile">
+      <span class="tile-label">Ausencias</span>
+      <span class="tile-valor rojo" *ngIf="totalAusenciasMes !== null">{{ totalAusenciasMes }}</span>
+    </div>
+    <div class="tile tile--clickable" (click)="verPorAprobar()">
+      <span class="tile-label">Por aprobar</span>
+      <span class="tile-valor">{{ totalPorAprobar }}</span>
+    </div>
+  </div>
+
+  <!-- DOS PANELES -->
+  <div class="fila-paneles">
+    <!-- ASISTENCIA HOY POR DEPARTAMENTO -->
+    <div class="panel">
+      <h2>Asistencia hoy por departamento</h2>
+      <span class="panel-subtitulo">presentes / total</span>
+
+      <div class="depto-loading" *ngIf="cargandoAsistenciaDepto">
+        <mat-spinner diameter="28"></mat-spinner>
+      </div>
+
+      <div class="depto-lista" *ngIf="!cargandoAsistenciaDepto">
+        <div class="depto-fila" *ngFor="let d of asistenciaPorDepto">
+          <div class="depto-encabezado">
+            <span class="depto-nombre">{{ d.departamento }}</span>
+            <span class="depto-conteo">{{ d.presentes }} / {{ d.total }}</span>
+          </div>
+          <div class="depto-barra">
+            <div class="depto-relleno" [style.width.%]="d.total > 0 ? (d.presentes / d.total) * 100 : 0"></div>
+          </div>
+        </div>
+
+        <p class="sin-datos" *ngIf="asistenciaPorDepto.length === 0">No hay empleados activos para mostrar</p>
       </div>
     </div>
 
-    <div class="stat-tile">
-      <mat-icon class="stat-tile-icon pausas">free_breakfast</mat-icon>
-      <div class="stat-tile-texto">
-        <span class="stat-tile-valor">{{ formatearDuracion(resumen.promedioPausas) }}</span>
-        <span class="stat-tile-label">Promedio de pausas</span>
+    <!-- HORAS EXTRA POR SEMANA -->
+    <div class="panel">
+      <h2>Horas extra por semana</h2>
+      <span class="panel-subtitulo">{{ labelPeriodo }}</span>
+
+      <div class="semanas-loading" *ngIf="cargandoHorasSemana">
+        <mat-spinner diameter="28"></mat-spinner>
+      </div>
+
+      <div class="semanas-chart" *ngIf="!cargandoHorasSemana">
+        <div class="semana-barra" *ngFor="let s of semanasHoras" [title]="s.label + ': ' + formatearDuracion(s.horas)">
+          <span class="semana-valor">{{ formatearDuracion(s.horas) }}</span>
+          <div class="semana-columna">
+            <div class="semana-fill" [style.height.%]="(s.horas / maxHorasSemana) * 100"></div>
+          </div>
+          <span class="semana-label">{{ s.label }}</span>
+        </div>
+
+        <p class="sin-datos" *ngIf="semanasHoras.length === 0">Sin horas extra aprobadas este mes</p>
       </div>
     </div>
   </div>
 
-  <div class="stat-tiles-loading" *ngIf="cargandoResumen">
-    <mat-spinner diameter="24"></mat-spinner>
-  </div>
-
-  <div class="kpi-grid">
-    <!-- KPI: Horas Extra Aprobadas - PLEX -->
-    <mat-card class="kpi-card">
-      <div class="kpi-header">
-        <div class="kpi-icon plex">
-          <mat-icon>engineering</mat-icon>
-        </div>
-        <mat-form-field appearance="fill" class="mes-selector">
-          <mat-label>Mes</mat-label>
-          <mat-select [(ngModel)]="mesHorasPlex" (selectionChange)="cargarHorasAprobadasPlex()">
-            <mat-option *ngFor="let opcion of opcionesMes" [value]="opcion.value">{{ opcion.label }}</mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-
-      <div class="kpi-body" *ngIf="!cargandoHorasPlex; else cargando">
-        <span class="kpi-titulo">Horas Extra Aprobadas · PLEX</span>
-        <span class="kpi-valor">{{ formatearDuracion(horasAprobadasPlex) }}</span>
-        <span class="kpi-detalle">{{ ticketsAprobadosPlex ?? 0 }} {{ ticketsAprobadosPlex === 1 ? 'ticket aprobado' : 'tickets aprobados' }}</span>
-      </div>
-
-      <ng-template #cargando>
-        <div class="kpi-loading">
-          <mat-spinner diameter="28"></mat-spinner>
-        </div>
-      </ng-template>
-    </mat-card>
-
-    <!-- KPI: Reposiciones del mes (tipo interno "ausencia") - clic lleva al dato real en Trámites > Aprobados -->
-    <mat-card class="kpi-card kpi-card--clickable" (click)="verAusencias()">
-      <div class="kpi-header">
-        <div class="kpi-icon ausencias">
-          <mat-icon>event_busy</mat-icon>
-        </div>
-        <mat-form-field appearance="fill" class="mes-selector" (click)="$event.stopPropagation()">
-          <mat-label>Mes</mat-label>
-          <mat-select [(ngModel)]="mesAusencias" (selectionChange)="cargarAusencias()" (click)="$event.stopPropagation()">
-            <mat-option *ngFor="let opcion of opcionesMes" [value]="opcion.value">{{ opcion.label }}</mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-
-      <div class="kpi-body" *ngIf="!cargandoAusencias; else cargando2">
-        <span class="kpi-titulo">Reposiciones del mes</span>
-        <span class="kpi-valor">{{ totalAusencias ?? 0 }}</span>
-        <span class="kpi-detalle">
-          <mat-icon>open_in_new</mat-icon>
-          Ver detalle en Trámites
-        </span>
-      </div>
-
-      <ng-template #cargando2>
-        <div class="kpi-loading">
-          <mat-spinner diameter="28"></mat-spinner>
-        </div>
-      </ng-template>
-    </mat-card>
-
-    <!-- Placeholder: aquí se van agregando las próximas gráficas/KPIs que pidan -->
-    <div class="kpi-placeholder">
-      <mat-icon>add_circle_outline</mat-icon>
-      <span>Próximas métricas aparecerán aquí</span>
-    </div>
-  </div>
-
-  <!-- Cumplimiento de Reportes por Departamento (círculos de %) -->
-  <mat-card class="cumplimiento-card">
-    <div class="cumplimiento-header">
-      <div>
-        <span class="kpi-titulo">Cumplimiento de Reportes por Departamento</span>
-        <p class="cumplimiento-subtitulo">% de días laborables del mes con jornada reportada (check-out)</p>
-      </div>
-      <mat-form-field appearance="fill" class="mes-selector">
-        <mat-label>Mes</mat-label>
-        <mat-select [(ngModel)]="mesCumplimiento" (selectionChange)="cargarCumplimiento()">
-          <mat-option *ngFor="let opcion of opcionesMes" [value]="opcion.value">{{ opcion.label }}</mat-option>
-        </mat-select>
-      </mat-form-field>
-    </div>
-
-    <div class="circulos-loading" *ngIf="cargandoCumplimiento">
-      <mat-spinner diameter="28"></mat-spinner>
-    </div>
-
-    <div class="circulos-grid" *ngIf="!cargandoCumplimiento">
-      <button
-        type="button"
-        class="circulo-depto"
-        *ngFor="let depto of cumplimientoDeptos"
-        (click)="verCumplimiento()"
-        [title]="depto.diasReportados + ' de ' + depto.diasLaborables + ' días laborables reportados'"
-      >
-        <div
-          class="circulo"
-          [style.background]="'conic-gradient(' + colorCumplimiento(depto.porcentaje) + ' ' + depto.porcentaje + '%, #eee 0)'"
-        >
-          <div class="circulo-interior">{{ depto.porcentaje }}%</div>
-        </div>
-        <span class="circulo-nombre">{{ depto.departamento }}</span>
-      </button>
-
-      <p class="sin-datos" *ngIf="cumplimientoDeptos.length === 0">Sin datos para este mes</p>
-    </div>
-  </mat-card>
 </div>

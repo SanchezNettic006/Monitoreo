@@ -1,5 +1,4 @@
-// Mismo tema oscuro del resto de la app. Solo repintado — misma
-// estructura, clases y funcionalidad de siempre.
+// Mismo tema oscuro del resto de la app.
 $verde-claro: #94c120;
 $ambar: #f0a400;
 $rojo-claro: #ff6b6b;
@@ -20,9 +19,9 @@ $superficie: #182d19;
   margin: 0 auto;
   color: $texto;
 
-  // Repintado de Material vía sus propias variables (los selectores de mes):
+  // Repintado de Material vía sus propias variables (selector de período):
   // más confiable que pelear con la especificidad de sus clases internas.
-  --mdc-filled-text-field-container-color: #{$fondo-suave};
+  --mdc-filled-text-field-container-color: #{$superficie};
   --mdc-filled-text-field-label-text-color: #{$texto-suave};
   --mdc-filled-text-field-hover-label-text-color: #{$texto-suave};
   --mdc-filled-text-field-focus-label-text-color: #{$verde-claro};
@@ -36,282 +35,114 @@ $superficie: #182d19;
   --mat-select-enabled-arrow-color: #{$texto-suave};
 }
 
-.panel-subtitle {
-  color: $texto-suave;
-  font-size: 14px;
-  margin: 0 0 24px;
-}
-
-// ============= ESTADÍSTICAS RÁPIDAS (fila de tarjetitas) =============
-
-.stat-tiles-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
   gap: 16px;
-  margin-bottom: 20px;
-}
+  margin-bottom: 24px;
 
-.stat-tiles-loading {
-  display: flex;
-  justify-content: center;
-  padding: 12px 0;
-  margin-bottom: 20px;
-}
-
-.stat-tile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: $superficie;
-  border-radius: 10px;
-  padding: 14px 16px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  min-width: 0;
-}
-
-.stat-tile-icon {
-  width: 36px;
-  height: 36px;
-  font-size: 20px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  &.extras {
-    background: rgba(240, 164, 0, 0.18);
-    color: $ambar;
+  .eyebrow {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $texto-suave;
+    margin-bottom: 4px;
   }
 
-  &.pausas {
-    background: rgba(142, 36, 170, 0.22);
-    color: #d896e8;
+  h1 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .periodo-selector {
+    width: 180px;
   }
 }
 
-.stat-tile-texto {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.stat-tile-valor {
-  font-size: 20px;
-  font-weight: 700;
-  color: #fff;
-}
-
-.stat-tile-label {
-  font-size: 12px;
-  color: $texto-suave;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.kpi-grid {
+// ============= TILES =============
+.tiles-row {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-.kpi-card {
-  background: $superficie !important;
-  color: $texto !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
-  padding: 20px;
-  border-radius: 10px;
-  border-left: 4px solid $verde-claro;
-  min-width: 0;
-}
-
-.kpi-card--clickable {
-  cursor: pointer;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
-
-  &:hover {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
-    transform: translateY(-2px);
-  }
-}
-
-.kpi-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.kpi-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  &.plex {
-    background: rgba(148, 193, 32, 0.18);
-    color: $verde-claro;
-  }
-
-  &.ausencias {
-    background: rgba(211, 47, 47, 0.18);
-    color: $rojo-claro;
-  }
-}
-
-.mes-selector {
-  width: 160px;
-}
-
-.kpi-body {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.kpi-titulo {
-  font-size: 13px;
-  color: $texto-suave;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.kpi-valor {
-  font-size: 32px;
-  font-weight: 700;
-  color: $verde-claro;
-}
-
-.kpi-detalle {
-  font-size: 13px;
-  color: $texto-suave;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-
-  mat-icon {
-    font-size: 15px;
-    width: 15px;
-    height: 15px;
-  }
-}
-
-.kpi-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px 0;
-}
-
-.kpi-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 30px 20px;
-  border: 2px dashed rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-  color: $texto-suave;
-  font-size: 13px;
-  text-align: center;
-
-  mat-icon {
-    font-size: 32px;
-    width: 32px;
-    height: 32px;
-  }
-}
-
-// ============= CUMPLIMIENTO POR DEPARTAMENTO (círculos de %) =============
-
-.cumplimiento-card {
-  background: $superficie !important;
-  color: $texto !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
-  margin-top: 20px;
-  padding: 20px;
-  border-radius: 10px;
-  min-width: 0;
-}
-
-.cumplimiento-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
   margin-bottom: 20px;
-  flex-wrap: wrap;
 }
 
-.cumplimiento-subtitulo {
-  margin: 4px 0 0;
-  font-size: 13px;
-  color: $texto-suave;
-}
-
-.circulos-loading {
-  display: flex;
-  justify-content: center;
-  padding: 20px 0;
-}
-
-.circulos-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 28px;
-}
-
-.circulo-depto {
+.tile {
+  background: $superficie;
+  border-radius: 12px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  background: none;
-  border: none;
-  padding: 4px;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: background-color 0.2s ease;
+  gap: 6px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.04);
+  .tile-label {
+    font-size: 12px;
+    color: $texto-suave;
+  }
+
+  .tile-valor {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+
+    &.verde { color: $verde-claro; }
+    &.ambar { color: $ambar; }
+    &.rojo { color: $rojo-claro; }
+  }
+
+  &.tile--clickable {
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+    }
   }
 }
 
-.circulo {
-  width: 84px;
-  height: 84px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+// ============= DOS PANELES =============
+.fila-paneles {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 16px;
 }
 
-.circulo-interior {
-  width: 66px;
-  height: 66px;
-  border-radius: 50%;
+@media (max-width: 900px) {
+  .fila-paneles {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel {
   background: $superficie;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  font-weight: 700;
-  color: #fff;
-}
+  border-radius: 14px;
+  padding: 20px 22px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 
-.circulo-nombre {
-  font-size: 13px;
-  color: $texto-suave;
-  font-weight: 500;
-  text-align: center;
+  h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .panel-subtitulo {
+    display: block;
+    font-size: 11.5px;
+    color: $texto-suave;
+    margin-bottom: 16px;
+  }
 }
 
 .sin-datos {
@@ -320,28 +151,119 @@ $superficie: #182d19;
   padding: 10px 0;
 }
 
+// ===== Asistencia hoy por departamento =====
+.depto-loading,
+.semanas-loading {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.depto-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.depto-fila {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.depto-encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+
+  .depto-nombre {
+    font-weight: 600;
+    color: $texto;
+  }
+
+  .depto-conteo {
+    color: $texto-suave;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.depto-barra {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.depto-relleno {
+  height: 100%;
+  border-radius: 4px;
+  background: $verde-claro;
+  transition: width 0.3s ease;
+}
+
+// ===== Horas extra por semana =====
+.semanas-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  height: 160px;
+  padding: 0 4px;
+}
+
+.semana-barra {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 80px;
+  height: 100%;
+}
+
+.semana-valor {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: $texto;
+  margin-bottom: 6px;
+  white-space: nowrap;
+}
+
+.semana-columna {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px 4px 0 0;
+}
+
+.semana-fill {
+  width: 100%;
+  min-height: 4px;
+  background: $ambar;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.3s ease;
+}
+
+.semana-label {
+  margin-top: 8px;
+  font-size: 11px;
+  color: $texto-suave;
+  text-align: center;
+  white-space: nowrap;
+}
+
 @media (max-width: 600px) {
   .panel-container {
     padding: 16px 12px;
   }
 
-  .kpi-grid {
-    grid-template-columns: 1fr;
+  .panel-header {
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .circulos-grid {
-    gap: 20px;
-    justify-content: space-around;
-  }
-
-  .circulo {
-    width: 72px;
-    height: 72px;
-  }
-
-  .circulo-interior {
-    width: 56px;
-    height: 56px;
-    font-size: 13px;
+  .periodo-selector {
+    width: 100%;
   }
 }
