@@ -413,11 +413,6 @@ export class ReportesComponent implements OnInit {
     });
   }
 
-  /** Genera el PDF usando el diálogo de impresión del navegador (Guardar como PDF) */
-  exportarPDF(): void {
-    window.print();
-  }
-
   /**
    * Formatear hora
    */
