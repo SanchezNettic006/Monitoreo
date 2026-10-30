@@ -81,12 +81,26 @@
               <input matInput [(ngModel)]="filtroEmpleadoHE" (ngModelChange)="filtrarPorTicket()" placeholder="Nombre o apellido" />
             </mat-form-field>
 
-            <mat-form-field class="filter-field">
-              <mat-label>Mes</mat-label>
-              <mat-select [(ngModel)]="filtroMesHE" (selectionChange)="filtrarPorTicket()">
-                <mat-option value="">Todos los meses</mat-option>
-                <mat-option *ngFor="let opcion of opcionesMesHE" [value]="opcion.value">{{ opcion.label }}</mat-option>
+            <mat-form-field class="filter-field" *ngIf="departamentosFiltroHE.length > 1">
+              <mat-label>Departamento</mat-label>
+              <mat-select [(ngModel)]="filtroDepartamentoHE" (selectionChange)="filtrarPorTicket()">
+                <mat-option value="">Todos</mat-option>
+                <mat-option *ngFor="let depto of departamentosFiltroHE" [value]="depto">{{ depto }}</mat-option>
               </mat-select>
+            </mat-form-field>
+
+            <mat-form-field class="filter-field">
+              <mat-label>Desde</mat-label>
+              <input matInput [matDatepicker]="pickerDesdeActivas" [(ngModel)]="filtroFechaInicioHE" (dateChange)="filtrarPorTicket()" />
+              <mat-datepicker-toggle matIconSuffix [for]="pickerDesdeActivas"></mat-datepicker-toggle>
+              <mat-datepicker #pickerDesdeActivas></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field class="filter-field">
+              <mat-label>Hasta</mat-label>
+              <input matInput [matDatepicker]="pickerHastaActivas" [(ngModel)]="filtroFechaFinHE" (dateChange)="filtrarPorTicket()" />
+              <mat-datepicker-toggle matIconSuffix [for]="pickerHastaActivas"></mat-datepicker-toggle>
+              <mat-datepicker #pickerHastaActivas></mat-datepicker>
             </mat-form-field>
 
             <button mat-stroked-button (click)="limpiarFiltros()" class="btn-clear">
@@ -124,7 +138,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let extra of dataSourceActivas.data" class="table-row">
+              <tr *ngFor="let extra of activasPaginadas" class="table-row">
                 <td class="ticket-cell">
                   <span class="badge badge-active">{{ extra.numero_ticket }}</span>
                   <span class="tipo-trabajo-tag">{{ extra.tipo_trabajo === 'averia' ? 'Avería' : extra.tipo_trabajo === 'motivo' ? 'Motivo' : 'Instalación' }}</span>
@@ -192,6 +206,7 @@
           <mat-paginator
             [length]="totalActivasRegistros"
             [pageSize]="pageSize"
+            [pageIndex]="currentPageActivas"
             [pageSizeOptions]="[10, 20, 50, 100]"
             (page)="onPageChangeActivas($event)"
             class="paginator">
@@ -220,12 +235,26 @@
               <input matInput [(ngModel)]="filtroEmpleadoHE" (ngModelChange)="filtrarPorTicket()" placeholder="Nombre o apellido" />
             </mat-form-field>
 
-            <mat-form-field class="filter-field">
-              <mat-label>Mes</mat-label>
-              <mat-select [(ngModel)]="filtroMesHE" (selectionChange)="filtrarPorTicket()">
-                <mat-option value="">Todos los meses</mat-option>
-                <mat-option *ngFor="let opcion of opcionesMesHE" [value]="opcion.value">{{ opcion.label }}</mat-option>
+            <mat-form-field class="filter-field" *ngIf="departamentosFiltroHE.length > 1">
+              <mat-label>Departamento</mat-label>
+              <mat-select [(ngModel)]="filtroDepartamentoHE" (selectionChange)="filtrarPorTicket()">
+                <mat-option value="">Todos</mat-option>
+                <mat-option *ngFor="let depto of departamentosFiltroHE" [value]="depto">{{ depto }}</mat-option>
               </mat-select>
+            </mat-form-field>
+
+            <mat-form-field class="filter-field">
+              <mat-label>Desde</mat-label>
+              <input matInput [matDatepicker]="pickerDesdeFinalizadas" [(ngModel)]="filtroFechaInicioHE" (dateChange)="filtrarPorTicket()" />
+              <mat-datepicker-toggle matIconSuffix [for]="pickerDesdeFinalizadas"></mat-datepicker-toggle>
+              <mat-datepicker #pickerDesdeFinalizadas></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field class="filter-field">
+              <mat-label>Hasta</mat-label>
+              <input matInput [matDatepicker]="pickerHastaFinalizadas" [(ngModel)]="filtroFechaFinHE" (dateChange)="filtrarPorTicket()" />
+              <mat-datepicker-toggle matIconSuffix [for]="pickerHastaFinalizadas"></mat-datepicker-toggle>
+              <mat-datepicker #pickerHastaFinalizadas></mat-datepicker>
             </mat-form-field>
 
             <mat-form-field class="filter-field">
@@ -275,7 +304,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let extra of dataSourceFinalizadas.data" class="table-row">
+              <tr *ngFor="let extra of finalizadasPaginadas" class="table-row">
                 <td class="ticket-cell">
                   <span class="badge badge-completed">{{ extra.numero_ticket }}</span>
                   <span class="tipo-trabajo-tag">{{ extra.tipo_trabajo === 'averia' ? 'Avería' : extra.tipo_trabajo === 'motivo' ? 'Motivo' : 'Instalación' }}</span>
@@ -366,9 +395,10 @@
               </tr>
             </tbody>
           </table>
-          <mat-paginator 
+          <mat-paginator
             [length]="totalFinalizadasRegistros"
             [pageSize]="pageSize"
+            [pageIndex]="currentPageFinalizadas"
             [pageSizeOptions]="[10, 20, 50, 100]"
             (page)="onPageChangeFinalizadas($event)"
             class="paginator">

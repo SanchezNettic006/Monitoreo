@@ -42,6 +42,8 @@ $superficie: #182d19;
   --mat-tab-header-inactive-label-text-color: #{$texto-suave};
   --mat-tab-header-divider-color: rgba(255, 255, 255, 0.08);
   --mdc-tab-indicator-active-indicator-color: #{$verde-claro};
+  --mat-datepicker-toggle-icon-color: #8fa98f;
+  --mat-datepicker-toggle-active-state-icon-color: #{$verde-claro};
 }
 
 // ============= LOADING OVERLAY =============
@@ -338,7 +340,7 @@ $superficie: #182d19;
 }
 
 .filters-grid-he {
-  grid-template-columns: 1fr 1fr 180px auto !important;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr !important;

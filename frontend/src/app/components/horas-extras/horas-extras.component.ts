@@ -9,6 +9,8 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -36,6 +38,8 @@ import { RevisarHoraExtraDialogComponent } from './revisar-hora-extra-dialog/rev
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
     MatTabsModule,
@@ -66,17 +70,30 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
   filtroTicket = '';
   filtroEmpleado = '';
   filtroEmpleadoHE = '';
-  filtroMesHE = '';
+  filtroFechaInicioHE: Date | null = null;
+  filtroFechaFinHE: Date | null = null;
+  filtroDepartamentoHE = '';
+  departamentosFiltroHE: string[] = [];
   /** Solo aplica a la pestaña Completadas: '' | 'pendiente' | 'aprobada' | 'rechazada' */
   filtroAprobacionHE = '';
-  opcionesMesHE: { value: string; label: string }[] = [];
-  
-  // Paginación
+
+  // Paginación (client-side: dataSourceActivas/Finalizadas traen TODO lo
+  // cargado/filtrado; las tablas muestran solo la página actual con un slice)
   totalActivasRegistros = 0;
   totalFinalizadasRegistros = 0;
   pageSize = 20;
   currentPageActivas = 0;
   currentPageFinalizadas = 0;
+
+  get activasPaginadas(): HoraExtraResponse[] {
+    const inicio = this.currentPageActivas * this.pageSize;
+    return this.dataSourceActivas.data.slice(inicio, inicio + this.pageSize);
+  }
+
+  get finalizadasPaginadas(): HoraExtraResponse[] {
+    const inicio = this.currentPageFinalizadas * this.pageSize;
+    return this.dataSourceFinalizadas.data.slice(inicio, inicio + this.pageSize);
+  }
 
   // Horas aprobadas por técnico
   tecnicosHorasAprobadas: TecnicoHorasAprobadas[] = [];
@@ -102,7 +119,6 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
     this.cargarHorasExtras();
     this.cargarHoraExtraActual();
     this.opcionesMesHorasAprobadas = this.generarOpcionesMes();
-    this.opcionesMesHE = this.generarOpcionesMes();
     this.cargarHorasAprobadas();
   }
 
@@ -197,6 +213,14 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
         this.dataSourceFinalizadas = new MatTableDataSource(this.horasExtrasFinalizadas);
         this.totalActivasRegistros = this.horasExtrasActivas.length || 0;
         this.totalFinalizadasRegistros = this.horasExtrasFinalizadas.length || 0;
+
+        const departamentos = new Set(
+          [...this.horasExtrasActivas, ...this.horasExtrasFinalizadas]
+            .map((h) => h.departamento_nombre)
+            .filter((d): d is string => !!d),
+        );
+        this.departamentosFiltroHE = Array.from(departamentos).sort();
+
         this.cargando = false;
       },
       error: (error) => {
@@ -254,25 +278,28 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Filtrar horas extras por ticket, nombre de empleado y/o mes
+   * Filtrar horas extras por ticket, nombre de empleado, departamento,
+   * rango de fechas y/o estado de aprobación
    */
   filtrarPorTicket(): void {
     const filtroTexto = this.filtroTicket.trim().toLowerCase();
     const filtroNombre = this.filtroEmpleadoHE.trim().toLowerCase();
-    const filtroMes = this.filtroMesHE;
+    const filtroDepartamento = this.filtroDepartamentoHE;
+    const desde = this.filtroFechaInicioHE ? new Date(this.filtroFechaInicioHE.getFullYear(), this.filtroFechaInicioHE.getMonth(), this.filtroFechaInicioHE.getDate()) : null;
+    const hasta = this.filtroFechaFinHE ? new Date(this.filtroFechaFinHE.getFullYear(), this.filtroFechaFinHE.getMonth(), this.filtroFechaFinHE.getDate(), 23, 59, 59, 999) : null;
     const filtroAprobacion = this.filtroAprobacionHE;
 
-    if (!filtroTexto && !filtroNombre && !filtroMes && !filtroAprobacion) {
-      this.dataSourceActivas = new MatTableDataSource(this.horasExtrasActivas);
-      this.dataSourceFinalizadas = new MatTableDataSource(this.horasExtrasFinalizadas);
-      return;
-    }
+    this.currentPageActivas = 0;
+    this.currentPageFinalizadas = 0;
 
     const coincideBase = (h: HoraExtraResponse) => {
       const coincideTicket = !filtroTexto || h.numero_ticket.toLowerCase().includes(filtroTexto);
       const coincideNombre = !filtroNombre || (h.empleado_nombre_completo || '').toLowerCase().includes(filtroNombre);
-      const coincideMes = !filtroMes || (h.hora_inicio || '').slice(0, 7) === filtroMes;
-      return coincideTicket && coincideNombre && coincideMes;
+      const coincideDepto = !filtroDepartamento || h.departamento_nombre === filtroDepartamento;
+      const fechaInicio = h.hora_inicio ? new Date(h.hora_inicio) : null;
+      const coincideDesde = !desde || (fechaInicio && fechaInicio >= desde);
+      const coincideHasta = !hasta || (fechaInicio && fechaInicio <= hasta);
+      return coincideTicket && coincideNombre && coincideDepto && coincideDesde && coincideHasta;
     };
 
     // El filtro de aprobación solo aplica a Completadas: en Activas todos los
@@ -284,6 +311,8 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
 
     this.dataSourceActivas = new MatTableDataSource(activasFiltradas);
     this.dataSourceFinalizadas = new MatTableDataSource(finalizadasFiltradas);
+    this.totalActivasRegistros = activasFiltradas.length;
+    this.totalFinalizadasRegistros = finalizadasFiltradas.length;
   }
 
   /**
@@ -293,8 +322,12 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
     this.filtroTicket = '';
     this.filtroEmpleado = '';
     this.filtroEmpleadoHE = '';
-    this.filtroMesHE = '';
+    this.filtroFechaInicioHE = null;
+    this.filtroFechaFinHE = null;
+    this.filtroDepartamentoHE = '';
     this.filtroAprobacionHE = '';
+    this.currentPageActivas = 0;
+    this.currentPageFinalizadas = 0;
     this.cargarHorasExtras();
   }
 
