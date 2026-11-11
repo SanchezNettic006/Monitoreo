@@ -76,7 +76,7 @@ export class ListadoEmpleadosComponent implements OnInit, AfterViewInit {
   }
 
   get displayedColumns(): string[] {
-    const columnas = ['id', 'nombre', 'apellido', 'cargo', 'telefono', 'departamento', 'estado', 'vacaciones'];
+    const columnas = ['id', 'nombre', 'apellido', 'cargo', 'correo', 'telefono', 'departamento', 'estado', 'vacaciones'];
     return this.esAdmin || this.esLider ? [...columnas, 'acciones'] : columnas;
   }
 
@@ -215,6 +215,7 @@ export class ListadoEmpleadosComponent implements OnInit, AfterViewInit {
         Nombre: e.nombre,
         Apellido: e.apellido,
         Cargo: e.cargo || '-',
+        Correo: e.usuario?.email || '-',
         Teléfono: e.telefono || '-',
         Departamento: e.departamento?.nombre || '-',
         'Vacaciones Disponibles': saldo ? saldo.diasDisponibles : '-',
