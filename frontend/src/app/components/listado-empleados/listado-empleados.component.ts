@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -40,7 +40,7 @@ import { ExportarExcelService } from '../../services/exportar-excel.service';
   templateUrl: './listado-empleados.component.html',
   styleUrl: './listado-empleados.component.scss'
 })
-export class ListadoEmpleadosComponent implements OnInit, AfterViewInit {
+export class ListadoEmpleadosComponent implements OnInit {
   empleados: Empleado[] = [];
   dataSource = new MatTableDataSource<Empleado>([]);
   cargando = false;
@@ -53,7 +53,16 @@ export class ListadoEmpleadosComponent implements OnInit, AfterViewInit {
   anioVacaciones = new Date().getFullYear();
   opcionesAnioVacaciones = this.generarOpcionesAnio();
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  // Setter en vez de @ViewChild + ngAfterViewInit: el <mat-paginator> vive
+  // dentro de un *ngIf que depende de que ya hayan cargado los datos, así que
+  // en ngAfterViewInit (que corre una sola vez, antes de que lleguen) el
+  // elemento todavía no existe y la asignación se perdía para siempre. El
+  // setter se vuelve a disparar cada vez que Angular (re)crea el elemento.
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator) {
+      this.dataSource.paginator = paginator;
+    }
+  }
 
   constructor(
     private empleadoService: EmpleadoService,
@@ -89,6 +98,15 @@ export class ListadoEmpleadosComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
+    // El filtro combina nombre + estado en un solo string (mat-table solo permite
+    // un filtro de texto), separados por '|' para no depender de coincidencias parciales raras
+    this.dataSource.filterPredicate = (empleado, filtro) => {
+      const [nombreFiltro, soloActivos] = filtro.split('|');
+      if (soloActivos === '1' && empleado.estado === 'inactivo') return false;
+      return `${empleado.nombre} ${empleado.apellido}`.toLowerCase().includes(nombreFiltro);
+    };
+    this.aplicarFiltroNombre();
+
     this.cargarEmpleados();
     this.cargarSaldosVacaciones();
   }
@@ -105,18 +123,6 @@ export class ListadoEmpleadosComponent implements OnInit, AfterViewInit {
         this.saldosVacacionesPorEmpleado = {};
       },
     });
-  }
-
-  ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
-    // El filtro combina nombre + estado en un solo string (mat-table solo permite
-    // un filtro de texto), separados por '|' para no depender de coincidencias parciales raras
-    this.dataSource.filterPredicate = (empleado, filtro) => {
-      const [nombreFiltro, soloActivos] = filtro.split('|');
-      if (soloActivos === '1' && empleado.estado === 'inactivo') return false;
-      return `${empleado.nombre} ${empleado.apellido}`.toLowerCase().includes(nombreFiltro);
-    };
-    this.aplicarFiltroNombre();
   }
 
   aplicarFiltroNombre(): void {
