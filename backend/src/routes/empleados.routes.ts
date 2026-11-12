@@ -24,13 +24,13 @@ router.get('/:id', liderOAdminMiddleware, cargarDepartamentoLider, (req, res, ne
   controller.obtenerPorId(req, res, next),
 );
 
-// PUT /api/empleados/:id/estado - Dar de baja / reactivar (admin: cualquiera; líder: solo su departamento)
-router.put('/:id/estado', liderOAdminMiddleware, cargarDepartamentoLider, (req, res, next) =>
+// A partir de aquí, solo la cuenta administradora principal (crear/editar/eliminar/dar de baja empleados y usuarios)
+router.use(superAdminMiddleware);
+
+// PUT /api/empleados/:id/estado - Dar de baja / reactivar
+router.put('/:id/estado', (req, res, next) =>
   controller.actualizarEstado(req, res, next),
 );
-
-// A partir de aquí, solo la cuenta administradora principal (crear/editar/eliminar empleados y usuarios)
-router.use(superAdminMiddleware);
 
 // POST /api/empleados - Crear nuevo empleado
 router.post('/', (req, res, next) =>

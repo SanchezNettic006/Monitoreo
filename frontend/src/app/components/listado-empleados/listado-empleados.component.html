@@ -138,6 +138,7 @@
               </button>
               <button
                 mat-icon-button
+                *ngIf="esSuperAdmin"
                 [color]="empleado.estado === 'inactivo' ? 'primary' : 'warn'"
                 (click)="toggleEstado(empleado)"
                 [title]="empleado.estado === 'inactivo' ? 'Reactivar' : 'Dar de baja'"

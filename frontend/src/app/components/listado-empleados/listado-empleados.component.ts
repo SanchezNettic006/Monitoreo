@@ -80,7 +80,7 @@ export class ListadoEmpleadosComponent implements OnInit, AfterViewInit {
 
   get displayedColumns(): string[] {
     const columnas = ['id', 'nombre', 'apellido', 'cargo', 'correo', 'telefono', 'departamento', 'estado', 'vacaciones'];
-    return this.esAdmin || this.esLider ? [...columnas, 'acciones'] : columnas;
+    return this.esSuperAdmin ? [...columnas, 'acciones'] : columnas;
   }
 
   private generarOpcionesAnio(): number[] {
