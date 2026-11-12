@@ -152,6 +152,9 @@ export class AlertasService {
       // (pendiente de definir si eso cambia más adelante).
       if (empleado.usuario?.rol === 'lider') continue;
 
+      // Marca asistencia en un reloj biométrico físico, no por esta app
+      if (empleado.solo_tramites) continue;
+
       const tieneRegistroHoy = await this.recordRepository.findOne({
         where: { empleado: { id: empleado.id }, fecha: hoyStr },
       });

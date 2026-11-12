@@ -102,6 +102,16 @@
       <mat-hint>Ej: el líder de Troncal que también supervisa Vehículos</mat-hint>
     </mat-form-field>
 
+    <!-- Solo trámites (marca asistencia en reloj biométrico físico) -->
+    <div class="solo-tramites-field">
+      <mat-checkbox formControlName="solo_tramites">Solo Trámites</mat-checkbox>
+      <p class="solo-tramites-hint">
+        Para personal que ya marca entrada/salida en un reloj biométrico de oficina.
+        En la app solo podrá ver sus días y pedir permisos — no verá Registro ni Mis Horas,
+        y no contará en reportes ni alertas de asistencia.
+      </p>
+    </div>
+
     <!-- Fecha de ingreso -->
     <mat-form-field appearance="fill" class="full-width">
       <mat-label>Fecha de ingreso (opcional)</mat-label>

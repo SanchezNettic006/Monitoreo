@@ -17,6 +17,7 @@ import { authGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
 import { adminOLiderGuard } from './guards/admin-o-lider.guard';
 import { liderGuard } from './guards/lider.guard';
+import { noSoloTramitesGuard } from './guards/no-solo-tramites.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -25,8 +26,8 @@ export const routes: Routes = [
   { path: 'restablecer-password', component: RestablecerPasswordComponent },
   { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
   { path: 'empleados', component: ListadoEmpleadosComponent, canActivate: [authGuard, adminOLiderGuard] },
-  { path: 'asistencia', component: RegistroAsistenciaComponent, canActivate: [authGuard] },
-  { path: 'mis-horas', component: MisHorasComponent, canActivate: [authGuard] },
+  { path: 'asistencia', component: RegistroAsistenciaComponent, canActivate: [authGuard, noSoloTramitesGuard] },
+  { path: 'mis-horas', component: MisHorasComponent, canActivate: [authGuard, noSoloTramitesGuard] },
   { path: 'mi-equipo', component: MiEquipoComponent, canActivate: [authGuard, liderGuard] },
   { path: 'proyectos', component: ProyectosComponent, canActivate: [authGuard, adminOLiderGuard] },
   { path: 'horas-extras', component: HorasExtrasComponent, canActivate: [authGuard, adminOLiderGuard] },

@@ -348,7 +348,9 @@ export class ReportesComponent implements OnInit {
     this.empleadoService.obtenerTodos().subscribe({
       next: (empResponse) => {
         const todos = Array.isArray(empResponse.data) ? empResponse.data : [empResponse.data];
-        const empleados = todos.filter((e: any) => e.estado !== 'inactivo' && e.usuario?.rol !== 'lider');
+        const empleados = todos.filter(
+          (e: any) => e.estado !== 'inactivo' && e.usuario?.rol !== 'lider' && !e.solo_tramites,
+        );
 
         this.reportesService
           .obtenerAsistencias(1, 10000, undefined, desde, hasta, this.filtroDepartamentoId || undefined, this.filtroNombreEmpleado || undefined)

@@ -69,7 +69,7 @@ export class EmpleadoController {
   // POST /api/empleados - Crear nuevo empleado
   async crear(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { nombre, apellido, cargo, telefono, departamento_id, email, password, rol, fecha_ingreso, dias_vacaciones_anuales } = req.body;
+      const { nombre, apellido, cargo, telefono, departamento_id, email, password, rol, fecha_ingreso, dias_vacaciones_anuales, solo_tramites } = req.body;
 
       // Validar campos requeridos
       if (!nombre || !apellido || !departamento_id || !email || !password) {
@@ -88,6 +88,7 @@ export class EmpleadoController {
         departamento_id,
         fecha_ingreso: fecha_ingreso || undefined,
         dias_vacaciones_anuales: dias_vacaciones_anuales !== undefined ? parseInt(dias_vacaciones_anuales, 10) : undefined,
+        solo_tramites: !!solo_tramites,
       };
 
       const resultado = await empleadoService.crearEmpleado(datosEmpleado, email, password, rol);
@@ -106,7 +107,7 @@ export class EmpleadoController {
   async actualizar(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const { nombre, apellido, cargo, telefono, departamento_id, rol, fecha_ingreso, dias_vacaciones_anuales, nuevaPassword, estado } = req.body;
+      const { nombre, apellido, cargo, telefono, departamento_id, rol, fecha_ingreso, dias_vacaciones_anuales, nuevaPassword, estado, solo_tramites } = req.body;
 
       const datosActualizar: Partial<Empleado> = {};
 
@@ -117,6 +118,7 @@ export class EmpleadoController {
       if (departamento_id) datosActualizar.departamento_id = departamento_id;
       if (fecha_ingreso !== undefined) datosActualizar.fecha_ingreso = fecha_ingreso || undefined;
       if (dias_vacaciones_anuales !== undefined) datosActualizar.dias_vacaciones_anuales = parseInt(dias_vacaciones_anuales, 10);
+      if (solo_tramites !== undefined) datosActualizar.solo_tramites = !!solo_tramites;
       // 'Dar de baja' / reactivar: no borra su historial, solo lo excluye de
       // cumplimiento de reportes, alertas y saldos de vacaciones (ver EmpleadoService)
       if (estado === 'activo' || estado === 'inactivo') datosActualizar.estado = estado;

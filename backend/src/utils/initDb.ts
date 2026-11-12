@@ -425,6 +425,15 @@ export async function inicializarColumnas() {
       } else {
         console.log('✅ Columna ultimo_recordatorio_no_inicio_lider ya existe');
       }
+
+      const columnaSoloTramitesExiste = await queryRunner.hasColumn('empleado', 'solo_tramites');
+      if (!columnaSoloTramitesExiste) {
+        console.log('📋 Agregando columna solo_tramites...');
+        await queryRunner.query(`ALTER TABLE empleado ADD COLUMN solo_tramites BOOLEAN NOT NULL DEFAULT false`);
+        console.log('✅ Columna solo_tramites agregada exitosamente');
+      } else {
+        console.log('✅ Columna solo_tramites ya existe');
+      }
     }
 
     console.log('🔧 Verificando columna proyecto_trabajado en record_asistencia...');

@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { EmpleadoService, Empleado } from '../../services/empleado.service';
 import { AuthService } from '../../services/auth.service';
 import { environment } from '../../../environments/environment';
@@ -27,7 +28,8 @@ import { environment } from '../../../environments/environment';
     MatSelectModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
-    MatIconModule
+    MatIconModule,
+    MatCheckboxModule,
   ],
   templateUrl: './formulario-empleado.component.html',
   styleUrl: './formulario-empleado.component.scss'
@@ -104,6 +106,8 @@ export class FormularioEmpleadoComponent {
       password: ['', this.editando ? [] : [Validators.required, Validators.minLength(6)]],
       // Solo aplica al editar, y solo el admin la ve (ver plantilla); vacío = no cambiar
       nuevaPassword: ['', this.editando ? [Validators.minLength(6)] : []],
+      // Marca entrada/salida en reloj biométrico físico de oficina, no por esta app
+      solo_tramites: [this.data?.solo_tramites ?? false],
     });
   }
 

@@ -120,6 +120,9 @@ export class AuthService {
       // false solo para departamentos cuyo personal no trabaja con tickets/NET
       // (ej. Vehículos y Taller); en ese caso la hora extra se reporta con un motivo libre
       usaTicketHorasExtra: usuario.empleado?.departamento?.usa_ticket_horas_extra ?? true,
+      // Marca entrada/salida en un reloj biométrico físico, no por esta app:
+      // solo debe poder usar el módulo de Trámites
+      solo_tramites: usuario.empleado?.solo_tramites ?? false,
     };
   }
 }

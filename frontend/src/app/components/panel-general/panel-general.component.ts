@@ -163,7 +163,9 @@ export class PanelGeneralComponent implements OnInit {
     this.empleadoService.obtenerTodos().subscribe({
       next: (response) => {
         const todos = Array.isArray(response.data) ? response.data : [response.data];
-        const empleados = todos.filter((e: any) => e.estado !== 'inactivo' && e.usuario?.rol !== 'lider');
+        const empleados = todos.filter(
+          (e: any) => e.estado !== 'inactivo' && e.usuario?.rol !== 'lider' && !e.solo_tramites,
+        );
 
         if (empleados.length === 0) {
           this.asistenciaPorDepto = [];

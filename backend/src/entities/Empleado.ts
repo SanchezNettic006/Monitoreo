@@ -54,6 +54,13 @@ export class Empleado {
   @Column({ type: 'date', nullable: true })
   ultimo_recordatorio_no_inicio_lider?: string;
 
+  // true para personal que marca asistencia en un reloj biométrico físico de
+  // oficina (no por esta app): no deben aparecer en cumplimiento de reportes,
+  // conteos de presentes/ausentes, ni recibir recordatorios de check-in —
+  // solo usan el módulo de Trámites (permisos, saldo de vacaciones).
+  @Column({ default: false })
+  solo_tramites!: boolean;
+
   @Column()
   usuario_id!: number;
 

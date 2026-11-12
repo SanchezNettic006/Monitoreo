@@ -16,6 +16,8 @@ interface ItemNav {
   /** undefined = visible para cualquier rol logueado */
   roles?: ('admin' | 'lider')[];
   badge?: 'horasExtra' | 'tramites';
+  /** Se oculta para empleados que marcan asistencia en reloj biométrico físico (solo usan Trámites) */
+  ocultoSiSoloTramites?: boolean;
 }
 
 interface GrupoNav {
@@ -52,8 +54,8 @@ export class SidebarComponent implements OnInit {
     {
       titulo: 'Asistencia',
       items: [
-        { label: 'Registro', icono: 'place', ruta: '/asistencia' },
-        { label: 'Mis horas', icono: 'schedule', ruta: '/mis-horas' },
+        { label: 'Registro', icono: 'place', ruta: '/asistencia', ocultoSiSoloTramites: true },
+        { label: 'Mis horas', icono: 'schedule', ruta: '/mis-horas', ocultoSiSoloTramites: true },
         { label: 'Mi equipo', icono: 'groups', ruta: '/mi-equipo', roles: ['lider'] },
         { label: 'Calendario laboral', icono: 'calendar_month', ruta: '/calendario', roles: ['admin'] },
       ],
@@ -115,8 +117,13 @@ export class SidebarComponent implements OnInit {
     return this.authService.esLider();
   }
 
+  get esSoloTramites(): boolean {
+    return this.authService.esSoloTramites();
+  }
+
   /** Un ítem es visible si no exige rol, o si el usuario tiene alguno de los permitidos */
   visible(item: ItemNav): boolean {
+    if (item.ocultoSiSoloTramites && this.esSoloTramites) return false;
     if (!item.roles) return true;
     if (item.roles.includes('admin') && this.esAdmin) return true;
     if (item.roles.includes('lider') && this.esLider) return true;

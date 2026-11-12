@@ -286,6 +286,10 @@ export class ReportesService {
 
     if (empleadoId) {
       queryEmpleados.andWhere('empleado.id = :empleadoId', { empleadoId });
+    } else {
+      // En la vista general (sin empleado específico), no fabricar filas de
+      // festivo/vacaciones para quienes marcan en reloj biométrico físico
+      queryEmpleados.andWhere('empleado.solo_tramites = false');
     }
     if (departamentoId?.length) {
       queryEmpleados.andWhere('empleado.departamento_id IN (:...departamentoId)', { departamentoId });
@@ -383,10 +387,12 @@ export class ReportesService {
         .where('record.fecha = :hoy', { hoy: hoyLocal() })
         .getCount();
 
-      // Total empleados
+      // Total empleados (excluye a quienes marcan en reloj biométrico físico,
+      // no por esta app, para no inflar el denominador de "% presentes")
       const totalEmpleados = await this.empleadoRepository
         .createQueryBuilder('empleado')
         .where('empleado.estado = :estado', { estado: 'activo' })
+        .andWhere('empleado.solo_tramites = false')
         .getCount();
 
       // Horas extras APROBADAS este mes (las pendientes de revisión no cuentan
@@ -710,7 +716,9 @@ export class ReportesService {
       .innerJoin('empleado.usuario', 'usuario')
       .where('empleado.estado = :estado', { estado: 'activo' })
       // El cumplimiento de reportes solo aplica a empleados, no a líderes
-      .andWhere('usuario.rol != :lider', { lider: 'lider' });
+      .andWhere('usuario.rol != :lider', { lider: 'lider' })
+      // Ni a quienes marcan asistencia en reloj biométrico físico (nunca tendrán check-out en la app)
+      .andWhere('empleado.solo_tramites = false');
 
     if (departamentoId) {
       queryEmpleados.andWhere('empleado.departamento_id = :departamentoId', { departamentoId });

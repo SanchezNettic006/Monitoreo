@@ -13,6 +13,8 @@ export interface Empleado {
   estado?: string;
   fecha_ingreso?: string;
   dias_vacaciones_anuales?: number;
+  /** true si marca entrada/salida en un reloj biométrico físico, no por esta app (solo usa Trámites) */
+  solo_tramites?: boolean;
   usuario_id: number;
   departamento_id: number;
   usuario?: {

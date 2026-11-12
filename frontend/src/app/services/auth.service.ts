@@ -27,6 +27,8 @@ export interface Usuario {
   departamento?: string;
   /** false solo en departamentos que no trabajan con tickets/NET (ej. Vehículos y Taller) */
   usaTicketHorasExtra?: boolean;
+  /** true si marca entrada/salida en un reloj biométrico físico, no por esta app (solo usa Trámites) */
+  solo_tramites?: boolean;
 }
 
 @Injectable({
@@ -98,6 +100,11 @@ export class AuthService {
   /** Único admin autorizado a crear/editar/eliminar empleados y usuarios */
   esSuperAdmin(): boolean {
     return this.esAdmin() && (this.currentUserSubject.value?.email || '').toLowerCase() === this.SUPER_ADMIN_EMAIL;
+  }
+
+  /** Marca entrada/salida en un reloj biométrico físico, no por esta app: solo usa Trámites */
+  esSoloTramites(): boolean {
+    return !!this.currentUserSubject.value?.solo_tramites;
   }
 
   /**
