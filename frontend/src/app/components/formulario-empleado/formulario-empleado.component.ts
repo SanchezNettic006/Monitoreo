@@ -292,6 +292,17 @@ export class FormularioEmpleadoComponent {
     }, 5000); // Cerrar después de 5 segundos
   }
 
+  /** Genera una contraseña aleatoria y la pone en el campo, visible para copiarla */
+  generarPassword(): void {
+    const caracteres = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+    let password = '';
+    for (let i = 0; i < 10; i++) {
+      password += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+    }
+    this.form.get('password')?.setValue(password);
+    this.mostrarPassword = true;
+  }
+
   cancelar(): void {
     this.dialogRef.close(false);
   }
