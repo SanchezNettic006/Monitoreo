@@ -1,20 +1,22 @@
-<mat-toolbar color="primary">
-  <span>👥 {{ esAdmin ? 'Gestión de Empleados' : 'Empleados de mi Departamento' }}</span>
-  <span class="spacer"></span>
-  <button mat-raised-button color="accent" *ngIf="esSuperAdmin" (click)="abrirFormulario()">
-    <mat-icon>add</mat-icon>
-    Nuevo Empleado
-  </button>
-  <button mat-icon-button (click)="volver()" title="Volver">
-    <mat-icon>close</mat-icon>
-  </button>
-</mat-toolbar>
-
 <div class="container">
+  <div class="header-section">
+    <div class="header-content">
+      <span class="eyebrow">Administración</span>
+      <h1>{{ esAdmin ? 'Gestión de Empleados' : 'Empleados de mi Departamento' }}</h1>
+    </div>
+    <div class="header-actions">
+      <button mat-raised-button class="btn-nuevo" *ngIf="esSuperAdmin" (click)="abrirFormulario()">
+        <mat-icon>add</mat-icon>
+        Nuevo Empleado
+      </button>
+      <button mat-icon-button (click)="volver()" title="Volver al inicio">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
   <mat-card class="empleados-card">
-    <mat-card-header>
-      <mat-card-title>Listado de Empleados</mat-card-title>
-    </mat-card-header>
+    <h2 class="card-titulo">Listado de Empleados</h2>
 
     <mat-card-content>
       <!-- Spinner de carga -->

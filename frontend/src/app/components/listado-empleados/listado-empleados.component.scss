@@ -43,26 +43,60 @@ $superficie: #182d19;
   --mat-paginator-enabled-icon-color: #{$texto-suave};
 }
 
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  .eyebrow {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $texto-suave;
+    margin-bottom: 4px;
+  }
+
+  h1 {
+    color: #fff;
+    margin: 0;
+    font-size: 24px;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .btn-nuevo {
+    background: $verde-claro !important;
+    color: #0b1710 !important;
+    font-weight: 700 !important;
+    height: 44px;
+
+    mat-icon {
+      margin-right: 6px;
+    }
+  }
+}
+
 .empleados-card {
   background: $superficie;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-mat-card-header {
-  background: linear-gradient(135deg, #2B8A3E 0%, #1a5a2a 100%);
-  color: white;
-  margin: -16px -16px 16px -16px;
-  padding: 16px;
-}
-
-mat-card-title {
-  color: white;
-  margin: 0;
-  font-size: 20px;
-}
-
-.spacer {
-  flex: 1 1 auto;
+.card-titulo {
+  color: #fff;
+  margin: 0 0 16px;
+  font-size: 17px;
+  font-weight: 700;
 }
 
 .table-container {
@@ -206,17 +240,5 @@ mat-card-title {
   &.bajo {
     background: rgba(211, 47, 47, 0.18);
     color: $rojo-claro;
-  }
-}
-
-::ng-deep {
-  .mat-mdc-button {
-    &.mat-accent {
-      --mdc-theme-primary: #94C120;
-    }
-  }
-
-  .mat-toolbar {
-    background: linear-gradient(135deg, #2B8A3E 0%, #1a5a2a 100%) !important;
   }
 }

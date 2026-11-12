@@ -7,7 +7,6 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -31,7 +30,6 @@ import { ExportarExcelService } from '../../services/exportar-excel.service';
     MatButtonModule,
     MatIconModule,
     MatCardModule,
-    MatToolbarModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatDialogModule,
@@ -151,7 +149,9 @@ export class ListadoEmpleadosComponent implements OnInit, AfterViewInit {
 
   abrirFormulario(empleado?: Empleado): void {
     const dialogRef = this.dialog.open(FormularioEmpleadoComponent, {
-      width: '500px',
+      width: '600px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
       data: empleado || null
     });
 

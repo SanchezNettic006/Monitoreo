@@ -1,5 +1,6 @@
 <h2 mat-dialog-title>
-  {{ editando ? '✏️ Editar Empleado' : '➕ Nuevo Empleado' }}
+  <mat-icon class="titulo-icono">{{ editando ? 'edit' : 'person_add' }}</mat-icon>
+  {{ editando ? 'Editar Empleado' : 'Nuevo Empleado' }}
 </h2>
 
 <mat-dialog-content>
@@ -10,14 +11,14 @@
         <img [src]="previewFoto" alt="Preview foto" class="preview-img" />
       </div>
       <div class="foto-upload">
-        <input 
-          type="file" 
-          #fotoInput 
-          (change)="onFotoSelected($event)" 
+        <input
+          type="file"
+          #fotoInput
+          (change)="onFotoSelected($event)"
           accept="image/*"
           style="display: none"
         />
-        <button 
+        <button
           type="button"
           mat-raised-button
           color="accent"
@@ -31,67 +32,67 @@
       </div>
     </div>
 
-    <!-- Nombre -->
-    <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Nombre</mat-label>
-      <input matInput formControlName="nombre" placeholder="Ingresa nombre" />
-      <mat-error *ngIf="nombre?.hasError('required')">
-        Nombre es requerido
-      </mat-error>
-      <mat-error *ngIf="nombre?.hasError('minlength')">
-        Mínimo 3 caracteres
-      </mat-error>
-    </mat-form-field>
+    <span class="seccion-titulo">Datos personales</span>
+    <div class="form-grid-2">
+      <mat-form-field appearance="fill">
+        <mat-label>Nombre</mat-label>
+        <input matInput formControlName="nombre" placeholder="Ingresa nombre" />
+        <mat-error *ngIf="nombre?.hasError('required')">
+          Nombre es requerido
+        </mat-error>
+        <mat-error *ngIf="nombre?.hasError('minlength')">
+          Mínimo 3 caracteres
+        </mat-error>
+      </mat-form-field>
 
-    <!-- Apellido -->
-    <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Apellido</mat-label>
-      <input matInput formControlName="apellido" placeholder="Ingresa apellido" />
-      <mat-error *ngIf="apellido?.hasError('required')">
-        Apellido es requerido
-      </mat-error>
-      <mat-error *ngIf="apellido?.hasError('minlength')">
-        Mínimo 3 caracteres
-      </mat-error>
-    </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Apellido</mat-label>
+        <input matInput formControlName="apellido" placeholder="Ingresa apellido" />
+        <mat-error *ngIf="apellido?.hasError('required')">
+          Apellido es requerido
+        </mat-error>
+        <mat-error *ngIf="apellido?.hasError('minlength')">
+          Mínimo 3 caracteres
+        </mat-error>
+      </mat-form-field>
 
-    <!-- Cargo -->
-    <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Cargo (opcional)</mat-label>
-      <input matInput formControlName="cargo" placeholder="Ej: Técnico, Supervisor" />
-      <mat-error *ngIf="cargo?.hasError('minlength')">
-        Mínimo 2 caracteres
-      </mat-error>
-    </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Cargo (opcional)</mat-label>
+        <input matInput formControlName="cargo" placeholder="Ej: Técnico, Supervisor" />
+        <mat-error *ngIf="cargo?.hasError('minlength')">
+          Mínimo 2 caracteres
+        </mat-error>
+      </mat-form-field>
 
-    <!-- Teléfono -->
-    <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Teléfono (opcional)</mat-label>
-      <input matInput formControlName="telefono" placeholder="Ej: 3001234567" />
-      <mat-error *ngIf="telefono?.hasError('pattern')">
-        Teléfono inválido
-      </mat-error>
-    </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Teléfono (opcional)</mat-label>
+        <input matInput formControlName="telefono" placeholder="Ej: 3001234567" />
+        <mat-error *ngIf="telefono?.hasError('pattern')">
+          Teléfono inválido
+        </mat-error>
+      </mat-form-field>
+    </div>
 
-    <!-- Departamento -->
-    <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Departamento</mat-label>
-      <mat-select formControlName="departamento_id">
-        <mat-option *ngFor="let depto of departamentos" [value]="depto.id">
-          {{ depto.nombre }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+    <span class="seccion-titulo">Departamento y rol</span>
+    <div class="form-grid-2">
+      <mat-form-field appearance="fill">
+        <mat-label>Departamento</mat-label>
+        <mat-select formControlName="departamento_id">
+          <mat-option *ngFor="let depto of departamentos" [value]="depto.id">
+            {{ depto.nombre }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
 
-    <!-- Rol -->
-    <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Rol</mat-label>
-      <mat-select formControlName="rol">
-        <mat-option value="empleado">Empleado</mat-option>
-        <mat-option value="lider">Líder de departamento</mat-option>
-      </mat-select>
-      <mat-hint>Un líder ve y gestiona las solicitudes, asistencias y empleados de su departamento</mat-hint>
-    </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Rol</mat-label>
+        <mat-select formControlName="rol">
+          <mat-option value="empleado">Empleado</mat-option>
+          <mat-option value="lider">Líder de departamento</mat-option>
+        </mat-select>
+        <mat-hint>El líder gestiona su departamento</mat-hint>
+      </mat-form-field>
+    </div>
 
     <!-- Departamentos adicionales (solo editando un líder ya creado) -->
     <mat-form-field appearance="fill" class="full-width" *ngIf="esLiderEnEdicion">
@@ -103,32 +104,36 @@
     </mat-form-field>
 
     <!-- Solo trámites (marca asistencia en reloj biométrico físico) -->
-    <div class="solo-tramites-field">
-      <mat-checkbox formControlName="solo_tramites">Solo Trámites</mat-checkbox>
-      <p class="solo-tramites-hint">
-        Para personal que ya marca entrada/salida en un reloj biométrico de oficina.
-        En la app solo podrá ver sus días y pedir permisos — no verá Registro ni Mis Horas,
-        y no contará en reportes ni alertas de asistencia.
-      </p>
+    <label class="solo-tramites-field">
+      <mat-checkbox formControlName="solo_tramites"></mat-checkbox>
+      <span>
+        <strong>Solo Trámites</strong>
+        <p>
+          Para personal que ya marca entrada/salida en un reloj biométrico de oficina.
+          En la app solo podrá ver sus días y pedir permisos — no verá Registro ni Mis Horas,
+          y no contará en reportes ni alertas de asistencia.
+        </p>
+      </span>
+    </label>
+
+    <span class="seccion-titulo">Vacaciones</span>
+    <div class="form-grid-2">
+      <mat-form-field appearance="fill">
+        <mat-label>Fecha de ingreso (opcional)</mat-label>
+        <input matInput type="date" formControlName="fecha_ingreso" />
+        <mat-hint>Referencia para vacaciones</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Días de vacaciones al año</mat-label>
+        <input matInput type="number" min="0" formControlName="dias_vacaciones_anuales" />
+        <mat-hint>Por defecto 15 (mínimo de ley)</mat-hint>
+      </mat-form-field>
     </div>
-
-    <!-- Fecha de ingreso -->
-    <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Fecha de ingreso (opcional)</mat-label>
-      <input matInput type="date" formControlName="fecha_ingreso" />
-      <mat-hint>Se usa como referencia para el cálculo de vacaciones</mat-hint>
-    </mat-form-field>
-
-    <!-- Cupo de vacaciones -->
-    <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Días de vacaciones al año</mat-label>
-      <input matInput type="number" min="0" formControlName="dias_vacaciones_anuales" />
-      <mat-hint>Por defecto 15 (mínimo de ley); ajústalo si este empleado tiene otra condición</mat-hint>
-    </mat-form-field>
 
     <!-- Credenciales de acceso (solo al crear) -->
     <ng-container *ngIf="!editando">
-      <h3 class="credenciales-titulo">Credenciales de acceso</h3>
+      <span class="seccion-titulo">Credenciales de acceso</span>
 
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>Correo</mat-label>
@@ -141,39 +146,47 @@
         </mat-error>
       </mat-form-field>
 
-      <mat-form-field appearance="fill" class="full-width">
-        <mat-label>Contraseña</mat-label>
-        <input matInput [type]="mostrarPassword ? 'text' : 'password'" formControlName="password" placeholder="Mínimo 6 caracteres" />
-        <button mat-icon-button matSuffix type="button" (click)="mostrarPassword = !mostrarPassword">
-          <mat-icon>{{ mostrarPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+      <div class="password-field-row">
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Contraseña</mat-label>
+          <input matInput [type]="mostrarPassword ? 'text' : 'password'" formControlName="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password" />
+          <button mat-icon-button matSuffix type="button" (click)="mostrarPassword = !mostrarPassword" tabindex="-1">
+            <mat-icon>{{ mostrarPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="password?.hasError('required')">
+            Contraseña es requerida
+          </mat-error>
+          <mat-error *ngIf="password?.hasError('minlength')">
+            Mínimo 6 caracteres
+          </mat-error>
+        </mat-form-field>
+        <button mat-stroked-button type="button" class="btn-generar-password" (click)="generarPassword()" title="Generar contraseña aleatoria">
+          <mat-icon>casino</mat-icon>
+          Generar
         </button>
-        <mat-error *ngIf="password?.hasError('required')">
-          Contraseña es requerida
-        </mat-error>
-        <mat-error *ngIf="password?.hasError('minlength')">
-          Mínimo 6 caracteres
-        </mat-error>
-      </mat-form-field>
-      <button mat-stroked-button type="button" class="btn-generar-password" (click)="generarPassword()">
-        <mat-icon>casino</mat-icon>
-        Generar contraseña
-      </button>
+      </div>
     </ng-container>
 
     <!-- Cambiar contraseña (solo al editar, solo admin) -->
     <ng-container *ngIf="editando && esAdmin">
-      <h3 class="credenciales-titulo">Cambiar contraseña</h3>
+      <span class="seccion-titulo">Cambiar contraseña</span>
 
-      <mat-form-field appearance="fill" class="full-width">
-        <mat-label>Nueva contraseña (opcional)</mat-label>
-        <input matInput [type]="mostrarPassword ? 'text' : 'password'" formControlName="nuevaPassword" placeholder="Dejar vacío para no cambiarla" />
-        <button mat-icon-button matSuffix type="button" (click)="mostrarPassword = !mostrarPassword">
-          <mat-icon>{{ mostrarPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+      <div class="password-field-row">
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Nueva contraseña (opcional)</mat-label>
+          <input matInput [type]="mostrarPassword ? 'text' : 'password'" formControlName="nuevaPassword" placeholder="Dejar vacío para no cambiarla" autocomplete="new-password" />
+          <button mat-icon-button matSuffix type="button" (click)="mostrarPassword = !mostrarPassword" tabindex="-1">
+            <mat-icon>{{ mostrarPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="nuevaPassword?.hasError('minlength')">
+            Mínimo 6 caracteres
+          </mat-error>
+        </mat-form-field>
+        <button mat-stroked-button type="button" class="btn-generar-password" (click)="generarPassword()" title="Generar contraseña aleatoria">
+          <mat-icon>casino</mat-icon>
+          Generar
         </button>
-        <mat-error *ngIf="nuevaPassword?.hasError('minlength')">
-          Mínimo 6 caracteres
-        </mat-error>
-      </mat-form-field>
+      </div>
     </ng-container>
   </form>
 
