@@ -34,6 +34,12 @@ export interface Usuario {
 })
 export class AuthService {
   private apiUrl = `${environment.apiUrl}/auth`;
+
+  // Único correo autorizado para crear/editar/eliminar empleados y usuarios
+  // (debe coincidir con config.seguridad.superAdminEmail en el backend, que
+  // es quien de verdad hace cumplir esta restricción; esto solo oculta los
+  // botones para el resto de administradores).
+  private readonly SUPER_ADMIN_EMAIL = 'evelynpereznettic@gmail.com';
   private currentUserSubject = new BehaviorSubject<Usuario | null>(this.getUserFromStorage());
   public currentUser$ = this.currentUserSubject.asObservable();
 
@@ -87,6 +93,11 @@ export class AuthService {
 
   esLider(): boolean {
     return this.currentUserSubject.value?.rol === 'lider';
+  }
+
+  /** Único admin autorizado a crear/editar/eliminar empleados y usuarios */
+  esSuperAdmin(): boolean {
+    return this.esAdmin() && (this.currentUserSubject.value?.email || '').toLowerCase() === this.SUPER_ADMIN_EMAIL;
   }
 
   /**

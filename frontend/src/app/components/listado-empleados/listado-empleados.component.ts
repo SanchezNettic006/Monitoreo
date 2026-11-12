@@ -75,6 +75,11 @@ export class ListadoEmpleadosComponent implements OnInit, AfterViewInit {
     return this.authService.esLider();
   }
 
+  /** Solo esta cuenta puede crear/editar/eliminar empleados (el backend hace cumplir esta misma regla) */
+  get esSuperAdmin(): boolean {
+    return this.authService.esSuperAdmin();
+  }
+
   get displayedColumns(): string[] {
     const columnas = ['id', 'nombre', 'apellido', 'cargo', 'correo', 'telefono', 'departamento', 'estado', 'vacaciones'];
     return this.esAdmin || this.esLider ? [...columnas, 'acciones'] : columnas;

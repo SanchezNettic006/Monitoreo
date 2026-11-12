@@ -57,4 +57,10 @@ export const config = {
     botToken: process.env.TELEGRAM_BOT_TOKEN || '',
     botUsername: process.env.TELEGRAM_BOT_USERNAME || '',
   },
+
+  // Único correo autorizado para crear/editar/eliminar empleados y usuarios
+  // (el resto de administradores puede ver y dar de baja, pero no esto)
+  seguridad: {
+    superAdminEmail: (process.env.SUPER_ADMIN_EMAIL || 'evelynpereznettic@gmail.com').toLowerCase(),
+  },
 };

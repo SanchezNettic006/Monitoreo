@@ -55,6 +55,23 @@ export const adminMiddleware = (
   next();
 };
 
+/**
+ * Requiere que authMiddleware se haya ejecutado antes; restringe a un único
+ * correo (config.seguridad.superAdminEmail), aunque el usuario sea 'admin'.
+ * Se usa para crear/editar/eliminar empleados y usuarios: eso debe pasar
+ * siempre por una sola cuenta designada, no por cualquier administrador.
+ */
+export const superAdminMiddleware = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  if ((req.user?.email || '').toLowerCase() !== config.seguridad.superAdminEmail) {
+    return next(new OperationalError(403, 'Solo la cuenta administradora principal puede realizar esta acción'));
+  }
+  next();
+};
+
 /** Requiere que authMiddleware se haya ejecutado antes; permite 'admin' o 'lider' */
 export const liderOAdminMiddleware = (
   req: AuthRequest,

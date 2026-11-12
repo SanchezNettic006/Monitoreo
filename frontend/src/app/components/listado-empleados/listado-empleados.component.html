@@ -1,7 +1,7 @@
 <mat-toolbar color="primary">
   <span>👥 {{ esAdmin ? 'Gestión de Empleados' : 'Empleados de mi Departamento' }}</span>
   <span class="spacer"></span>
-  <button mat-raised-button color="accent" *ngIf="esAdmin" (click)="abrirFormulario()">
+  <button mat-raised-button color="accent" *ngIf="esSuperAdmin" (click)="abrirFormulario()">
     <mat-icon>add</mat-icon>
     Nuevo Empleado
   </button>
@@ -128,7 +128,7 @@
           <ng-container matColumnDef="acciones">
             <th mat-header-cell *matHeaderCellDef>Acciones</th>
             <td mat-cell *matCellDef="let empleado">
-              <button mat-icon-button color="accent" *ngIf="esAdmin" (click)="editarEmpleado(empleado)" title="Editar">
+              <button mat-icon-button color="accent" *ngIf="esSuperAdmin" (click)="editarEmpleado(empleado)" title="Editar">
                 <mat-icon>edit</mat-icon>
               </button>
               <button
@@ -139,7 +139,7 @@
               >
                 <mat-icon>{{ empleado.estado === 'inactivo' ? 'person_add' : 'person_off' }}</mat-icon>
               </button>
-              <button mat-icon-button color="warn" *ngIf="esAdmin" (click)="eliminarEmpleado(empleado)" title="Eliminar permanentemente (borra su historial)">
+              <button mat-icon-button color="warn" *ngIf="esSuperAdmin" (click)="eliminarEmpleado(empleado)" title="Eliminar permanentemente (borra su historial)">
                 <mat-icon>delete</mat-icon>
               </button>
             </td>
@@ -158,7 +158,7 @@
       <div *ngIf="!cargando && empleados.length === 0" class="empty-state">
         <mat-icon class="empty-icon">people_outline</mat-icon>
         <p>No hay empleados registrados</p>
-        <button mat-raised-button color="primary" *ngIf="esAdmin" (click)="abrirFormulario()">
+        <button mat-raised-button color="primary" *ngIf="esSuperAdmin" (click)="abrirFormulario()">
           <mat-icon>add</mat-icon>
           Crear primer empleado
         </button>

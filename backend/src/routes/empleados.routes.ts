@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { EmpleadoController } from '@controllers/empleado.controller';
 import {
   authMiddleware,
-  adminMiddleware,
+  superAdminMiddleware,
   liderOAdminMiddleware,
   cargarDepartamentoLider,
 } from '@middleware/auth.middleware';
@@ -29,8 +29,8 @@ router.put('/:id/estado', liderOAdminMiddleware, cargarDepartamentoLider, (req, 
   controller.actualizarEstado(req, res, next),
 );
 
-// A partir de aquí, solo administradores (crear/editar/eliminar empleados)
-router.use(adminMiddleware);
+// A partir de aquí, solo la cuenta administradora principal (crear/editar/eliminar empleados y usuarios)
+router.use(superAdminMiddleware);
 
 // POST /api/empleados - Crear nuevo empleado
 router.post('/', (req, res, next) =>
