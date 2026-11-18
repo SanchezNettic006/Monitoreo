@@ -425,6 +425,8 @@ export class TramitesDashboardComponent implements OnInit, OnDestroy {
       this.tabInicial = 3;
       this.mesInicial = queryParams.get('mes') || undefined;
       this.tipoFiltroInicial = queryParams.get('tipo') || undefined;
+    } else if (queryParams.get('tab') === 'crear') {
+      this.tabInicial = 1;
     }
 
     if (this.esAdmin) {

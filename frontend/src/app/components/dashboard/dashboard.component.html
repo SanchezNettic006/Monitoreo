@@ -5,9 +5,13 @@
       <span class="fecha-hoy">{{ fechaHoyLabel }}</span>
       <h1>Hola, {{ primerNombre }}.<br />Esto pasa hoy en Nettic.</h1>
     </div>
-    <button class="btn-marcar" (click)="irA('asistencia')">
+    <button *ngIf="!esSoloTramites" class="btn-marcar" (click)="irA('asistencia')">
       <mat-icon>place</mat-icon>
       Marcar asistencia
+    </button>
+    <button *ngIf="esSoloTramites" class="btn-marcar" (click)="irAPedirPermiso()">
+      <mat-icon>assignment</mat-icon>
+      Pedir permiso
     </button>
   </div>
 
@@ -135,6 +139,47 @@
         <p class="equipo-subtitulo" *ngIf="empleadosPendientesHoy.length === 0">
           Todo el equipo ha registrado su entrada hoy
         </p>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- VISTA SOLO TRÁMITES (marca asistencia en reloj biométrico físico, no por esta app) -->
+  <ng-container *ngIf="esSoloTramites">
+    <div class="fila-principal">
+      <!-- SALDO DE VACACIONES -->
+      <div class="panel panel-presentes" *ngIf="miSaldoVacaciones">
+        <span class="panel-label">Mis vacaciones · {{ miSaldoVacaciones.anio }}</span>
+        <div class="presentes-numero">
+          <span class="numero-grande">{{ miSaldoVacaciones.diasDisponibles }}</span>
+          <span class="numero-total">/{{ miSaldoVacaciones.cupoAnual }} días</span>
+        </div>
+        <a class="panel-link" (click)="irAPedirPermiso()">Pedir un permiso →</a>
+      </div>
+
+      <!-- MIS SOLICITUDES RECIENTES -->
+      <div class="panel panel-aprobar al-dia">
+        <span class="panel-label">Mis solicitudes recientes</span>
+
+        <ng-container *ngIf="!cargandoSolicitudes && misSolicitudesRecientes.length > 0">
+          <div class="aprobar-fila" *ngFor="let s of misSolicitudesRecientes">
+            <span>{{ tipoSolicitudLabel(s.tipo) }}</span>
+            <span
+              class="aprobar-valor"
+              [ngClass]="{
+                'estado-pendiente': s.estado === 'pendiente',
+                'estado-aprobada': s.estado === 'aprobada',
+                'estado-rechazada': s.estado === 'rechazada' || s.estado === 'cancelada'
+              }"
+            >{{ s.estado }}</span>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="!cargandoSolicitudes && misSolicitudesRecientes.length === 0">
+          <mat-icon class="icono-al-dia">assignment</mat-icon>
+          <span class="texto-al-dia">Aún no tienes solicitudes</span>
+        </ng-container>
+
+        <button class="btn-revisar" (click)="irA('tramites')">Ver todas →</button>
       </div>
     </div>
   </ng-container>

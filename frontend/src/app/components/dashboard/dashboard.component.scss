@@ -215,6 +215,11 @@
     background: #10200f;
     color: #e7f0e5;
     align-items: flex-start;
+    width: 100%;
+
+    .panel-label {
+      color: #8fa98f;
+    }
 
     .icono-al-dia {
       color: #94c120;
@@ -230,6 +235,42 @@
       font-size: 12px;
       color: #8fa98f;
       margin-top: 4px;
+    }
+
+    .aprobar-fila {
+      width: 100%;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-weight: 500;
+
+      .aprobar-valor {
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        padding: 3px 10px;
+        border-radius: 999px;
+
+        &.estado-pendiente {
+          background: rgba(240, 164, 0, 0.18);
+          color: #f0a400;
+        }
+
+        &.estado-aprobada {
+          background: rgba(148, 193, 32, 0.18);
+          color: #94c120;
+        }
+
+        &.estado-rechazada {
+          background: rgba(255, 107, 107, 0.18);
+          color: #ff6b6b;
+        }
+      }
+    }
+
+    .btn-revisar {
+      background: #94c120;
+      color: #0b1710;
     }
   }
 }

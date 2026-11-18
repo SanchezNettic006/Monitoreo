@@ -11,17 +11,18 @@
     <ng-container *ngFor="let grupo of grupos">
       <div class="grupo" *ngIf="grupoTieneItemsVisibles(grupo)">
         <span class="grupo-titulo">{{ grupo.titulo }}</span>
-        <a
-          *ngFor="let item of grupo.items"
-          class="item"
-          [hidden]="!visible(item)"
-          [routerLink]="item.ruta"
-          routerLinkActive="activo"
-        >
-          <mat-icon class="item-icono">{{ item.icono }}</mat-icon>
-          <span class="item-label">{{ item.label }}</span>
-          <span class="item-badge" *ngIf="badgeDe(item) > 0">{{ badgeDe(item) }}</span>
-        </a>
+        <ng-container *ngFor="let item of grupo.items">
+          <a
+            *ngIf="visible(item)"
+            class="item"
+            [routerLink]="item.ruta"
+            routerLinkActive="activo"
+          >
+            <mat-icon class="item-icono">{{ item.icono }}</mat-icon>
+            <span class="item-label">{{ item.label }}</span>
+            <span class="item-badge" *ngIf="badgeDe(item) > 0">{{ badgeDe(item) }}</span>
+          </a>
+        </ng-container>
       </div>
     </ng-container>
   </nav>

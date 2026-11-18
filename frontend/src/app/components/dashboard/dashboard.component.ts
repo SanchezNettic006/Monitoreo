@@ -8,7 +8,7 @@ import { ReportesService, ResumenReportes, AsistenciaReporte } from '../../servi
 import { CalendarioService, EventoProximo } from '../../services/calendario.service';
 import { EmpleadoService } from '../../services/empleado.service';
 import { HoraExtraService } from '../../services/hora-extra.service';
-import { SolicitudService } from '../../services/solicitud.service';
+import { SolicitudService, Solicitud, SaldoVacaciones } from '../../services/solicitud.service';
 import { AusenciasDepartamentoDialogComponent } from './ausencias-departamento-dialog/ausencias-departamento-dialog.component';
 import { PresenteHoyDialogComponent } from './presente-hoy-dialog/presente-hoy-dialog.component';
 
@@ -54,6 +54,12 @@ export class DashboardComponent implements OnInit {
   barrasSemana: BarraSemana[] = [];
   cargandoSemana = true;
 
+  // Vista "Solo Trámites": sin Registro/Mis Horas, así que el Inicio muestra
+  // su saldo de vacaciones y sus solicitudes recientes en vez de widgets de asistencia
+  miSaldoVacaciones: SaldoVacaciones | null = null;
+  misSolicitudesRecientes: Solicitud[] = [];
+  cargandoSolicitudes = false;
+
   constructor(
     private authService: AuthService,
     private reportesService: ReportesService,
@@ -83,6 +89,10 @@ export class DashboardComponent implements OnInit {
     if (this.esLider) {
       this.cargarResumenEquipoHoy();
     }
+    if (this.esSoloTramites) {
+      this.cargarMiSaldoVacaciones();
+      this.cargarMisSolicitudesRecientes();
+    }
   }
 
   get esAdmin(): boolean {
@@ -91,6 +101,10 @@ export class DashboardComponent implements OnInit {
 
   get esLider(): boolean {
     return this.authService.esLider();
+  }
+
+  get esSoloTramites(): boolean {
+    return this.authService.esSoloTramites();
   }
 
   get fechaHoyLabel(): string {
@@ -330,6 +344,51 @@ export class DashboardComponent implements OnInit {
     const diaInicio = fInicio.getUTCDate();
     const textoFin = fFin.toLocaleDateString('es-SV', opciones);
     return `${diaInicio}-${textoFin}`;
+  }
+
+  cargarMiSaldoVacaciones(): void {
+    this.solicitudService.obtenerMiSaldoVacaciones().subscribe({
+      next: (saldo) => (this.miSaldoVacaciones = saldo),
+      error: () => (this.miSaldoVacaciones = null),
+    });
+  }
+
+  cargarMisSolicitudesRecientes(): void {
+    this.cargandoSolicitudes = true;
+    this.solicitudService.obtenerMisSolicitudes().subscribe({
+      next: (solicitudes) => {
+        this.misSolicitudesRecientes = solicitudes
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .slice(0, 5);
+        this.cargandoSolicitudes = false;
+      },
+      error: () => {
+        this.misSolicitudesRecientes = [];
+        this.cargandoSolicitudes = false;
+      },
+    });
+  }
+
+  irAPedirPermiso(): void {
+    this.router.navigate(['/tramites'], { queryParams: { tab: 'crear' } });
+  }
+
+  readonly TIPO_SOLICITUD_LABEL: Record<string, string> = {
+    vacaciones: 'Vacaciones',
+    ausencia: 'Ausencia',
+    cambio_jornada: 'Cambio de jornada',
+    permiso_personal: 'Permiso personal',
+    motivo_familiar: 'Motivo familiar',
+    cita_medica_programada: 'Cita médica',
+    cita_medica_emergencia: 'Cita médica (emergencia)',
+    enfermedad: 'Enfermedad',
+    estudios_academicos: 'Estudios académicos',
+    cumpleanos: 'Cumpleaños',
+    fidelidad: 'Fidelidad',
+  };
+
+  tipoSolicitudLabel(tipo: string): string {
+    return this.TIPO_SOLICITUD_LABEL[tipo] || tipo;
   }
 
   irA(ruta: string): void {
