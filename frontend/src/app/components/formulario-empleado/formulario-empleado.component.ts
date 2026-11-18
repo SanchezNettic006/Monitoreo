@@ -46,6 +46,12 @@ export class FormularioEmpleadoComponent {
     { id: 5, nombre: 'Ventas' },
     { id: 6, nombre: 'SAC' },
     { id: 7, nombre: 'Vehículos' },
+    { id: 14, nombre: 'Mantenimiento' },
+    { id: 15, nombre: 'Cobranza' },
+    { id: 16, nombre: 'Despacho' },
+    { id: 17, nombre: 'PLIN' },
+    { id: 18, nombre: 'Contabilidad' },
+    { id: 19, nombre: 'Bodega' },
   ];
   
   // Foto
