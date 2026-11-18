@@ -448,6 +448,32 @@ export async function inicializarColumnas() {
       }
     }
 
+    console.log('🔧 Verificando columnas de saldo base de vacaciones en empleado...');
+    if (tablaExiste) {
+      const columnaSaldoBaseExiste = await queryRunner.hasColumn('empleado', 'vacaciones_saldo_base');
+      if (!columnaSaldoBaseExiste) {
+        console.log('🏖️ Agregando columna vacaciones_saldo_base...');
+        await queryRunner.query(`ALTER TABLE empleado ADD COLUMN vacaciones_saldo_base NUMERIC(6,2) NOT NULL DEFAULT 0`);
+        console.log('✅ Columna vacaciones_saldo_base agregada exitosamente');
+      } else {
+        console.log('✅ Columna vacaciones_saldo_base ya existe');
+      }
+
+      const columnaSaldoBaseFechaExiste = await queryRunner.hasColumn('empleado', 'vacaciones_saldo_base_fecha');
+      if (!columnaSaldoBaseFechaExiste) {
+        console.log('🏖️ Agregando columna vacaciones_saldo_base_fecha...');
+        await queryRunner.query(`ALTER TABLE empleado ADD COLUMN vacaciones_saldo_base_fecha DATE NULL`);
+        // Para empleados existentes, el punto de partida del cálculo automático
+        // es su fecha de ingreso (o hoy si no la tienen registrada)
+        await queryRunner.query(
+          `UPDATE empleado SET vacaciones_saldo_base_fecha = COALESCE(fecha_ingreso, CURRENT_DATE) WHERE vacaciones_saldo_base_fecha IS NULL`
+        );
+        console.log('✅ Columna vacaciones_saldo_base_fecha agregada exitosamente');
+      } else {
+        console.log('✅ Columna vacaciones_saldo_base_fecha ya existe');
+      }
+    }
+
     console.log('🔧 Verificando columna departamento_id en asignacion_proyecto...');
     const tablaAsignacionProyectoExiste = await queryRunner.hasTable('asignacion_proyecto');
     if (tablaAsignacionProyectoExiste) {

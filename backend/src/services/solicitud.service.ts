@@ -368,14 +368,52 @@ export class SolicitudService {
   }
 
   /**
-   * Saldo de vacaciones de un empleado para un año dado (calendario, ene-dic).
-   * cupo = empleado.dias_vacaciones_anuales (ajustable por admin en su ficha).
-   * usados = suma de dias_solicitados de solicitudes tipo 'vacaciones' APROBADAS
-   * cuya fecha_inicio caiga en ese año.
+   * Cálculo de saldo de vacaciones por acumulación diaria proporcional
+   * (igual al que maneja contabilidad en su Excel, pero en vivo día a día
+   * en lugar de actualizarse a mano una vez al mes):
    *
-   * Simplificación v1: no hay acarreo de días no usados de años anteriores —
-   * cada año calendario reinicia el cupo completo. Si se valida el enfoque,
-   * el acarreo se puede agregar después sin romper esta base.
+   *   diasAcumulados = ROUND(diasTranscurridosDesdeFechaBase * cupoAnual / 365)
+   *   diasDisponibles = saldoBase + diasAcumulados - diasUsadosDesdeFechaBase
+   *
+   * `vacaciones_saldo_base` / `vacaciones_saldo_base_fecha` son el punto de
+   * partida: el saldo que el empleado ya traía acumulado (de antigüedad
+   * previa, importado del Excel de contabilidad) a esa fecha. Para un
+   * empleado nuevo sin ajuste manual, la fecha base es su fecha de ingreso
+   * y el saldo base es 0 — o sea, empieza a acumular desde el día 1.
+   *
+   * Los "usados" solo cuentan solicitudes aprobadas con fecha_inicio igual
+   * o posterior a la fecha base, para no restar dos veces algo que ya
+   * estaba reflejado en el saldo base importado.
+   */
+  private calcularSaldoDeEmpleado(
+    empleado: Empleado,
+    solicitudesAprobadasDelEmpleado: SolicitudTramite[],
+    hoy: Date = new Date(),
+  ) {
+    const cupoAnual = empleado.dias_vacaciones_anuales ?? 15;
+    const saldoBase = parseFloat(empleado.vacaciones_saldo_base as any) || 0;
+    const fechaBase = new Date(empleado.vacaciones_saldo_base_fecha || empleado.fecha_ingreso || hoy);
+
+    const diasTranscurridos = Math.max(0, Math.floor((hoy.getTime() - fechaBase.getTime()) / 86400000));
+    const diasAcumulados = Math.round((diasTranscurridos * cupoAnual) / 365);
+
+    const diasUsados = solicitudesAprobadasDelEmpleado
+      .filter((s) => new Date(s.fecha_inicio) >= fechaBase)
+      .reduce((sum, s) => sum + (parseFloat(s.dias_solicitados as any) || 0), 0);
+
+    return {
+      cupoAnual,
+      diasAcumulados,
+      diasUsados,
+      diasDisponibles: Math.max(0, saldoBase + diasAcumulados - diasUsados),
+    };
+  }
+
+  /**
+   * Saldo de vacaciones de un empleado, calculado en vivo a la fecha de hoy.
+   * El parámetro `anio` se conserva por compatibilidad con llamadas
+   * anteriores, pero ya no afecta el cálculo (el acumulado es continuo,
+   * no reinicia cada año calendario).
    */
   async obtenerSaldoVacaciones(empleadoId: number, anio?: number, departamentoIdRestringido?: number[]) {
     const empleado = await this.empleadoRepository.findOne({ where: { id: empleadoId } });
@@ -387,40 +425,31 @@ export class SolicitudService {
       throw new OperationalError(403, 'No tienes permisos para ver el saldo de otro departamento');
     }
 
-    const anioConsulta = anio || new Date().getFullYear();
-    const cupoAnual = empleado.dias_vacaciones_anuales ?? 15;
-
     const solicitudesAprobadas = await this.solicitudRepository
       .createQueryBuilder('solicitud')
       .where('solicitud.empleado_id = :empleadoId', { empleadoId })
       .andWhere('solicitud.tipo = :tipo', { tipo: 'vacaciones' })
       .andWhere('solicitud.estado = :estado', { estado: 'aprobada' })
-      .andWhere('EXTRACT(YEAR FROM solicitud.fecha_inicio) = :anio', { anio: anioConsulta })
       .getMany();
 
-    const diasUsados = solicitudesAprobadas.reduce(
-      (sum, s) => sum + (parseFloat(s.dias_solicitados as any) || 0),
-      0,
-    );
+    const { cupoAnual, diasUsados, diasDisponibles } = this.calcularSaldoDeEmpleado(empleado, solicitudesAprobadas);
 
     return {
       empleadoId,
-      anio: anioConsulta,
+      anio: anio || new Date().getFullYear(),
       cupoAnual,
       diasUsados,
-      diasDisponibles: Math.max(0, cupoAnual - diasUsados),
+      diasDisponibles,
       fechaIngreso: empleado.fecha_ingreso || null,
     };
   }
 
   /**
-   * Saldo de vacaciones de TODOS los empleados (activos) para un año dado,
+   * Saldo de vacaciones de TODOS los empleados (activos), calculado en vivo,
    * en una sola consulta agrupada — para la vista de administración donde
    * se necesita ver de un vistazo cuánto tiene cada quien.
    */
   async obtenerSaldosVacacionesMasivo(anio?: number, departamentoId?: number[]) {
-    const anioConsulta = anio || new Date().getFullYear();
-
     let queryEmpleados = this.empleadoRepository
       .createQueryBuilder('empleado')
       .where('empleado.estado = :estado', { estado: 'activo' });
@@ -439,26 +468,31 @@ export class SolicitudService {
       .where('solicitud.empleado_id IN (:...empleadoIds)', { empleadoIds })
       .andWhere('solicitud.tipo = :tipo', { tipo: 'vacaciones' })
       .andWhere('solicitud.estado = :estado', { estado: 'aprobada' })
-      .andWhere('EXTRACT(YEAR FROM solicitud.fecha_inicio) = :anio', { anio: anioConsulta })
       .getMany();
 
-    const usadosPorEmpleado = new Map<number, number>();
+    const solicitudesPorEmpleado = new Map<number, SolicitudTramite[]>();
     for (const s of solicitudesAprobadas) {
-      const actual = usadosPorEmpleado.get(s.empleado_id) || 0;
-      usadosPorEmpleado.set(s.empleado_id, actual + (parseFloat(s.dias_solicitados as any) || 0));
+      const lista = solicitudesPorEmpleado.get(s.empleado_id) || [];
+      lista.push(s);
+      solicitudesPorEmpleado.set(s.empleado_id, lista);
     }
 
+    const hoy = new Date();
+
     return empleados.map((empleado) => {
-      const cupoAnual = empleado.dias_vacaciones_anuales ?? 15;
-      const diasUsados = usadosPorEmpleado.get(empleado.id) || 0;
+      const { cupoAnual, diasUsados, diasDisponibles } = this.calcularSaldoDeEmpleado(
+        empleado,
+        solicitudesPorEmpleado.get(empleado.id) || [],
+        hoy,
+      );
       return {
         empleadoId: empleado.id,
         nombre: `${empleado.nombre} ${empleado.apellido}`,
         departamentoId: empleado.departamento_id,
-        anio: anioConsulta,
+        anio: anio || hoy.getFullYear(),
         cupoAnual,
         diasUsados,
-        diasDisponibles: Math.max(0, cupoAnual - diasUsados),
+        diasDisponibles,
         fechaIngreso: empleado.fecha_ingreso || null,
       };
     });

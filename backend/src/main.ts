@@ -20,9 +20,9 @@ if (!fs.existsSync(uploadDir)) {
 async function bootstrap() {
   try {
     // Conectar base de datos
-    console.log('🔗 Conectando a la base de datos...');
+    console.log('Conectando a la base de datos...');
     await AppDataSource.initialize();
-    console.log('✅ Base de datos conectada');
+    console.log('Base de datos conectada');
 
     // Inicializar columnas faltantes
     await inicializarColumnas();
@@ -37,15 +37,15 @@ async function bootstrap() {
     app.listen(PORT, () => {
       console.log(`
 ╔════════════════════════════════════════╗
-║  🚀 NETTIC Backend iniciado            ║
+║  NETTIC Backend iniciado               ║
 ║  Puerto: ${PORT}                        
-║  Entorno: ${config.server.env}                ║
-║  Base de datos: ${config.db.database}         ║
+║  Entorno: ${config.server.env}         ║
+║  Base de datos: ${config.db.database}  ║
 ╚════════════════════════════════════════╝
       `);
 
       console.log(`
-📚 Endpoints disponibles:
+ Endpoints disponibles:
   POST   /api/auth/registrar
   POST   /api/auth/login
   GET    /api/auth/perfil
@@ -65,7 +65,7 @@ async function bootstrap() {
   GET    /api/reportes/empleado
   GET    /health
 
-📖 Documentación: http://localhost:${PORT}/health
+Documentación: http://localhost:${PORT}/health
       `);
     });
   } catch (error) {

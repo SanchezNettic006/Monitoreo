@@ -44,6 +44,16 @@ export class Empleado {
   @Column({ type: 'int', default: 15 })
   dias_vacaciones_anuales!: number;
 
+  // Saldo de vacaciones ya acumulado (por antigüedad previa) al momento de
+  // activar el cálculo automático, o tras un ajuste manual de contabilidad.
+  // El cálculo en vivo parte de aquí y sigue sumando día a día desde
+  // vacaciones_saldo_base_fecha (ver SolicitudService.calcularSaldoVacaciones).
+  @Column({ type: 'numeric', precision: 6, scale: 2, default: 0 })
+  vacaciones_saldo_base!: number;
+
+  @Column({ type: 'date', nullable: true })
+  vacaciones_saldo_base_fecha?: string;
+
   // Fecha ('YYYY-MM-DD') del último recordatorio de "no has iniciado tu jornada"
   // enviado por Telegram (al propio técnico); evita mandarlo varias veces el mismo día.
   @Column({ type: 'date', nullable: true })
