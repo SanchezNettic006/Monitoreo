@@ -405,7 +405,7 @@ export class SolicitudService {
       cupoAnual,
       diasAcumulados,
       diasUsados,
-      diasDisponibles: Math.max(0, saldoBase + diasAcumulados - diasUsados),
+      diasDisponibles: Math.max(0, Math.round(saldoBase + diasAcumulados - diasUsados)),
     };
   }
 
