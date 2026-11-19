@@ -395,9 +395,14 @@ export class SolicitudService {
    * corriendo) nunca se congela: se recalcula desde el aniversario más
    * reciente en cada consulta, así nunca se desincroniza.
    *
-   * Los "usados" solo cuentan solicitudes aprobadas con fecha_inicio dentro
-   * del período actual, para no restar dos veces algo que ya estaba
-   * reflejado en los períodos cerrados.
+   * Los "usados" solo cuentan solicitudes aprobadas con fecha_inicio IGUAL
+   * O POSTERIOR a `vacaciones_saldo_base_fecha` (la fecha de la "foto" del
+   * Excel que se usó para calcular el saldo cerrado), no desde el inicio
+   * del período actual. Esto evita restar dos veces una vacación cuyo día
+   * cae dentro del rango del período actual pero que en realidad se cobró
+   * contra un período viejo ya cerrado (y por lo tanto ya reflejado en el
+   * saldo cerrado) — el caso típico es alguien que arrastraba saldo de un
+   * período anterior y lo gastó apenas hace poco.
    */
   private calcularSaldoDeEmpleado(
     empleado: Empleado,
@@ -408,12 +413,15 @@ export class SolicitudService {
     const saldoCerrado = parseFloat(empleado.vacaciones_saldo_base as any) || 0;
     const fechaIngreso = new Date(empleado.fecha_ingreso || hoy);
     const fechaBase = this.fechaInicioPeriodoActual(fechaIngreso, hoy);
+    const fechaCorteUsados = empleado.vacaciones_saldo_base_fecha
+      ? new Date(empleado.vacaciones_saldo_base_fecha)
+      : fechaBase;
 
     const diasTranscurridos = Math.max(0, Math.floor((hoy.getTime() - fechaBase.getTime()) / 86400000));
     const diasAcumuladosPeriodoActual = (diasTranscurridos * cupoAnual) / 365;
 
     const diasUsados = solicitudesAprobadasDelEmpleado
-      .filter((s) => new Date(s.fecha_inicio) >= fechaBase)
+      .filter((s) => new Date(s.fecha_inicio) >= fechaCorteUsados)
       .reduce((sum, s) => sum + (parseFloat(s.dias_solicitados as any) || 0), 0);
 
     return {
