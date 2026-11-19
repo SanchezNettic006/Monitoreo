@@ -368,22 +368,36 @@ export class SolicitudService {
   }
 
   /**
-   * Cálculo de saldo de vacaciones por acumulación diaria proporcional
-   * (igual al que maneja contabilidad en su Excel, pero en vivo día a día
-   * en lugar de actualizarse a mano una vez al mes):
+   * Fecha de inicio del período de vacaciones actual: el aniversario más
+   * reciente de la fecha de ingreso (mismo mes/día) que ya haya pasado,
+   * o la propia fecha de ingreso si el empleado aún no cumple su primer año.
+   */
+  private fechaInicioPeriodoActual(fechaIngreso: Date, hoy: Date): Date {
+    const aniversarioEsteAnio = new Date(hoy.getFullYear(), fechaIngreso.getMonth(), fechaIngreso.getDate());
+    if (aniversarioEsteAnio <= hoy) {
+      return aniversarioEsteAnio > fechaIngreso ? aniversarioEsteAnio : fechaIngreso;
+    }
+    const aniversarioAnioPasado = new Date(hoy.getFullYear() - 1, fechaIngreso.getMonth(), fechaIngreso.getDate());
+    return aniversarioAnioPasado > fechaIngreso ? aniversarioAnioPasado : fechaIngreso;
+  }
+
+  /**
+   * Cálculo de saldo de vacaciones por acumulación diaria proporcional,
+   * en vivo día a día (igual a lo que contabilidad calcula a mano en su
+   * Excel, pero sin que haga falta actualizarlo nunca):
    *
-   *   diasAcumulados = ROUND(diasTranscurridosDesdeFechaBase * cupoAnual / 365)
-   *   diasDisponibles = saldoBase + diasAcumulados - diasUsadosDesdeFechaBase
+   *   diasAcumuladosPeriodoActual = (díasTranscurridosDesdeElAniversario * cupoAnual) / 365
+   *   diasDisponibles = saldoCerrado + diasAcumuladosPeriodoActual - diasUsadosEnElPeriodoActual
    *
-   * `vacaciones_saldo_base` / `vacaciones_saldo_base_fecha` son el punto de
-   * partida: el saldo que el empleado ya traía acumulado (de antigüedad
-   * previa, importado del Excel de contabilidad) a esa fecha. Para un
-   * empleado nuevo sin ajuste manual, la fecha base es su fecha de ingreso
-   * y el saldo base es 0 — o sea, empieza a acumular desde el día 1.
+   * `vacaciones_saldo_base` es la suma de los períodos de aniversario YA
+   * cerrados (importada una vez del Excel de contabilidad) — un número
+   * estable que no cambia con el tiempo. El período actual (el que sigue
+   * corriendo) nunca se congela: se recalcula desde el aniversario más
+   * reciente en cada consulta, así nunca se desincroniza.
    *
-   * Los "usados" solo cuentan solicitudes aprobadas con fecha_inicio igual
-   * o posterior a la fecha base, para no restar dos veces algo que ya
-   * estaba reflejado en el saldo base importado.
+   * Los "usados" solo cuentan solicitudes aprobadas con fecha_inicio dentro
+   * del período actual, para no restar dos veces algo que ya estaba
+   * reflejado en los períodos cerrados.
    */
   private calcularSaldoDeEmpleado(
     empleado: Empleado,
@@ -391,11 +405,12 @@ export class SolicitudService {
     hoy: Date = new Date(),
   ) {
     const cupoAnual = empleado.dias_vacaciones_anuales ?? 15;
-    const saldoBase = parseFloat(empleado.vacaciones_saldo_base as any) || 0;
-    const fechaBase = new Date(empleado.vacaciones_saldo_base_fecha || empleado.fecha_ingreso || hoy);
+    const saldoCerrado = parseFloat(empleado.vacaciones_saldo_base as any) || 0;
+    const fechaIngreso = new Date(empleado.fecha_ingreso || hoy);
+    const fechaBase = this.fechaInicioPeriodoActual(fechaIngreso, hoy);
 
     const diasTranscurridos = Math.max(0, Math.floor((hoy.getTime() - fechaBase.getTime()) / 86400000));
-    const diasAcumulados = Math.round((diasTranscurridos * cupoAnual) / 365);
+    const diasAcumuladosPeriodoActual = (diasTranscurridos * cupoAnual) / 365;
 
     const diasUsados = solicitudesAprobadasDelEmpleado
       .filter((s) => new Date(s.fecha_inicio) >= fechaBase)
@@ -403,9 +418,9 @@ export class SolicitudService {
 
     return {
       cupoAnual,
-      diasAcumulados,
+      diasAcumulados: Math.round(diasAcumuladosPeriodoActual),
       diasUsados,
-      diasDisponibles: Math.max(0, Math.round(saldoBase + diasAcumulados - diasUsados)),
+      diasDisponibles: Math.max(0, Math.round(saldoCerrado + diasAcumuladosPeriodoActual - diasUsados)),
     };
   }
 
