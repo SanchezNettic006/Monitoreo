@@ -13,10 +13,10 @@ export class SolicitudController {
     try {
       const { tipo, fecha_inicio, fecha_fin, dias_solicitados, motivo, descripcion } = req.body;
 
-      if (!tipo || !fecha_inicio) {
+      if (!tipo || !fecha_inicio || !fecha_fin) {
         return res.status(400).json({
           exitoso: false,
-          mensaje: 'Faltan campos: tipo, fecha_inicio',
+          mensaje: 'Faltan campos: tipo, fecha_inicio, fecha_fin',
         });
       }
 

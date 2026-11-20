@@ -101,10 +101,11 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
               </mat-form-field>
 
               <mat-form-field appearance="fill" class="full-width">
-                <mat-label>Fecha de Fin (opcional)</mat-label>
-                <input matInput [matDatepicker]="picker2" formControlName="fecha_fin" placeholder="Hasta..." />
+                <mat-label>Fecha de Fin</mat-label>
+                <input matInput [matDatepicker]="picker2" formControlName="fecha_fin" placeholder="Hasta..." required [errorStateMatcher]="matcher" />
                 <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
                 <mat-datepicker #picker2></mat-datepicker>
+                <mat-error>Selecciona una fecha de fin</mat-error>
               </mat-form-field>
             </div>
           </div>
@@ -393,8 +394,8 @@ export class CrearSolicitudComponent {
     this.formulario = this.fb.group({
       tipo: ['', Validators.required],
       fecha_inicio: ['', Validators.required],
-      fecha_fin: [''],
-      dias_solicitados: [0],
+      fecha_fin: ['', Validators.required],
+      dias_solicitados: [0, [Validators.required, Validators.min(0.5)]],
       motivo: [''],
     });
   }
