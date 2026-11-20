@@ -122,26 +122,26 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
   /**
    * Cargar registro de asistencia de hoy
    */
-  cargarRegistroHoy(): void {
+  cargarRegistroHoy(intento: number = 0): void {
     this.cargando = true;
     this.asistenciaService.obtenerRegistroHoy().subscribe({
       next: (response: any) => {
         this.registroHoy = response.record;
         this.estado = response.estado;
-        
+
         // Si hay registro activo, cargar pausas e iniciar cronómetro
         // PERO SOLO si:
         // 1. NO hay hora extra activa (hora extra tiene prioridad)
         // 2. Tiene una hora_entrada válida (no fue creado automáticamente por hora extra)
         if (this.registroHoy && this.estado === 'activo') {
           this.cargarPausas();
-          
+
           if (!this.horaExtraActiva && this.registroHoy.hora_entrada) {
             // Solo iniciar cronómetro si tiene hora_entrada (check-in manual o previo)
             this.iniciarCronometro();
           }
         }
-        
+
         // Si hay registro activo sin completar, mostrar alerta
         if (this.estado === 'activo') {
           this.snackBar.open(
@@ -150,14 +150,25 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
             { duration: 5000 }
           );
         }
-        
+
         this.cargando = false;
       },
       error: (error) => {
+        // Al volver de segundo plano en el celular, el navegador recarga la
+        // página justo cuando la señal todavía no se estabiliza: esta petición
+        // puede fallar aunque el registro SÍ esté activo en el servidor. Si
+        // dejáramos `estado` en su valor inicial ('sin_registro'), la pantalla
+        // pediría check-in de nuevo sobre una jornada que ya está corriendo.
+        // Por eso se reintenta unas veces antes de rendirse.
+        if (intento < 3) {
+          setTimeout(() => this.cargarRegistroHoy(intento + 1), 2000 * (intento + 1));
+          return;
+        }
         console.error('Error al cargar registro:', error);
-        this.snackBar.open('Error al cargar registro', 'Cerrar', {
-          duration: 3000,
-        });
+        this.snackBar.open(
+          'No se pudo verificar tu asistencia. Revisa tu conexión y reintenta.',
+          'Reintentar',
+        ).onAction().subscribe(() => this.cargarRegistroHoy());
         this.cargando = false;
       },
     });
