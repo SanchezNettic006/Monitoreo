@@ -177,18 +177,26 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
   /**
    * Cargar pausas del registro actual
    */
-  cargarPausas(): void {
+  cargarPausas(intento: number = 0): void {
     if (!this.registroHoy?.id) return;
 
     this.asistenciaService.obtenerPausas(this.registroHoy.id).subscribe({
       next: (response: PausasResponse) => {
         this.pausas = response.pausas;
         this.totalPausas = parseFloat(response.total);
-        
+
         // Identificar pausa activa
         this.pausaActiva = this.pausas.find(p => p.estado === 'pausa_activa') || null;
       },
       error: (error) => {
+        // Mismo caso que cargarRegistroHoy: si falla justo al volver de segundo
+        // plano, pausaActiva se quedaría en null por defecto y la pantalla
+        // ofrecería "iniciar pausa" sobre una pausa que ya está activa en el
+        // servidor. Se reintenta antes de rendirse.
+        if (intento < 3) {
+          setTimeout(() => this.cargarPausas(intento + 1), 2000 * (intento + 1));
+          return;
+        }
         console.error('Error al cargar pausas:', error);
       },
     });
