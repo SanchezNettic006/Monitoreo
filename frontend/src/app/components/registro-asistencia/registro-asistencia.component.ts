@@ -93,12 +93,20 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
     return this.authService.getCurrentUser()?.usaTicketHorasExtra ?? true;
   }
 
+  private static readonly CLAVE_SNAPSHOT = 'snapshotAsistenciaHoy';
+
   ngOnInit(): void {
     // Restaurar foto capturada del localStorage si existe (solo asistencia)
     const previewGuardado = localStorage.getItem('previewFoto');
     if (previewGuardado) {
       this.previewFotoAsistencia = previewGuardado;
     }
+
+    // Pintar de inmediato el último estado confirmado por el servidor (guardado
+    // en el celular) mientras se confirma en paralelo. Así, si la pestaña se
+    // recarga con mala señal justo al volver de segundo plano, la pantalla no
+    // depende de esa respuesta para mostrar lo correcto.
+    this.restaurarSnapshotLocal();
 
     // Cargar hora extra PRIMERO (como Promise)
     // Luego cargar asistencia (verifica si hay hora extra activa)
@@ -128,6 +136,7 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
       next: (response: any) => {
         this.registroHoy = response.record;
         this.estado = response.estado;
+        this.guardarSnapshotLocal();
 
         // Si hay registro activo, cargar pausas e iniciar cronómetro
         // PERO SOLO si:
@@ -187,6 +196,7 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
 
         // Identificar pausa activa
         this.pausaActiva = this.pausas.find(p => p.estado === 'pausa_activa') || null;
+        this.guardarSnapshotLocal();
       },
       error: (error) => {
         // Mismo caso que cargarRegistroHoy: si falla justo al volver de segundo
@@ -433,6 +443,7 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
           next: (response: any) => {
             this.registroHoy = response.record;
             this.estado = 'finalizado';
+            this.guardarSnapshotLocal();
             this.limpiarFoto('asistencia');
             if (this.intervalId) {
               clearInterval(this.intervalId);
@@ -886,6 +897,59 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
     } else {
       this.fotoCapturadaHoraExtra = null;
       this.previewFotoHoraExtra = null;
+    }
+  }
+
+  /** YYYY-MM-DD en hora local del dispositivo, para invalidar el snapshot de días anteriores */
+  private fechaLocalHoy(): string {
+    const hoy = new Date();
+    const mes = (hoy.getMonth() + 1).toString().padStart(2, '0');
+    const dia = hoy.getDate().toString().padStart(2, '0');
+    return `${hoy.getFullYear()}-${mes}-${dia}`;
+  }
+
+  /**
+   * Guarda en el celular el último estado CONFIRMADO por el servidor
+   * (registro, estado, pausa activa). Se lee al abrir la app para pintar de
+   * inmediato lo correcto, sin esperar a que responda el servidor.
+   */
+  private guardarSnapshotLocal(): void {
+    try {
+      localStorage.setItem(
+        RegistroAsistenciaComponent.CLAVE_SNAPSHOT,
+        JSON.stringify({
+          fecha: this.fechaLocalHoy(),
+          registroHoy: this.registroHoy,
+          estado: this.estado,
+          pausaActiva: this.pausaActiva,
+          totalPausas: this.totalPausas,
+        }),
+      );
+    } catch {
+      // Almacenamiento lleno o bloqueado (modo incógnito, etc.): no es crítico,
+      // simplemente no habrá snapshot para la próxima carga.
+    }
+  }
+
+  /** Pinta el último snapshot guardado, solo si es de hoy. Se sobreescribe en cuanto responde el servidor. */
+  private restaurarSnapshotLocal(): void {
+    try {
+      const crudo = localStorage.getItem(RegistroAsistenciaComponent.CLAVE_SNAPSHOT);
+      if (!crudo) return;
+
+      const snapshot = JSON.parse(crudo);
+      if (snapshot.fecha !== this.fechaLocalHoy()) return;
+
+      this.registroHoy = snapshot.registroHoy;
+      this.estado = snapshot.estado;
+      this.pausaActiva = snapshot.pausaActiva;
+      this.totalPausas = snapshot.totalPausas ?? 0;
+
+      if (this.registroHoy && this.estado === 'activo' && this.registroHoy.hora_entrada) {
+        this.iniciarCronometro();
+      }
+    } catch {
+      // Snapshot corrupto o inaccesible: se ignora y se espera la respuesta del servidor.
     }
   }
 }
