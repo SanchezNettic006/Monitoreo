@@ -79,38 +79,6 @@
       </div>
     </div>
 
-    <!-- Vista previa -->
-    <div class="vista-previa-section">
-      <div class="vista-previa-header">
-        <h3>Vista previa · Asistencia</h3>
-        <span class="rango">{{ labelVistaPrevia }}</span>
-      </div>
-
-      <div class="loading" *ngIf="cargandoVistaPrevia">Cargando...</div>
-
-      <div class="vista-previa-wrapper" *ngIf="!cargandoVistaPrevia && vistaPrevia.length > 0">
-        <table class="tabla-vista-previa">
-          <thead>
-            <tr>
-              <th>Departamento</th>
-              <th>Días laborados</th>
-              <th>Asistencia</th>
-              <th>Horas extra</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let d of vistaPrevia">
-              <td class="col-depto">{{ d.departamento }}</td>
-              <td>{{ d.diasLaborados }}</td>
-              <td class="col-asistencia">{{ d.asistenciaPorcentaje }}%</td>
-              <td class="col-extra">{{ formatearDuracion(d.horasExtra) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <p class="sin-datos" *ngIf="!cargandoVistaPrevia && vistaPrevia.length === 0">Sin datos para este rango</p>
-    </div>
   </ng-container>
 
   <ng-template #proximamente>
