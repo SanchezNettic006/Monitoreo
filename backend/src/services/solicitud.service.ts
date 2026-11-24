@@ -4,6 +4,7 @@ import { SolicitudTramite, TipoTramite, EstadoSolicitud } from '@entities/Solici
 import { SolicitudHistorial } from '@entities/SolicitudHistorial';
 import { NotificacionEmail } from '@entities/NotificacionEmail';
 import { Empleado } from '@entities/Empleado';
+import { LiderDepartamentoExtra } from '@entities/LiderDepartamentoExtra';
 import { emailTemplates } from '@utils/emailTemplates';
 import { config } from '@config/env';
 import { OperationalError } from '@middleware/errorHandler';
@@ -33,6 +34,7 @@ export class SolicitudService {
   private historialRepository = AppDataSource.getRepository(SolicitudHistorial);
   private notificacionRepository = AppDataSource.getRepository(NotificacionEmail);
   private empleadoRepository = AppDataSource.getRepository(Empleado);
+  private liderDepartamentoExtraRepository = AppDataSource.getRepository(LiderDepartamentoExtra);
 
   /**
    * Crear nueva solicitud de trámite a partir del usuario logueado
@@ -263,6 +265,52 @@ export class SolicitudService {
   }
 
   /**
+   * Mapa departamento_id -> nombre del líder a cargo (propio + departamentos
+   * extra que supervisa). Mismo criterio que usa el backend para decidir a
+   * quién llega la notificación por correo (ver crearNotificacionSolicitudCreada).
+   */
+  private async mapaLideresPorDepartamento(): Promise<Map<number, string>> {
+    const mapa = new Map<number, string>();
+
+    const empleadosLideres = await this.empleadoRepository.find({
+      where: { usuario: { rol: 'lider' } },
+      relations: ['usuario'],
+    });
+
+    for (const empleado of empleadosLideres) {
+      if (empleado.departamento_id && !mapa.has(empleado.departamento_id)) {
+        mapa.set(empleado.departamento_id, `${empleado.nombre} ${empleado.apellido}`);
+      }
+    }
+
+    const extras = await this.liderDepartamentoExtraRepository.find();
+    for (const extra of extras) {
+      if (mapa.has(extra.departamento_id)) continue;
+      const empleadoLider = await this.empleadoRepository.findOne({
+        where: { usuario_id: extra.usuario_id },
+      });
+      if (empleadoLider) {
+        mapa.set(extra.departamento_id, `${empleadoLider.nombre} ${empleadoLider.apellido}`);
+      }
+    }
+
+    return mapa;
+  }
+
+  /** Quién debe autorizar esta solicitud: mismo criterio que la notificación por correo */
+  private quienDebeAutorizar(solicitud: SolicitudTramite, lideresPorDepartamento: Map<number, string>): string {
+    if (solicitud.empleado?.usuario?.rol === 'lider') {
+      return 'RRHH (líder sin supervisor propio)';
+    }
+
+    const lider = solicitud.empleado?.departamento_id
+      ? lideresPorDepartamento.get(solicitud.empleado.departamento_id)
+      : undefined;
+
+    return lider ? `${lider} + RRHH` : 'Solo RRHH (sin líder asignado)';
+  }
+
+  /**
    * Obtener todas las solicitudes pendientes (admin) o solo las de un
    * departamento (líder, cuando se pasa departamentoId)
    */
@@ -279,12 +327,15 @@ export class SolicitudService {
         order: { created_at: 'ASC' },
       });
 
+      const lideresPorDepartamento = await this.mapaLideresPorDepartamento();
+
       return solicitudes.map((s) => ({
         ...s,
         empleado_nombre_completo: s.empleado
           ? `${s.empleado.nombre} ${s.empleado.apellido}`
           : '-',
         departamento_nombre: s.empleado?.departamento?.nombre || '-',
+        quien_autoriza: this.quienDebeAutorizar(s, lideresPorDepartamento),
       }));
     } catch (error) {
       console.error('Error al obtener solicitudes pendientes:', error);

@@ -103,6 +103,14 @@ import { TipoTramitePipe } from '../../../pipes/tipo-tramite.pipe';
             </td>
           </ng-container>
 
+          <!-- Quién debe autorizar Column -->
+          <ng-container matColumnDef="quienAutoriza">
+            <th mat-header-cell *matHeaderCellDef>Quién debe Autorizar</th>
+            <td mat-cell *matCellDef="let element">
+              {{ element.quien_autoriza || '-' }}
+            </td>
+          </ng-container>
+
           <!-- Estado Column -->
           <ng-container matColumnDef="estado">
             <th mat-header-cell *matHeaderCellDef>Estado</th>
@@ -307,7 +315,7 @@ import { TipoTramitePipe } from '../../../pipes/tipo-tramite.pipe';
 export class GestionarSolicitudesComponent implements OnInit, OnDestroy {
   solicitudes: any[] = [];
   dataSource = new MatTableDataSource<any>();
-  displayedColumns: string[] = ['empleado', 'tipo', 'fechas', 'dias', 'motivo', 'estado', 'acciones'];
+  displayedColumns: string[] = ['empleado', 'tipo', 'fechas', 'dias', 'motivo', 'quienAutoriza', 'estado', 'acciones'];
   loading = true;
   saldosPorEmpleado: Record<number, SaldoVacaciones> = {};
   private destroy$ = new Subject<void>();
