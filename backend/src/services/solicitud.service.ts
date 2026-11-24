@@ -300,7 +300,7 @@ export class SolicitudService {
   /** Quién debe autorizar esta solicitud: mismo criterio que la notificación por correo */
   private quienDebeAutorizar(solicitud: SolicitudTramite, lideresPorDepartamento: Map<number, string>): string {
     if (solicitud.empleado?.usuario?.rol === 'lider') {
-      return 'RRHH (líder sin supervisor propio)';
+      return 'RRHH + Marco (líder sin supervisor propio)';
     }
 
     const lider = solicitud.empleado?.departamento_id
