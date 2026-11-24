@@ -64,7 +64,7 @@ interface FilaDepartamento {
           </tr>
         </tbody>
         <tfoot>
-          <tr class="fila-total">
+          <tr class="fila-total fila-clickeable" (click)="mostrandoDetalle = !mostrandoDetalle">
             <td>Total</td>
             <td class="cantidad">{{ total }}</td>
           </tr>
@@ -74,6 +74,14 @@ interface FilaDepartamento {
       <p class="sin-datos" *ngIf="!cargando && filas.length === 0">
         Sin trámites aprobados este mes
       </p>
+
+      <ul class="lista-detalle" *ngIf="mostrandoDetalle && !cargando">
+        <li *ngFor="let s of detalle">
+          <span class="detalle-nombre">{{ s.empleado_nombre_completo || (s.empleado?.nombre + ' ' + s.empleado?.apellido) }}</span>
+          <span class="detalle-depto">{{ s.departamento_nombre || s.empleado?.departamento?.nombre }}</span>
+          <span class="detalle-fecha">{{ s.fecha_inicio | date: 'dd/MM/yyyy' }}</span>
+        </li>
+      </ul>
     </mat-dialog-content>
 
     <mat-dialog-actions>
@@ -127,10 +135,43 @@ interface FilaDepartamento {
     .fila-total .cantidad {
       color: #2b8a3e;
     }
+    .fila-clickeable {
+      cursor: pointer;
+    }
+    .fila-clickeable:hover td {
+      color: #1a5a2a;
+    }
     .sin-datos {
       text-align: center;
       color: #999;
       padding: 30px 0;
+    }
+    .lista-detalle {
+      list-style: none;
+      margin: 12px 0 0;
+      padding: 0;
+      max-height: 260px;
+      overflow-y: auto;
+      border-top: 2px solid #eee;
+    }
+    .lista-detalle li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 4px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px;
+    }
+    .detalle-nombre {
+      flex: 1;
+      font-weight: 500;
+    }
+    .detalle-depto {
+      color: #999;
+    }
+    .detalle-fecha {
+      color: #999;
+      white-space: nowrap;
     }
     mat-dialog-actions {
       display: flex;
@@ -144,8 +185,10 @@ export class AusenciasDepartamentoDialogComponent implements OnInit {
   mesSeleccionado = new Date().toISOString().slice(0, 7);
   opcionesMes: { value: string; label: string }[] = [];
   filas: FilaDepartamento[] = [];
+  detalle: any[] = [];
   total = 0;
   cargando = false;
+  mostrandoDetalle = false;
 
   constructor(
     public dialogRef: MatDialogRef<AusenciasDepartamentoDialogComponent>,
@@ -171,6 +214,7 @@ export class AusenciasDepartamentoDialogComponent implements OnInit {
 
   cargar(): void {
     this.cargando = true;
+    this.mostrandoDetalle = false;
     this.solicitudService.obtenerSolicitudesAprobadas(this.mesSeleccionado).subscribe({
       next: (data) => {
         const conteo = new Map<string, number>();
@@ -181,11 +225,13 @@ export class AusenciasDepartamentoDialogComponent implements OnInit {
         this.filas = Array.from(conteo.entries())
           .map(([departamento, cantidad]) => ({ departamento, cantidad }))
           .sort((a, b) => b.cantidad - a.cantidad);
+        this.detalle = data;
         this.total = data.length;
         this.cargando = false;
       },
       error: () => {
         this.filas = [];
+        this.detalle = [];
         this.total = 0;
         this.cargando = false;
       },
