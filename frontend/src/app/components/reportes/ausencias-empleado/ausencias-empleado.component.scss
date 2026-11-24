@@ -1,0 +1,524 @@
+$fondo: #0b130e;
+$tarjeta: #182a1c;
+$borde: #24382a;
+$verde-lima: #95c11f;
+$texto: #ffffff;
+$texto-suave: #9db3a0;
+
+$col-vacaciones: #95c11f;
+$col-permiso: #3fb6a8;
+$col-reposicion: #f0b43c;
+$col-falta: #e5674e;
+$col-otros: #6b7d94;
+
+:host {
+  display: block;
+}
+
+.ficha-container {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+// ============= PANEL IZQUIERDO =============
+.panel-empleados {
+  width: 340px;
+  flex-shrink: 0;
+  background: $tarjeta;
+  border: 1px solid $borde;
+  border-radius: 12px;
+  padding: 16px;
+
+  .buscador {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    background: $fondo;
+    border: 1px solid $borde;
+    border-radius: 8px;
+    color: $texto;
+    font-size: 13px;
+    margin-bottom: 12px;
+
+    &::placeholder {
+      color: $texto-suave;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $verde-lima;
+    }
+  }
+
+  .chips-filtro {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid $borde;
+    background: transparent;
+    color: $texto-suave;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &.activo {
+      background: $verde-lima;
+      border-color: $verde-lima;
+      color: #0b130e;
+    }
+  }
+
+  .lista-empleados {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 640px;
+    overflow-y: auto;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      &.activo {
+        border: 1px solid $verde-lima;
+        background: rgba(149, 193, 31, 0.08);
+      }
+    }
+
+    .sin-datos {
+      cursor: default;
+      color: $texto-suave;
+      font-size: 13px;
+      padding: 20px 8px;
+      text-align: center;
+
+      &:hover {
+        background: none;
+      }
+    }
+  }
+
+  .avatar {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(149, 193, 31, 0.18);
+    color: $verde-lima;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  .info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+
+    .nombre {
+      font-size: 13px;
+      font-weight: 600;
+      color: $texto;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .depto {
+      font-size: 11px;
+      color: $texto-suave;
+    }
+  }
+
+  .dias-vac {
+    flex-shrink: 0;
+    text-align: right;
+    font-size: 14px;
+    font-weight: 700;
+    color: $texto;
+
+    small {
+      display: block;
+      font-size: 9px;
+      font-weight: 500;
+      color: $texto-suave;
+    }
+
+    &.alto {
+      color: $col-falta;
+    }
+  }
+}
+
+// ============= PANEL DERECHO =============
+.panel-ficha {
+  flex: 1;
+  min-width: 0;
+  background: $tarjeta;
+  border: 1px solid $borde;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.panel-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  color: $texto-suave;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    opacity: 0.4;
+    margin-bottom: 8px;
+  }
+}
+
+.ficha-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+
+  .avatar-grande {
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(149, 193, 31, 0.18);
+    color: $verde-lima;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+  }
+
+  .ficha-header-texto {
+    flex: 1;
+    min-width: 0;
+
+    h2 {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 700;
+      color: $texto;
+    }
+
+    p {
+      margin: 2px 0 0;
+      font-size: 12.5px;
+      color: $texto-suave;
+    }
+  }
+
+  .selector-anio {
+    width: 110px;
+
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      background: $fondo;
+    }
+
+    ::ng-deep .mat-mdc-form-field-label,
+    ::ng-deep .mat-mdc-select-value {
+      color: $texto;
+    }
+  }
+}
+
+// ============= TARJETAS RESUMEN =============
+.tarjetas-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.tarjeta {
+  background: $fondo;
+  border: 1px solid $borde;
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+
+  .punto {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .tarjeta-titulo {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: $texto-suave;
+    font-weight: 600;
+  }
+
+  .tarjeta-valor {
+    font-size: 24px;
+    font-weight: 700;
+    color: $texto;
+  }
+
+  .tarjeta-detalle {
+    font-size: 11px;
+    color: $texto-suave;
+  }
+}
+
+// ============= PUNTOS / COLORES POR TIPO =============
+.punto {
+  display: inline-block;
+  border-radius: 50%;
+
+  &.vacaciones { background: $col-vacaciones; }
+  &.permiso { background: $col-permiso; }
+  &.reposicion { background: $col-reposicion; }
+  &.otros { background: $col-otros; }
+  &.falta { background: $col-falta; }
+}
+
+// ============= CALENDARIO =============
+.calendario-section {
+  margin-bottom: 24px;
+}
+
+.calendario-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+
+  h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: $texto;
+  }
+
+  .leyenda {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: $texto-suave;
+
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .punto {
+      width: 8px;
+      height: 8px;
+    }
+  }
+}
+
+.calendario-scroll {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.calendario-grid-wrapper {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fila-labels-mes {
+  display: grid;
+  gap: 2px;
+
+  .label-mes {
+    font-size: 10px;
+    color: $texto-suave;
+    overflow: visible;
+    white-space: nowrap;
+  }
+}
+
+.dias-grid {
+  display: grid;
+  gap: 2px;
+
+  .dia-label {
+    font-size: 10px;
+    color: $texto-suave;
+    align-self: center;
+  }
+}
+
+.celda {
+  width: 13px;
+  height: 13px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.05);
+
+  &.vacio {
+    background: transparent;
+  }
+
+  &.futuro {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  &.clickeable {
+    cursor: pointer;
+  }
+
+  &.vacaciones { background: $col-vacaciones; }
+  &.permiso { background: $col-permiso; }
+  &.reposicion { background: $col-reposicion; }
+  &.otros { background: $col-otros; }
+  &.falta { background: $col-falta; }
+}
+
+.detalle-dia {
+  position: relative;
+  margin-top: 12px;
+  padding: 12px 36px 12px 14px;
+  background: $fondo;
+  border: 1px solid $borde;
+  border-radius: 8px;
+  font-size: 13px;
+  color: $texto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .detalle-fechas,
+  .detalle-motivo,
+  .detalle-aprobador {
+    font-size: 12px;
+    color: $texto-suave;
+  }
+
+  .cerrar-detalle {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: $texto-suave;
+    cursor: pointer;
+    padding: 2px;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+// ============= HISTORIAL =============
+.historial-section {
+  h3 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    font-weight: 700;
+    color: $texto;
+  }
+
+  .sin-datos {
+    color: $texto-suave;
+    font-size: 13px;
+  }
+}
+
+.historial-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid $borde;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .punto {
+    width: 9px;
+    height: 9px;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+
+  .historial-texto {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+
+    strong {
+      font-size: 13px;
+      color: $texto;
+    }
+
+    .historial-sub {
+      font-size: 12px;
+      color: $texto-suave;
+    }
+  }
+
+  .historial-fecha {
+    flex-shrink: 0;
+    font-size: 12px;
+    color: $texto-suave;
+    white-space: nowrap;
+  }
+}
+
+.loading-mini {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+// ============= RESPONSIVE =============
+@media (max-width: 860px) {
+  .ficha-container {
+    flex-direction: column;
+  }
+
+  .panel-empleados {
+    width: 100%;
+  }
+}

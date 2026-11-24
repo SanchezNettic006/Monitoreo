@@ -1,0 +1,207 @@
+<div class="ficha-container">
+  <!-- ===== PANEL IZQUIERDO ===== -->
+  <aside class="panel-empleados">
+    <input
+      class="buscador"
+      type="text"
+      placeholder="Nombre o departamento"
+      [(ngModel)]="buscar"
+      (ngModelChange)="onBuscarChange()"
+    />
+
+    <div class="chips-filtro">
+      <button
+        type="button"
+        class="chip"
+        [class.activo]="filtro === 'todos'"
+        (click)="seleccionarFiltro('todos')"
+      >
+        Todos
+      </button>
+      <button
+        type="button"
+        class="chip"
+        [class.activo]="filtro === 'saldo_alto'"
+        (click)="seleccionarFiltro('saldo_alto')"
+      >
+        Con saldo alto
+      </button>
+      <button
+        type="button"
+        class="chip"
+        [class.activo]="filtro === 'con_faltas'"
+        (click)="seleccionarFiltro('con_faltas')"
+      >
+        Con faltas
+      </button>
+    </div>
+
+    <div class="loading-mini" *ngIf="cargandoLista">
+      <mat-spinner diameter="24"></mat-spinner>
+    </div>
+
+    <ul class="lista-empleados" *ngIf="!cargandoLista">
+      <li
+        *ngFor="let e of empleados"
+        [class.activo]="e.empleadoId === empleadoSeleccionadoId"
+        (click)="seleccionarEmpleado(e.empleadoId)"
+      >
+        <span class="avatar">{{ iniciales(e.nombre) }}</span>
+        <span class="info">
+          <span class="nombre">{{ e.nombre }}</span>
+          <span class="depto">{{ e.departamento }}</span>
+        </span>
+        <span class="dias-vac" [class.alto]="e.diasVacacionesPendientes > 20">
+          {{ e.diasVacacionesPendientes }}
+          <small>días vac.</small>
+        </span>
+      </li>
+      <li class="sin-datos" *ngIf="empleados.length === 0">Sin empleados para este filtro</li>
+    </ul>
+  </aside>
+
+  <!-- ===== PANEL DERECHO ===== -->
+  <section class="panel-ficha" *ngIf="ficha as f">
+    <div class="ficha-header">
+      <span class="avatar-grande">{{ iniciales(f.empleado.nombre) }}</span>
+      <div class="ficha-header-texto">
+        <h2>{{ f.empleado.nombre }}</h2>
+        <p>
+          {{ f.empleado.departamento }}
+          <ng-container *ngIf="f.empleado.cargo"> · {{ f.empleado.cargo }}</ng-container>
+          <ng-container *ngIf="f.empleado.fechaIngreso"> · Ingreso {{ f.empleado.fechaIngreso | date: 'dd/MM/yyyy' }}</ng-container>
+        </p>
+      </div>
+      <mat-form-field appearance="fill" class="selector-anio">
+        <mat-label>Año</mat-label>
+        <mat-select [(ngModel)]="anioSeleccionado" (selectionChange)="cambiarAnio($event.value)">
+          <mat-option *ngFor="let anio of aniosDisponibles" [value]="anio">{{ anio }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="loading-mini" *ngIf="cargandoFicha">
+      <mat-spinner diameter="32"></mat-spinner>
+    </div>
+
+    <ng-container *ngIf="!cargandoFicha">
+      <!-- Tarjetas resumen -->
+      <div class="tarjetas-resumen">
+        <div class="tarjeta">
+          <span class="punto vacaciones"></span>
+          <span class="tarjeta-titulo">Vacaciones pendientes</span>
+          <span class="tarjeta-valor">{{ f.resumen.vacaciones.diasDisponibles }} días</span>
+          <span class="tarjeta-detalle">{{ f.resumen.vacaciones.diasDisponibles }} disponibles · {{ f.resumen.vacaciones.diasUsados }} tomados</span>
+        </div>
+        <div class="tarjeta">
+          <span class="punto permiso"></span>
+          <span class="tarjeta-titulo">Permisos</span>
+          <span class="tarjeta-valor">{{ f.resumen.permiso.eventos }}</span>
+          <span class="tarjeta-detalle">{{ f.resumen.permiso.dias }} días en {{ f.anio }}</span>
+        </div>
+        <div class="tarjeta">
+          <span class="punto reposicion"></span>
+          <span class="tarjeta-titulo">Reposiciones</span>
+          <span class="tarjeta-valor">{{ f.resumen.reposicion.eventos }}</span>
+          <span class="tarjeta-detalle">{{ f.resumen.reposicion.dias }} días en {{ f.anio }}</span>
+        </div>
+        <div class="tarjeta">
+          <span class="punto falta"></span>
+          <span class="tarjeta-titulo">Faltas</span>
+          <span class="tarjeta-valor">{{ f.resumen.faltas.dias }}</span>
+          <span class="tarjeta-detalle">{{ f.resumen.faltas.dias === 0 ? 'Sin faltas' : 'Sin justificación' }}</span>
+        </div>
+      </div>
+
+      <!-- Calendario anual -->
+      <div class="calendario-section">
+        <div class="calendario-header">
+          <h3>Año {{ f.anio }} de un vistazo</h3>
+          <div class="leyenda">
+            <span class="item"><span class="punto vacaciones"></span> Vacaciones</span>
+            <span class="item"><span class="punto permiso"></span> Permiso</span>
+            <span class="item"><span class="punto reposicion"></span> Reposición</span>
+            <span class="item"><span class="punto falta"></span> Falta</span>
+          </div>
+        </div>
+
+        <div class="calendario-scroll">
+          <div class="calendario-grid-wrapper">
+            <div class="fila-labels-mes" [style.grid-template-columns]="'20px repeat(' + semanas.length + ', 13px)'">
+              <span></span>
+              <span class="label-mes" *ngFor="let semana of semanas; let i = index">{{ labelMesDeSemana(i) }}</span>
+            </div>
+
+            <div
+              class="dias-grid"
+              [style.grid-template-columns]="'20px repeat(' + semanas.length + ', 13px)'"
+              [style.grid-template-rows]="'repeat(7, 13px)'"
+            >
+              <span class="dia-label" style="grid-column: 1; grid-row: 2">L</span>
+              <span class="dia-label" style="grid-column: 1; grid-row: 4">M</span>
+              <span class="dia-label" style="grid-column: 1; grid-row: 6">V</span>
+
+              <ng-container *ngFor="let semana of semanas; let si = index">
+                <div
+                  class="celda"
+                  *ngFor="let celda of semana; let di = index"
+                  [style.grid-column]="si + 2"
+                  [style.grid-row]="di + 1"
+                  [class.vacio]="!celda.fecha"
+                  [class.futuro]="celda.esFuturo"
+                  [class.vacaciones]="celda.tipo === 'vacaciones'"
+                  [class.permiso]="celda.tipo === 'permiso'"
+                  [class.reposicion]="celda.tipo === 'reposicion'"
+                  [class.otros]="celda.tipo === 'otros'"
+                  [class.falta]="celda.tipo === 'falta'"
+                  [class.clickeable]="celda.tipo"
+                  [title]="celda.fecha"
+                  (click)="verDetalleDia(celda)"
+                ></div>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+
+        <div class="detalle-dia" *ngIf="diaSeleccionado as d">
+          <button type="button" class="cerrar-detalle" (click)="cerrarDetalleDia()">
+            <mat-icon>close</mat-icon>
+          </button>
+          <ng-container *ngIf="d.historial as h; else sinHistorial">
+            <strong>{{ h.tipo | tipoTramite }}</strong> · {{ h.dias }} día(s)
+            <span class="detalle-fechas">{{ formatFechaCorta(h.fechaInicio) }} – {{ formatFechaCorta(h.fechaFin) }}</span>
+            <span class="detalle-motivo" *ngIf="h.motivo">{{ h.motivo }}</span>
+            <span class="detalle-aprobador" *ngIf="h.aprobadoPor">Aprobado por {{ h.aprobadoPor }}</span>
+          </ng-container>
+          <ng-template #sinHistorial>
+            <strong>Falta</strong> · {{ d.celda.fecha }} · sin check-out y sin permiso aprobado
+          </ng-template>
+        </div>
+      </div>
+
+      <!-- Historial -->
+      <div class="historial-section">
+        <h3>Historial</h3>
+        <ul class="historial-lista" *ngIf="f.historial.length > 0">
+          <li *ngFor="let h of f.historial">
+            <span class="punto" [ngClass]="colorPuntoHistorial(h.tipo)"></span>
+            <span class="historial-texto">
+              <strong>{{ h.tipo | tipoTramite }} · {{ h.dias }} día(s)</strong>
+              <span class="historial-sub" *ngIf="h.motivo">{{ h.motivo }}</span>
+              <span class="historial-sub" *ngIf="h.aprobadoPor">Aprobado por {{ h.aprobadoPor }}</span>
+            </span>
+            <span class="historial-fecha">
+              {{ h.fechaInicio === h.fechaFin ? (h.fechaInicio | date: 'dd/MM') : ((h.fechaInicio | date: 'dd/MM') + ' – ' + (h.fechaFin | date: 'dd/MM')) }}
+            </span>
+          </li>
+        </ul>
+        <p class="sin-datos" *ngIf="f.historial.length === 0">Sin trámites aprobados en {{ f.anio }}</p>
+      </div>
+    </ng-container>
+  </section>
+
+  <section class="panel-ficha panel-vacio" *ngIf="!ficha && !cargandoFicha">
+    <mat-icon>person_search</mat-icon>
+    <p>Selecciona un empleado de la lista</p>
+  </section>
+</div>

@@ -88,6 +88,22 @@ router.get('/cumplimiento/:empleadoId', (req: AuthRequest, res: Response, next: 
 );
 
 /**
+ * GET /reportes/ausencias/empleados?buscar=&filtro=
+ * Lista de empleados para el panel izquierdo de la Ficha de Ausencias
+ */
+router.get('/ausencias/empleados', (req: AuthRequest, res: Response, next: NextFunction) =>
+  controller.listarFichaAusenciasEmpleados(req, res, next)
+);
+
+/**
+ * GET /reportes/ausencias/empleados/:id?anio=
+ * Ficha completa de ausencias de un empleado
+ */
+router.get('/ausencias/empleados/:id', (req: AuthRequest, res: Response, next: NextFunction) =>
+  controller.obtenerFichaAusenciasEmpleado(req, res, next)
+);
+
+/**
  * POST /reportes/recalcular-horas
  * Recalcular horas trabajadas (ADMIN ONLY)
  */

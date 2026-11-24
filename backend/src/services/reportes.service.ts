@@ -9,8 +9,23 @@ import { SolicitudTramite } from '@entities/SolicitudTramite';
 import { AsignacionProyecto } from '@entities/AsignacionProyecto';
 import { config } from '@config/env';
 import { enumerarFechas, formatFechaLocal, hoyLocal } from '@utils/fecha.utils';
+import { SolicitudService } from '@services/solicitud.service';
+import { OperationalError } from '@middleware/errorHandler';
 import path from 'path';
-import { Between } from 'typeorm';
+import { Between, In } from 'typeorm';
+
+/**
+ * Agrupa los tipos de trámite en los 4 "buckets" de la ficha de ausencias del
+ * empleado: el calendario y las tarjetas de resumen no distinguen cada tipo
+ * (serían demasiados colores en un cuadrito de 13px), pero el historial sí
+ * muestra el tipo real y específico de cada uno.
+ */
+function bucketDeAusencia(tipo: string): 'vacaciones' | 'permiso' | 'reposicion' | 'otros' {
+  if (tipo === 'vacaciones') return 'vacaciones';
+  if (tipo === 'permiso_personal') return 'permiso';
+  if (tipo === 'ausencia') return 'reposicion'; // se muestra como "Reposición"
+  return 'otros';
+}
 
 interface FiltrosAsistencia {
   empleadoId?: number;
@@ -33,6 +48,7 @@ export class ReportesService {
   private diaCalendarioRepository = AppDataSource.getRepository(DiaCalendario);
   private solicitudRepository = AppDataSource.getRepository(SolicitudTramite);
   private asignacionProyectoRepository = AppDataSource.getRepository(AsignacionProyecto);
+  private solicitudService = new SolicitudService();
 
   /**
    * Historial de asistencias del propio usuario logueado (empleado o admin viendo lo suyo)
@@ -875,5 +891,175 @@ export class ReportesService {
       .sort((a, b) => a.departamento.localeCompare(b.departamento));
 
     return { mes, departamentos };
+  }
+
+  /**
+   * Lista de empleados para el panel izquierdo de la Ficha de Ausencias
+   * (Reportes > Ausencias): nombre, departamento y saldo de vacaciones
+   * pendiente, con búsqueda y los chips "Con saldo alto" / "Con faltas".
+   */
+  async listarFichaAusenciasEmpleados(buscar?: string, filtro?: 'saldo_alto' | 'con_faltas') {
+    const empleados = await this.empleadoRepository.find({
+      where: { estado: 'activo' },
+      relations: ['departamento'],
+    });
+
+    const saldos = await this.solicitudService.obtenerSaldosVacacionesMasivo();
+    const saldoPorEmpleado = new Map(saldos.map((s) => [s.empleadoId, s.diasDisponibles]));
+
+    let faltasPorEmpleado = new Map<number, number>();
+    if (filtro === 'con_faltas') {
+      const hoy = hoyLocal();
+      const inicioAnio = `${new Date().getFullYear()}-01-01`;
+      const empleadosConControl = empleados.filter((e) => !e.solo_tramites);
+      const datos = await this.clasificarDias(empleadosConControl, inicioAnio, hoy);
+      for (const empleado of empleadosConControl) {
+        let faltas = 0;
+        for (const fecha of datos.fechasDelRango) {
+          if (this.estadoDelDia(empleado.id, fecha, datos) === 'pendiente') faltas++;
+        }
+        if (faltas > 0) faltasPorEmpleado.set(empleado.id, faltas);
+      }
+    }
+
+    let lista = empleados.map((e) => ({
+      empleadoId: e.id,
+      nombre: `${e.nombre} ${e.apellido}`,
+      departamento: e.departamento?.nombre || '-',
+      diasVacacionesPendientes: saldoPorEmpleado.get(e.id) ?? 0,
+    }));
+
+    if (filtro === 'saldo_alto') {
+      lista = lista.filter((e) => e.diasVacacionesPendientes > 20);
+    } else if (filtro === 'con_faltas') {
+      lista = lista.filter((e) => faltasPorEmpleado.has(e.empleadoId));
+    }
+
+    if (buscar) {
+      const texto = buscar.toLowerCase();
+      lista = lista.filter(
+        (e) => e.nombre.toLowerCase().includes(texto) || e.departamento.toLowerCase().includes(texto),
+      );
+    }
+
+    return lista.sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }
+
+  /**
+   * Ficha completa de un empleado para Reportes > Ausencias: perfil, saldo de
+   * vacaciones (en vivo, igual que en Trámites — no depende del año elegido),
+   * resumen y calendario anual de permisos/reposición/otros/faltas, e historial.
+   */
+  async obtenerFichaAusenciasEmpleado(empleadoId: number, anio: number) {
+    const empleado = await this.empleadoRepository.findOne({
+      where: { id: empleadoId },
+      relations: ['departamento'],
+    });
+    if (!empleado) {
+      throw new OperationalError(404, 'Empleado no encontrado');
+    }
+
+    const inicioAnio = `${anio}-01-01`;
+    const finAnio = `${anio}-12-31`;
+
+    const solicitudesDelAnio = await this.solicitudRepository
+      .createQueryBuilder('solicitud')
+      .where('solicitud.empleado_id = :empleadoId', { empleadoId })
+      .andWhere('solicitud.estado = :estado', { estado: 'aprobada' })
+      .andWhere('solicitud.fecha_inicio <= :finAnio', { finAnio })
+      .andWhere('COALESCE(solicitud.fecha_fin, solicitud.fecha_inicio) >= :inicioAnio', { inicioAnio })
+      .getMany();
+
+    // --- Resumen por bucket (eventos + días), vacaciones aparte porque su
+    // tarjeta usa el saldo en vivo, no un conteo de este año ---
+    const resumenPorBucket: Record<'permiso' | 'reposicion' | 'otros', { eventos: number; dias: number }> = {
+      permiso: { eventos: 0, dias: 0 },
+      reposicion: { eventos: 0, dias: 0 },
+      otros: { eventos: 0, dias: 0 },
+    };
+    for (const s of solicitudesDelAnio) {
+      const bucket = bucketDeAusencia(s.tipo);
+      if (bucket === 'vacaciones') continue;
+      resumenPorBucket[bucket].eventos++;
+      resumenPorBucket[bucket].dias += parseFloat(s.dias_solicitados as any) || 0;
+    }
+
+    const saldoVacaciones = await this.solicitudService.obtenerSaldoVacaciones(empleadoId, anio);
+
+    // --- Días sueltos para el calendario (sin domingos) ---
+    const dias: { fecha: string; tipo: string }[] = [];
+    for (const s of solicitudesDelAnio) {
+      const bucket = bucketDeAusencia(s.tipo);
+      const inicio = s.fecha_inicio < inicioAnio ? inicioAnio : s.fecha_inicio;
+      const finSolicitud = s.fecha_fin || s.fecha_inicio;
+      const fin = finSolicitud > finAnio ? finAnio : finSolicitud;
+      for (const fecha of enumerarFechas(inicio, fin)) {
+        const diaSemana = new Date(`${fecha}T00:00:00`).getDay();
+        if (diaSemana === 0) continue; // domingo
+        dias.push({ fecha, tipo: bucket });
+      }
+    }
+
+    // --- Faltas: días laborables ya transcurridos sin check-out y sin
+    // ningún trámite aprobado que los cubra (misma regla que Cumplimiento de
+    // Reportes). No aplica a quienes marcan en reloj biométrico físico. ---
+    let faltas = 0;
+    if (!empleado.solo_tramites) {
+      const hoy = hoyLocal();
+      const finFaltas = finAnio < hoy ? finAnio : hoy;
+      if (inicioAnio <= finFaltas) {
+        const datos = await this.clasificarDias([empleado], inicioAnio, finFaltas);
+        for (const fecha of datos.fechasDelRango) {
+          if (this.estadoDelDia(empleadoId, fecha, datos) === 'pendiente') {
+            dias.push({ fecha, tipo: 'falta' });
+            faltas++;
+          }
+        }
+      }
+    }
+
+    // --- Historial cronológico (más reciente primero), con el tipo real ---
+    const aprobadorIds = [...new Set(solicitudesDelAnio.map((s) => s.aprobador_id).filter((id): id is number => !!id))];
+    const aprobadores = aprobadorIds.length
+      ? await this.usuarioRepository.find({ where: { id: In(aprobadorIds) }, relations: ['empleado'] })
+      : [];
+    const nombreAprobador = new Map(
+      aprobadores.map((u) => [u.id, u.empleado ? `${u.empleado.nombre} ${u.empleado.apellido}` : u.username]),
+    );
+
+    const historial = solicitudesDelAnio
+      .map((s) => ({
+        tipo: s.tipo,
+        fechaInicio: s.fecha_inicio,
+        fechaFin: s.fecha_fin || s.fecha_inicio,
+        dias: parseFloat(s.dias_solicitados as any) || 0,
+        motivo: s.motivo || null,
+        aprobadoPor: s.aprobador_id ? nombreAprobador.get(s.aprobador_id) || null : null,
+      }))
+      .sort((a, b) => (a.fechaInicio < b.fechaInicio ? 1 : -1));
+
+    return {
+      empleado: {
+        id: empleado.id,
+        nombre: `${empleado.nombre} ${empleado.apellido}`,
+        departamento: empleado.departamento?.nombre || '-',
+        cargo: empleado.cargo || null,
+        fechaIngreso: empleado.fecha_ingreso || null,
+      },
+      anio,
+      resumen: {
+        vacaciones: {
+          diasDisponibles: saldoVacaciones.diasDisponibles,
+          diasUsados: saldoVacaciones.diasUsados,
+          cupoAnual: saldoVacaciones.cupoAnual,
+        },
+        permiso: resumenPorBucket.permiso,
+        reposicion: resumenPorBucket.reposicion,
+        otros: resumenPorBucket.otros,
+        faltas: { dias: faltas },
+      },
+      dias,
+      historial,
+    };
   }
 }

@@ -221,6 +221,40 @@ export class ReportesController {
   }
 
   /**
+   * GET /reportes/ausencias/empleados?buscar=&filtro=saldo_alto|con_faltas
+   * Lista de empleados para el panel izquierdo de la Ficha de Ausencias
+   */
+  async listarFichaAusenciasEmpleados(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const buscar = req.query.buscar ? String(req.query.buscar) : undefined;
+      const filtro = req.query.filtro as 'saldo_alto' | 'con_faltas' | undefined;
+
+      const resultado = await reportesService.listarFichaAusenciasEmpleados(buscar, filtro);
+
+      return res.status(200).json({ exitoso: true, data: resultado });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /reportes/ausencias/empleados/:id?anio=2026
+   * Ficha completa de ausencias de un empleado: perfil, resumen, calendario anual e historial
+   */
+  async obtenerFichaAusenciasEmpleado(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const empleadoId = parseInt(String(req.params.id), 10);
+      const anio = req.query.anio ? parseInt(String(req.query.anio), 10) : new Date().getFullYear();
+
+      const resultado = await reportesService.obtenerFichaAusenciasEmpleado(empleadoId, anio);
+
+      return res.status(200).json({ exitoso: true, data: resultado });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * POST /reportes/recalcular-horas (ADMIN ONLY)
    * Recalcular horas trabajadas basado en check-in/check-out
    */
