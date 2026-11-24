@@ -58,13 +58,22 @@ interface FilaDepartamento {
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let fila of filas">
+          <tr
+            *ngFor="let fila of filas"
+            class="fila-clickeable"
+            [class.fila-activa]="mostrandoDetalle && departamentoFiltro === fila.departamento"
+            (click)="verDetalle(fila.departamento)"
+          >
             <td>{{ fila.departamento }}</td>
             <td class="cantidad">{{ fila.cantidad }}</td>
           </tr>
         </tbody>
         <tfoot>
-          <tr class="fila-total fila-clickeable" (click)="mostrandoDetalle = !mostrandoDetalle">
+          <tr
+            class="fila-total fila-clickeable"
+            [class.fila-activa]="mostrandoDetalle && departamentoFiltro === null"
+            (click)="verDetalle(null)"
+          >
             <td>Total</td>
             <td class="cantidad">{{ total }}</td>
           </tr>
@@ -76,7 +85,7 @@ interface FilaDepartamento {
       </p>
 
       <ul class="lista-detalle" *ngIf="mostrandoDetalle && !cargando">
-        <li *ngFor="let s of detalle">
+        <li *ngFor="let s of detalleFiltrado()">
           <span class="detalle-nombre">{{ s.empleado_nombre_completo || (s.empleado?.nombre + ' ' + s.empleado?.apellido) }}</span>
           <span class="detalle-depto">{{ s.departamento_nombre || s.empleado?.departamento?.nombre }}</span>
           <span class="detalle-fecha">{{ s.fecha_inicio | date: 'dd/MM/yyyy' }}</span>
@@ -141,6 +150,10 @@ interface FilaDepartamento {
     .fila-clickeable:hover td {
       color: #1a5a2a;
     }
+    .fila-clickeable.fila-activa td {
+      color: #1a5a2a;
+      font-weight: 700;
+    }
     .sin-datos {
       text-align: center;
       color: #999;
@@ -189,6 +202,7 @@ export class AusenciasDepartamentoDialogComponent implements OnInit {
   total = 0;
   cargando = false;
   mostrandoDetalle = false;
+  departamentoFiltro: string | null = null;
 
   constructor(
     public dialogRef: MatDialogRef<AusenciasDepartamentoDialogComponent>,
@@ -212,9 +226,27 @@ export class AusenciasDepartamentoDialogComponent implements OnInit {
     return opciones;
   }
 
+  /** Click en un departamento filtra la lista a ese; click de nuevo en lo mismo la cierra */
+  verDetalle(departamento: string | null): void {
+    if (this.mostrandoDetalle && this.departamentoFiltro === departamento) {
+      this.mostrandoDetalle = false;
+      return;
+    }
+    this.departamentoFiltro = departamento;
+    this.mostrandoDetalle = true;
+  }
+
+  detalleFiltrado(): any[] {
+    if (this.departamentoFiltro === null) return this.detalle;
+    return this.detalle.filter(
+      (s) => (s.departamento_nombre || s.empleado?.departamento?.nombre) === this.departamentoFiltro,
+    );
+  }
+
   cargar(): void {
     this.cargando = true;
     this.mostrandoDetalle = false;
+    this.departamentoFiltro = null;
     this.solicitudService.obtenerSolicitudesAprobadas(this.mesSeleccionado).subscribe({
       next: (data) => {
         const conteo = new Map<string, number>();
