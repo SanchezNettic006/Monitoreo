@@ -328,6 +328,53 @@ $col-presente: #3ea85a;
     color: $texto;
   }
 
+  .calendario-titulo-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .nav-mes {
+    background: none;
+    border: none;
+    color: $texto-suave;
+    cursor: pointer;
+    display: flex;
+    padding: 2px;
+
+    &:hover {
+      color: $texto;
+    }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .vista-toggle {
+    display: flex;
+    gap: 6px;
+
+    button {
+      padding: 4px 12px;
+      border-radius: 16px;
+      border: 1px solid $borde;
+      background: transparent;
+      color: $texto-suave;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+
+      &.activo {
+        background: $verde-lima;
+        border-color: $verde-lima;
+        color: #0b130e;
+      }
+    }
+  }
+
   .leyenda {
     display: flex;
     gap: 12px;

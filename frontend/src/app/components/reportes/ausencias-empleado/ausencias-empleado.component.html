@@ -113,10 +113,29 @@
         </div>
       </div>
 
-      <!-- Calendario anual -->
+      <!-- Calendario: por mes (por defecto) o por año, estilo "contribuciones" -->
       <div class="calendario-section">
         <div class="calendario-header">
-          <h3>Año {{ f.anio }} de un vistazo</h3>
+          <div class="calendario-titulo-nav">
+            <ng-container *ngIf="vistaCalendario === 'mes'; else tituloAnio">
+              <button type="button" class="nav-mes" (click)="cambiarMes(-1)">
+                <mat-icon>chevron_left</mat-icon>
+              </button>
+              <h3>{{ nombreMesSeleccionado }} {{ anioSeleccionado }}</h3>
+              <button type="button" class="nav-mes" (click)="cambiarMes(1)">
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </ng-container>
+            <ng-template #tituloAnio>
+              <h3>Año {{ f.anio }} de un vistazo</h3>
+            </ng-template>
+          </div>
+
+          <div class="vista-toggle">
+            <button type="button" [class.activo]="vistaCalendario === 'mes'" (click)="cambiarVista('mes')">Mes</button>
+            <button type="button" [class.activo]="vistaCalendario === 'anio'" (click)="cambiarVista('anio')">Año</button>
+          </div>
+
           <div class="leyenda">
             <span class="item"><span class="punto vacaciones"></span> Vacaciones</span>
             <span class="item"><span class="punto permiso"></span> Permiso</span>
@@ -128,21 +147,25 @@
 
         <div class="calendario-scroll">
           <div class="calendario-grid-wrapper">
-            <div class="fila-labels-mes" [style.grid-template-columns]="'20px repeat(' + semanas.length + ', 13px)'">
+            <div
+              class="fila-labels-mes"
+              *ngIf="vistaCalendario === 'anio'"
+              [style.grid-template-columns]="'20px repeat(' + semanasMostradas.length + ', 13px)'"
+            >
               <span></span>
-              <span class="label-mes" *ngFor="let semana of semanas; let i = index">{{ labelMesDeSemana(i) }}</span>
+              <span class="label-mes" *ngFor="let semana of semanasMostradas; let i = index">{{ labelMesDeSemana(i) }}</span>
             </div>
 
             <div
               class="dias-grid"
-              [style.grid-template-columns]="'20px repeat(' + semanas.length + ', 13px)'"
+              [style.grid-template-columns]="'20px repeat(' + semanasMostradas.length + ', 13px)'"
               [style.grid-template-rows]="'repeat(7, 13px)'"
             >
               <span class="dia-label" style="grid-column: 1; grid-row: 2">L</span>
               <span class="dia-label" style="grid-column: 1; grid-row: 4">M</span>
               <span class="dia-label" style="grid-column: 1; grid-row: 6">V</span>
 
-              <ng-container *ngFor="let semana of semanas; let si = index">
+              <ng-container *ngFor="let semana of semanasMostradas; let si = index">
                 <div
                   class="celda"
                   *ngFor="let celda of semana; let di = index"

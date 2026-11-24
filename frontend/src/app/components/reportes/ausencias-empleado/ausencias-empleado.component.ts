@@ -31,6 +31,10 @@ interface LabelMes {
 const NOMBRES_MES = [
   'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
 ];
+const NOMBRES_MES_LARGO = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+];
 
 @Component({
   selector: 'app-ausencias-empleado',
@@ -62,7 +66,9 @@ export class AusenciasEmpleadoComponent implements OnInit {
   anioSeleccionado = new Date().getFullYear();
   aniosDisponibles: number[] = [];
 
-  // Calendario anual
+  // Calendario: vista "mes" (por defecto, el mes actual) o "año" (el mosaico completo)
+  vistaCalendario: 'mes' | 'anio' = 'mes';
+  mesSeleccionado = new Date().getMonth() + 1; // 1-12
   semanas: CeldaCalendario[][] = [];
   labelsMes: LabelMes[] = [];
   diaSeleccionado: { celda: CeldaCalendario; historial: HistorialAusencia | null } | null = null;
@@ -193,6 +199,44 @@ export class AusenciasEmpleadoComponent implements OnInit {
 
   labelMesDeSemana(semanaIndex: number): string {
     return this.labelsMes.find((l) => l.semanaIndex === semanaIndex)?.label || '';
+  }
+
+  /** Semanas a dibujar: todas (vista año) o solo las que tocan el mes elegido (vista mes) */
+  get semanasMostradas(): CeldaCalendario[][] {
+    if (this.vistaCalendario === 'anio') return this.semanas;
+    return this.semanas.filter((semana) =>
+      semana.some((celda) => celda.fecha && parseInt(celda.fecha.slice(5, 7), 10) === this.mesSeleccionado),
+    );
+  }
+
+  get nombreMesSeleccionado(): string {
+    return NOMBRES_MES_LARGO[this.mesSeleccionado - 1];
+  }
+
+  cambiarVista(vista: 'mes' | 'anio'): void {
+    this.vistaCalendario = vista;
+    this.diaSeleccionado = null;
+  }
+
+  /** Mueve un mes hacia adelante/atrás; si cruza de año, recarga la ficha de ese año */
+  cambiarMes(delta: number): void {
+    this.diaSeleccionado = null;
+    let nuevoMes = this.mesSeleccionado + delta;
+    let nuevoAnio = this.anioSeleccionado;
+
+    if (nuevoMes > 12) {
+      nuevoMes = 1;
+      nuevoAnio++;
+    } else if (nuevoMes < 1) {
+      nuevoMes = 12;
+      nuevoAnio--;
+    }
+
+    this.mesSeleccionado = nuevoMes;
+    if (nuevoAnio !== this.anioSeleccionado) {
+      this.anioSeleccionado = nuevoAnio;
+      this.cargarFicha();
+    }
   }
 
   verDetalleDia(celda: CeldaCalendario): void {
