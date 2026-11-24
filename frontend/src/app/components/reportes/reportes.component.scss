@@ -624,6 +624,188 @@ $superficie: #182d19;
   }
 }
 
+// ============= PESTAÑA AUSENCIAS =============
+.ausencias-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.comparacion-section {
+  padding: 20px;
+  background: $superficie;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
+  .comparacion-titulo {
+    margin: 0 0 16px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .comparacion-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    height: 160px;
+    padding: 0 4px;
+    overflow-x: auto;
+  }
+
+  .comparacion-barra {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    min-width: 56px;
+    max-width: 96px;
+    height: 100%;
+  }
+
+  .comparacion-valor {
+    font-size: 13px;
+    font-weight: 700;
+    color: $verde-claro;
+    margin-bottom: 6px;
+  }
+
+  .comparacion-columna {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 4px 4px 0 0;
+  }
+
+  .comparacion-fill {
+    width: 100%;
+    min-height: 4px;
+    background: linear-gradient(180deg, $verde-claro 0%, #1a5a2a 100%);
+    border-radius: 4px 4px 0 0;
+    transition: height 0.3s ease;
+  }
+
+  .comparacion-mes {
+    margin-top: 8px;
+    font-size: 11px;
+    color: $texto-suave;
+    text-align: center;
+  }
+}
+
+.resumen-depto-section {
+  padding: 20px;
+  background: $superficie;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
+  .resumen-depto-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 8px;
+
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .filter-field {
+      width: 200px;
+      margin-bottom: -1.25em; // compensar el hint-space que agrega mat-form-field
+    }
+  }
+
+  .tabla-deptos {
+    width: 100%;
+    border-collapse: collapse;
+
+    th {
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: $texto-suave;
+      padding: 10px 4px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+    }
+
+    td {
+      padding: 12px 4px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      color: $texto;
+    }
+
+    .cantidad {
+      text-align: right;
+      font-weight: 600;
+      color: $verde-claro;
+    }
+
+    .fila-total td {
+      border-bottom: none;
+      border-top: 2px solid rgba(255, 255, 255, 0.08);
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .fila-clickeable {
+      cursor: pointer;
+    }
+
+    .fila-clickeable:hover td {
+      color: $verde-claro;
+    }
+
+    .fila-clickeable.fila-activa td {
+      color: $verde-claro;
+      font-weight: 700;
+    }
+  }
+
+  .sin-datos {
+    color: $texto-suave;
+    font-size: 13px;
+    padding: 8px 0;
+  }
+
+  .lista-detalle {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    max-height: 280px;
+    overflow-y: auto;
+    border-top: 2px solid rgba(255, 255, 255, 0.08);
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 4px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 13px;
+    }
+
+    .detalle-nombre {
+      flex: 1;
+      font-weight: 500;
+      color: $texto;
+    }
+
+    .detalle-tipo,
+    .detalle-fecha {
+      color: $texto-suave;
+      white-space: nowrap;
+    }
+  }
+}
+
 // ============= RESPONSIVE =============
 @media (max-width: 768px) {
   .reports-container {

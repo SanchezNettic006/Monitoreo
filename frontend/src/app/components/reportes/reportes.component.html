@@ -81,9 +81,73 @@
 
   </ng-container>
 
-  <!-- Pestaña Ausencias: reutiliza la misma tabla de Trámites > Aprobados -->
-  <div class="table-section" *ngIf="tabActiva === 'ausencias'">
-    <app-solicitudes-aprobadas></app-solicitudes-aprobadas>
+  <!-- Pestaña Ausencias: tendencia mensual + resumen por departamento -->
+  <div class="ausencias-section" *ngIf="tabActiva === 'ausencias'">
+    <div class="comparacion-section" *ngIf="!cargandoAusenciasTendencia && ausenciasTendencia.length > 0">
+      <h3 class="comparacion-titulo">Tendencia · trámites aprobados por mes</h3>
+      <div class="comparacion-chart">
+        <div class="comparacion-barra" *ngFor="let m of ausenciasTendencia" [title]="m.cantidad + ' en ' + m.label">
+          <span class="comparacion-valor">{{ m.cantidad }}</span>
+          <div class="comparacion-columna">
+            <div
+              class="comparacion-fill"
+              [style.height.%]="ausenciasTendenciaMax > 0 ? (m.cantidad / ausenciasTendenciaMax) * 100 : 0"
+            ></div>
+          </div>
+          <span class="comparacion-mes">{{ m.label }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="resumen-depto-section">
+      <div class="resumen-depto-header">
+        <h3>Resumen por departamento</h3>
+        <mat-form-field appearance="fill" class="filter-field">
+          <mat-label>Mes</mat-label>
+          <mat-select [(ngModel)]="ausenciasMesSeleccionado" (selectionChange)="cargarAusenciasResumen()">
+            <mat-option *ngFor="let opcion of ausenciasOpcionesMes" [value]="opcion.value">{{ opcion.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <table class="tabla-deptos" *ngIf="!cargandoAusencias && ausenciasResumen.length > 0">
+        <thead>
+          <tr>
+            <th>Departamento</th>
+            <th>Cantidad</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let fila of ausenciasResumen"
+            class="fila-clickeable"
+            [class.fila-activa]="ausenciasDeptoExpandido === fila.departamento"
+            (click)="toggleAusenciasDepto(fila.departamento)"
+          >
+            <td>{{ fila.departamento }}</td>
+            <td class="cantidad">{{ fila.cantidad }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="fila-total">
+            <td>Total</td>
+            <td class="cantidad">{{ ausenciasTotal }}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <p class="sin-datos" *ngIf="!cargandoAusencias && ausenciasResumen.length === 0">
+        Sin trámites aprobados este mes
+      </p>
+
+      <ul class="lista-detalle" *ngIf="ausenciasDeptoExpandido && !cargandoAusencias">
+        <li *ngFor="let s of ausenciasDetalleFiltrado()">
+          <span class="detalle-nombre">{{ s.empleado_nombre_completo || (s.empleado?.nombre + ' ' + s.empleado?.apellido) }}</span>
+          <span class="detalle-tipo">{{ s.tipo | tipoTramite }}</span>
+          <span class="detalle-fecha">{{ s.fecha_inicio | date: 'dd/MM/yyyy' }}</span>
+        </li>
+      </ul>
+    </div>
   </div>
 
   <!-- Tabla de Asistencias -->

@@ -27,7 +27,20 @@ import {
 } from '../../services/reportes.service';
 import { ExportarExcelService } from '../../services/exportar-excel.service';
 import { EmpleadoService } from '../../services/empleado.service';
-import { SolicitudesAprobadasComponent } from '../tramites/solicitudes-aprobadas/solicitudes-aprobadas.component';
+import { SolicitudService } from '../../services/solicitud.service';
+import { TipoTramitePipe } from '../../pipes/tipo-tramite.pipe';
+import { forkJoin } from 'rxjs';
+
+interface FilaDepartamentoAusencias {
+  departamento: string;
+  cantidad: number;
+}
+
+interface MesTendenciaAusencias {
+  mes: string;
+  label: string;
+  cantidad: number;
+}
 
 export interface VistaPreviaDepartamento {
   departamento: string;
@@ -56,7 +69,7 @@ export interface VistaPreviaDepartamento {
     MatDialogModule,
     MatMenuModule,
     MatDividerModule,
-    SolicitudesAprobadasComponent,
+    TipoTramitePipe,
   ],
   templateUrl: './reportes.component.html',
   styleUrl: './reportes.component.scss',
@@ -130,12 +143,28 @@ export class ReportesComponent implements OnInit {
 
   exportando = false;
 
+  // Pestaña Ausencias: resumen por departamento (del mes elegido, clickeable
+  // para ver el detalle de empleados) + tendencia de los últimos 6 meses
+  ausenciasCargada = false;
+  ausenciasMesSeleccionado = new Date().toISOString().slice(0, 7);
+  ausenciasOpcionesMes: { value: string; label: string }[] = [];
+  ausenciasResumen: FilaDepartamentoAusencias[] = [];
+  ausenciasDetalle: any[] = [];
+  ausenciasTotal = 0;
+  ausenciasDeptoExpandido: string | null = null;
+  cargandoAusencias = false;
+
+  ausenciasTendencia: MesTendenciaAusencias[] = [];
+  ausenciasTendenciaMax = 0;
+  cargandoAusenciasTendencia = false;
+
   constructor(
     private reportesService: ReportesService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private exportarExcelService: ExportarExcelService,
     private empleadoService: EmpleadoService,
+    private solicitudService: SolicitudService,
   ) {}
 
   ngOnInit(): void {
@@ -149,6 +178,84 @@ export class ReportesComponent implements OnInit {
 
   seleccionarTab(id: string): void {
     this.tabActiva = id;
+    if (id === 'ausencias' && !this.ausenciasCargada) {
+      this.ausenciasCargada = true;
+      this.ausenciasOpcionesMes = this.generarOpcionesMesN(12);
+      this.cargarAusenciasResumen();
+      this.cargarAusenciasTendencia();
+    }
+  }
+
+  private generarOpcionesMesN(cantidad: number): { value: string; label: string }[] {
+    const opciones: { value: string; label: string }[] = [];
+    const hoy = new Date();
+    for (let i = 0; i < cantidad; i++) {
+      const fecha = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+      const value = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+      const label = fecha.toLocaleDateString('es-SV', { month: 'long', year: 'numeric' });
+      opciones.push({ value, label: label.charAt(0).toUpperCase() + label.slice(1) });
+    }
+    return opciones;
+  }
+
+  /** Resumen por departamento (clickeable) de trámites aprobados del mes elegido */
+  cargarAusenciasResumen(): void {
+    this.cargandoAusencias = true;
+    this.ausenciasDeptoExpandido = null;
+    this.solicitudService.obtenerSolicitudesAprobadas(this.ausenciasMesSeleccionado).subscribe({
+      next: (data) => {
+        const conteo = new Map<string, number>();
+        for (const s of data) {
+          const depto = s.departamento_nombre || s.empleado?.departamento?.nombre || 'Sin departamento';
+          conteo.set(depto, (conteo.get(depto) || 0) + 1);
+        }
+        this.ausenciasResumen = Array.from(conteo.entries())
+          .map(([departamento, cantidad]) => ({ departamento, cantidad }))
+          .sort((a, b) => b.cantidad - a.cantidad);
+        this.ausenciasDetalle = data;
+        this.ausenciasTotal = data.length;
+        this.cargandoAusencias = false;
+      },
+      error: () => {
+        this.ausenciasResumen = [];
+        this.ausenciasDetalle = [];
+        this.ausenciasTotal = 0;
+        this.cargandoAusencias = false;
+      },
+    });
+  }
+
+  toggleAusenciasDepto(departamento: string): void {
+    this.ausenciasDeptoExpandido = this.ausenciasDeptoExpandido === departamento ? null : departamento;
+  }
+
+  ausenciasDetalleFiltrado(): any[] {
+    if (!this.ausenciasDeptoExpandido) return [];
+    return this.ausenciasDetalle.filter(
+      (s) => (s.departamento_nombre || s.empleado?.departamento?.nombre) === this.ausenciasDeptoExpandido,
+    );
+  }
+
+  /** Cuántos trámites aprobados tuvo cada uno de los últimos 6 meses, para ver la tendencia */
+  cargarAusenciasTendencia(): void {
+    this.cargandoAusenciasTendencia = true;
+    const meses = this.generarOpcionesMesN(6).reverse(); // más viejo -> más nuevo
+
+    forkJoin(meses.map((m) => this.solicitudService.obtenerSolicitudesAprobadas(m.value))).subscribe({
+      next: (resultados) => {
+        this.ausenciasTendencia = meses.map((m, i) => ({
+          mes: m.value,
+          label: m.label.split(' ')[0],
+          cantidad: resultados[i].length,
+        }));
+        this.ausenciasTendenciaMax = Math.max(...this.ausenciasTendencia.map((m) => m.cantidad), 0);
+        this.cargandoAusenciasTendencia = false;
+      },
+      error: () => {
+        this.ausenciasTendencia = [];
+        this.cargandoAusenciasTendencia = false;
+      },
+    });
   }
 
   private generarOpcionesMes(): { value: string; label: string }[] {
