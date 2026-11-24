@@ -10,6 +10,7 @@ $col-permiso: #3fb6a8;
 $col-reposicion: #f0b43c;
 $col-falta: #e5674e;
 $col-otros: #6b7d94;
+$col-presente: #2f4a35;
 
 :host {
   display: block;
@@ -304,6 +305,7 @@ $col-otros: #6b7d94;
   &.reposicion { background: $col-reposicion; }
   &.otros { background: $col-otros; }
   &.falta { background: $col-falta; }
+  &.presente { background: $col-presente; }
 }
 
 // ============= CALENDARIO =============
@@ -402,6 +404,7 @@ $col-otros: #6b7d94;
   &.reposicion { background: $col-reposicion; }
   &.otros { background: $col-otros; }
   &.falta { background: $col-falta; }
+  &.presente { background: $col-presente; }
 }
 
 .detalle-dia {

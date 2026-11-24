@@ -986,8 +986,10 @@ export class ReportesService {
 
     const saldoVacaciones = await this.solicitudService.obtenerSaldoVacaciones(empleadoId, anio);
 
-    // --- Días sueltos para el calendario (sin domingos) ---
-    const dias: { fecha: string; tipo: string }[] = [];
+    // --- Días sueltos para el calendario (sin domingos). Se arma como mapa
+    // para que "presente"/"falta" (calculados después) nunca pisen un día
+    // que ya tiene un tipo de ausencia real asignado. ---
+    const diasMap = new Map<string, string>();
     for (const s of solicitudesDelAnio) {
       const bucket = bucketDeAusencia(s.tipo);
       const inicio = s.fecha_inicio < inicioAnio ? inicioAnio : s.fecha_inicio;
@@ -996,13 +998,16 @@ export class ReportesService {
       for (const fecha of enumerarFechas(inicio, fin)) {
         const diaSemana = new Date(`${fecha}T00:00:00`).getDay();
         if (diaSemana === 0) continue; // domingo
-        dias.push({ fecha, tipo: bucket });
+        diasMap.set(fecha, bucket);
       }
     }
 
-    // --- Faltas: días laborables ya transcurridos sin check-out y sin
-    // ningún trámite aprobado que los cubra (misma regla que Cumplimiento de
-    // Reportes). No aplica a quienes marcan en reloj biométrico físico. ---
+    // --- Faltas y presentes: días laborables ya transcurridos, clasificados
+    // con la misma regla que Cumplimiento de Reportes — 'pendiente' (sin
+    // check-out y sin trámite aprobado que lo cubra) se pinta como falta,
+    // 'reportado' (sí marcó) se pinta como presente, para no confundirlo con
+    // un domingo/feriado/día futuro (que simplemente no se pintan). No
+    // aplica a quienes marcan en reloj biométrico físico. ---
     let faltas = 0;
     if (!empleado.solo_tramites) {
       const hoy = hoyLocal();
@@ -1010,13 +1015,19 @@ export class ReportesService {
       if (inicioAnio <= finFaltas) {
         const datos = await this.clasificarDias([empleado], inicioAnio, finFaltas);
         for (const fecha of datos.fechasDelRango) {
-          if (this.estadoDelDia(empleadoId, fecha, datos) === 'pendiente') {
-            dias.push({ fecha, tipo: 'falta' });
+          if (diasMap.has(fecha)) continue; // ya cubierto por un trámite aprobado
+          const estado = this.estadoDelDia(empleadoId, fecha, datos);
+          if (estado === 'pendiente') {
+            diasMap.set(fecha, 'falta');
             faltas++;
+          } else if (estado === 'reportado') {
+            diasMap.set(fecha, 'presente');
           }
         }
       }
     }
+
+    const dias = Array.from(diasMap, ([fecha, tipo]) => ({ fecha, tipo }));
 
     // --- Historial cronológico (más reciente primero), con el tipo real ---
     const aprobadorIds = [...new Set(solicitudesDelAnio.map((s) => s.aprobador_id).filter((id): id is number => !!id))];

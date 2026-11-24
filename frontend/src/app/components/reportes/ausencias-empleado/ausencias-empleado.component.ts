@@ -196,7 +196,7 @@ export class AusenciasEmpleadoComponent implements OnInit {
   }
 
   verDetalleDia(celda: CeldaCalendario): void {
-    if (!celda.fecha || !celda.tipo || !this.ficha) return;
+    if (!celda.fecha || !celda.tipo || celda.tipo === 'presente' || !this.ficha) return;
 
     const historial = this.ficha.historial.find(
       (h) => celda.fecha! >= h.fechaInicio && celda.fecha! <= h.fechaFin,

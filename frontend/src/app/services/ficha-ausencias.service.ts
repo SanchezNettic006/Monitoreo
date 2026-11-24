@@ -10,7 +10,7 @@ export interface EmpleadoFichaAusencias {
   diasVacacionesPendientes: number;
 }
 
-export type TipoDiaAusencia = 'vacaciones' | 'permiso' | 'reposicion' | 'otros' | 'falta';
+export type TipoDiaAusencia = 'vacaciones' | 'permiso' | 'reposicion' | 'otros' | 'falta' | 'presente';
 
 export interface DiaAusencia {
   fecha: string;

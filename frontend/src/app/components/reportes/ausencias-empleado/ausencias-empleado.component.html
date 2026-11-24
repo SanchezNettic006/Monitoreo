@@ -122,6 +122,7 @@
             <span class="item"><span class="punto permiso"></span> Permiso</span>
             <span class="item"><span class="punto reposicion"></span> Reposición</span>
             <span class="item"><span class="punto falta"></span> Falta</span>
+            <span class="item"><span class="punto presente"></span> Presente</span>
           </div>
         </div>
 
@@ -149,12 +150,13 @@
                   [style.grid-row]="di + 1"
                   [class.vacio]="!celda.fecha"
                   [class.futuro]="celda.esFuturo"
+                  [class.presente]="celda.tipo === 'presente'"
                   [class.vacaciones]="celda.tipo === 'vacaciones'"
                   [class.permiso]="celda.tipo === 'permiso'"
                   [class.reposicion]="celda.tipo === 'reposicion'"
                   [class.otros]="celda.tipo === 'otros'"
                   [class.falta]="celda.tipo === 'falta'"
-                  [class.clickeable]="celda.tipo"
+                  [class.clickeable]="celda.tipo && celda.tipo !== 'presente'"
                   [title]="celda.fecha"
                   (click)="verDetalleDia(celda)"
                 ></div>
