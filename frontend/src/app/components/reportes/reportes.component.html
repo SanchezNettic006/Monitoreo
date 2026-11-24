@@ -18,7 +18,7 @@
     </div>
   </div>
 
-  <ng-container *ngIf="tabActiva === 'asistencia'; else proximamente">
+  <ng-container *ngIf="tabActiva === 'asistencia'">
     <!-- Filtros -->
     <div class="filters-section">
       <div class="filters-grid">
@@ -81,13 +81,10 @@
 
   </ng-container>
 
-  <ng-template #proximamente>
-    <div class="proximamente-section">
-      <mat-icon>hourglass_empty</mat-icon>
-      <h3>Próximamente</h3>
-      <p>Este reporte todavía no está disponible.</p>
-    </div>
-  </ng-template>
+  <!-- Pestaña Ausencias: reutiliza la misma tabla de Trámites > Aprobados -->
+  <div class="table-section" *ngIf="tabActiva === 'ausencias'">
+    <app-solicitudes-aprobadas></app-solicitudes-aprobadas>
+  </div>
 
   <!-- Tabla de Asistencias -->
   <div class="table-section" *ngIf="tabActiva === 'asistencia'">

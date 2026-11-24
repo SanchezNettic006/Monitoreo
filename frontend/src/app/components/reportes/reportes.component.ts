@@ -27,6 +27,7 @@ import {
 } from '../../services/reportes.service';
 import { ExportarExcelService } from '../../services/exportar-excel.service';
 import { EmpleadoService } from '../../services/empleado.service';
+import { SolicitudesAprobadasComponent } from '../tramites/solicitudes-aprobadas/solicitudes-aprobadas.component';
 
 export interface VistaPreviaDepartamento {
   departamento: string;
@@ -55,16 +56,15 @@ export interface VistaPreviaDepartamento {
     MatDialogModule,
     MatMenuModule,
     MatDividerModule,
+    SolicitudesAprobadasComponent,
   ],
   templateUrl: './reportes.component.html',
   styleUrl: './reportes.component.scss',
 })
 export class ReportesComponent implements OnInit {
-  // Pestañas del encabezado — por ahora solo "Asistencia" está construida
+  // Pestañas del encabezado
   tabs: { id: string; label: string; descripcion: string }[] = [
     { id: 'asistencia', label: 'Asistencia', descripcion: 'Días y porcentaje por empleado' },
-    { id: 'puntualidad', label: 'Puntualidad', descripcion: 'Llegadas tarde y promedio de entrada' },
-    { id: 'horas-extra', label: 'Horas extra', descripcion: 'Aprobadas y pendientes por persona' },
     { id: 'ausencias', label: 'Ausencias', descripcion: 'Vacaciones, permisos y faltas' },
   ];
   tabActiva = 'asistencia';
