@@ -426,6 +426,15 @@ $col-presente: #3ea85a;
     color: $texto-suave;
     align-self: center;
   }
+
+  &.dias-grid--mes {
+    gap: 6px;
+
+    .dia-label {
+      font-size: 13px;
+      font-weight: 600;
+    }
+  }
 }
 
 .celda {
@@ -433,6 +442,10 @@ $col-presente: #3ea85a;
   height: 13px;
   border-radius: 2px;
   background: rgba(255, 255, 255, 0.05);
+
+  .dias-grid--mes & {
+    border-radius: 6px;
+  }
 
   &.vacio {
     background: transparent;

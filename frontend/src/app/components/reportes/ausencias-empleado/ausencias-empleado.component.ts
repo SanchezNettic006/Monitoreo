@@ -209,6 +209,11 @@ export class AusenciasEmpleadoComponent implements OnInit {
     );
   }
 
+  /** Más grande en vista mes (pocas columnas, hay espacio) que en vista año (53 semanas) */
+  get tamanoCelda(): number {
+    return this.vistaCalendario === 'mes' ? 32 : 13;
+  }
+
   get nombreMesSeleccionado(): string {
     return NOMBRES_MES_LARGO[this.mesSeleccionado - 1];
   }

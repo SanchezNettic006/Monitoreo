@@ -150,7 +150,7 @@
             <div
               class="fila-labels-mes"
               *ngIf="vistaCalendario === 'anio'"
-              [style.grid-template-columns]="'20px repeat(' + semanasMostradas.length + ', 13px)'"
+              [style.grid-template-columns]="'24px repeat(' + semanasMostradas.length + ', ' + tamanoCelda + 'px)'"
             >
               <span></span>
               <span class="label-mes" *ngFor="let semana of semanasMostradas; let i = index">{{ labelMesDeSemana(i) }}</span>
@@ -158,8 +158,9 @@
 
             <div
               class="dias-grid"
-              [style.grid-template-columns]="'20px repeat(' + semanasMostradas.length + ', 13px)'"
-              [style.grid-template-rows]="'repeat(7, 13px)'"
+              [class.dias-grid--mes]="vistaCalendario === 'mes'"
+              [style.grid-template-columns]="'24px repeat(' + semanasMostradas.length + ', ' + tamanoCelda + 'px)'"
+              [style.grid-template-rows]="'repeat(7, ' + tamanoCelda + 'px)'"
             >
               <span class="dia-label" style="grid-column: 1; grid-row: 2">L</span>
               <span class="dia-label" style="grid-column: 1; grid-row: 4">M</span>
@@ -171,6 +172,8 @@
                   *ngFor="let celda of semana; let di = index"
                   [style.grid-column]="si + 2"
                   [style.grid-row]="di + 1"
+                  [style.width.px]="tamanoCelda"
+                  [style.height.px]="tamanoCelda"
                   [class.vacio]="!celda.fecha"
                   [class.futuro]="celda.esFuturo"
                   [class.presente]="celda.tipo === 'presente'"
