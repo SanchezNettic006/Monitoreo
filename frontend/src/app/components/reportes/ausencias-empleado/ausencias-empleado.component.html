@@ -145,35 +145,53 @@
           </div>
         </div>
 
-        <div class="calendario-scroll">
+        <!-- Vista MES: calendario normal a todo lo ancho (filas = semanas, columnas = 7 días) -->
+        <div class="mes-grid-wrapper" *ngIf="vistaCalendario === 'mes'">
+          <div class="mes-dias-semana">
+            <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
+          </div>
+          <div class="mes-fila" *ngFor="let fila of filasMes">
+            <div
+              class="mes-celda"
+              *ngFor="let celda of fila"
+              [class.vacio]="!celda.fecha"
+              [class.futuro]="celda.esFuturo"
+              [class.presente]="celda.tipo === 'presente'"
+              [class.vacaciones]="celda.tipo === 'vacaciones'"
+              [class.permiso]="celda.tipo === 'permiso'"
+              [class.reposicion]="celda.tipo === 'reposicion'"
+              [class.otros]="celda.tipo === 'otros'"
+              [class.falta]="celda.tipo === 'falta'"
+              [class.clickeable]="celda.tipo && celda.tipo !== 'presente'"
+              (click)="verDetalleDia(celda)"
+            >
+              <span class="mes-celda-numero" *ngIf="celda.fecha">{{ celda.fecha.slice(8, 10) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vista AÑO: mosaico compacto estilo "contribuciones" -->
+        <div class="calendario-scroll" *ngIf="vistaCalendario === 'anio'">
           <div class="calendario-grid-wrapper">
             <div
               class="fila-labels-mes"
-              *ngIf="vistaCalendario === 'anio'"
-              [style.grid-template-columns]="'24px repeat(' + semanasMostradas.length + ', ' + tamanoCelda + 'px)'"
+              [style.grid-template-columns]="'24px repeat(' + semanas.length + ', 13px)'"
             >
               <span></span>
-              <span class="label-mes" *ngFor="let semana of semanasMostradas; let i = index">{{ labelMesDeSemana(i) }}</span>
+              <span class="label-mes" *ngFor="let semana of semanas; let i = index">{{ labelMesDeSemana(i) }}</span>
             </div>
 
-            <div
-              class="dias-grid"
-              [class.dias-grid--mes]="vistaCalendario === 'mes'"
-              [style.grid-template-columns]="'24px repeat(' + semanasMostradas.length + ', ' + tamanoCelda + 'px)'"
-              [style.grid-template-rows]="'repeat(7, ' + tamanoCelda + 'px)'"
-            >
+            <div class="dias-grid" [style.grid-template-columns]="'24px repeat(' + semanas.length + ', 13px)'" [style.grid-template-rows]="'repeat(7, 13px)'">
               <span class="dia-label" style="grid-column: 1; grid-row: 2">L</span>
               <span class="dia-label" style="grid-column: 1; grid-row: 4">M</span>
               <span class="dia-label" style="grid-column: 1; grid-row: 6">V</span>
 
-              <ng-container *ngFor="let semana of semanasMostradas; let si = index">
+              <ng-container *ngFor="let semana of semanas; let si = index">
                 <div
                   class="celda"
                   *ngFor="let celda of semana; let di = index"
                   [style.grid-column]="si + 2"
                   [style.grid-row]="di + 1"
-                  [style.width.px]="tamanoCelda"
-                  [style.height.px]="tamanoCelda"
                   [class.vacio]="!celda.fecha"
                   [class.futuro]="celda.esFuturo"
                   [class.presente]="celda.tipo === 'presente'"

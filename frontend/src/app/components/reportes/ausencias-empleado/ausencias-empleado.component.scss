@@ -399,6 +399,76 @@ $col-presente: #3ea85a;
   padding-bottom: 4px;
 }
 
+// ============= VISTA MES (calendario normal, a todo lo ancho) =============
+.mes-grid-wrapper {
+  width: 100%;
+}
+
+.mes-dias-semana {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+
+  span {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: $texto-suave;
+  }
+}
+
+.mes-fila {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mes-celda {
+  position: relative;
+  aspect-ratio: 1.3 / 1;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+
+  &.vacio {
+    background: transparent;
+  }
+
+  &.futuro {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  &.clickeable {
+    cursor: pointer;
+  }
+
+  &.vacaciones { background: $col-vacaciones; }
+  &.permiso { background: $col-permiso; }
+  &.reposicion { background: $col-reposicion; }
+  &.otros { background: $col-otros; }
+  &.falta { background: $col-falta; }
+  &.presente { background: $col-presente; }
+
+  .mes-celda-numero {
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  &.vacaciones .mes-celda-numero,
+  &.permiso .mes-celda-numero,
+  &.reposicion .mes-celda-numero,
+  &.otros .mes-celda-numero,
+  &.falta .mes-celda-numero,
+  &.presente .mes-celda-numero {
+    color: rgba(0, 0, 0, 0.55);
+  }
+}
+
 .calendario-grid-wrapper {
   display: inline-flex;
   flex-direction: column;
@@ -426,15 +496,6 @@ $col-presente: #3ea85a;
     color: $texto-suave;
     align-self: center;
   }
-
-  &.dias-grid--mes {
-    gap: 6px;
-
-    .dia-label {
-      font-size: 13px;
-      font-weight: 600;
-    }
-  }
 }
 
 .celda {
@@ -442,10 +503,6 @@ $col-presente: #3ea85a;
   height: 13px;
   border-radius: 2px;
   background: rgba(255, 255, 255, 0.05);
-
-  .dias-grid--mes & {
-    border-radius: 6px;
-  }
 
   &.vacio {
     background: transparent;

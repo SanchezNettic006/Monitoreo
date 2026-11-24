@@ -201,17 +201,49 @@ export class AusenciasEmpleadoComponent implements OnInit {
     return this.labelsMes.find((l) => l.semanaIndex === semanaIndex)?.label || '';
   }
 
-  /** Semanas a dibujar: todas (vista año) o solo las que tocan el mes elegido (vista mes) */
-  get semanasMostradas(): CeldaCalendario[][] {
-    if (this.vistaCalendario === 'anio') return this.semanas;
-    return this.semanas.filter((semana) =>
-      semana.some((celda) => celda.fecha && parseInt(celda.fecha.slice(5, 7), 10) === this.mesSeleccionado),
-    );
-  }
+  /**
+   * Calendario de mes normal (filas = semanas, columnas = Dom..Sáb), a todo
+   * lo ancho — distinto del mosaico compacto de la vista año, que va por
+   * columnas de semana para que quepan las 53 del año.
+   */
+  get filasMes(): CeldaCalendario[][] {
+    if (!this.ficha) return [];
 
-  /** Más grande en vista mes (pocas columnas, hay espacio) que en vista año (53 semanas) */
-  get tamanoCelda(): number {
-    return this.vistaCalendario === 'mes' ? 32 : 13;
+    const anio = this.anioSeleccionado;
+    const mes = this.mesSeleccionado; // 1-12
+    const porFecha = new Map(this.ficha.dias.map((d) => [d.fecha, d.tipo]));
+    const hoyStr = new Date().toISOString().slice(0, 10);
+
+    const inicioGrid = new Date(anio, mes - 1, 1);
+    inicioGrid.setDate(inicioGrid.getDate() - inicioGrid.getDay()); // retrocede al domingo
+
+    const finMes = new Date(anio, mes, 0);
+    const finGrid = new Date(finMes);
+    finGrid.setDate(finGrid.getDate() + (6 - finGrid.getDay())); // avanza al sábado
+
+    const filas: CeldaCalendario[][] = [];
+    const cursor = new Date(inicioGrid);
+
+    while (cursor <= finGrid) {
+      const fila: CeldaCalendario[] = [];
+      for (let i = 0; i < 7; i++) {
+        const perteneceAlMes = cursor.getMonth() === mes - 1;
+        const fecha = perteneceAlMes
+          ? `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`
+          : null;
+
+        fila.push({
+          fecha,
+          tipo: fecha ? (porFecha.get(fecha) as TipoDiaAusencia) || null : null,
+          esFuturo: fecha ? fecha > hoyStr : false,
+        });
+
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      filas.push(fila);
+    }
+
+    return filas;
   }
 
   get nombreMesSeleccionado(): string {
