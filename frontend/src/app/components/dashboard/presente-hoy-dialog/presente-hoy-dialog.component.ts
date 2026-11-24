@@ -43,8 +43,13 @@ interface EmpleadoHoy {
       <mat-tab-group *ngIf="!cargando">
         <mat-tab [label]="'Ya marcaron (' + presentes.length + ')'">
           <ul class="lista-empleados" *ngIf="presentes.length > 0">
-            <li *ngFor="let empleado of presentes" (click)="verHistorial(empleado)">
-              <mat-icon class="icono-ok">check_circle</mat-icon>
+            <li
+              *ngFor="let empleado of presentes"
+              [class.cargando-fila]="cargandoHistorialId === empleado.id"
+              (click)="verHistorial(empleado)"
+            >
+              <mat-icon class="icono-ok" *ngIf="cargandoHistorialId !== empleado.id">check_circle</mat-icon>
+              <mat-spinner *ngIf="cargandoHistorialId === empleado.id" diameter="18"></mat-spinner>
               {{ empleado.nombre }}
             </li>
           </ul>
@@ -53,8 +58,13 @@ interface EmpleadoHoy {
 
         <mat-tab [label]="'Pendientes (' + pendientes.length + ')'">
           <ul class="lista-empleados" *ngIf="pendientes.length > 0">
-            <li *ngFor="let empleado of pendientes" (click)="verHistorial(empleado)">
-              <mat-icon class="icono-pendiente">schedule</mat-icon>
+            <li
+              *ngFor="let empleado of pendientes"
+              [class.cargando-fila]="cargandoHistorialId === empleado.id"
+              (click)="verHistorial(empleado)"
+            >
+              <mat-icon class="icono-pendiente" *ngIf="cargandoHistorialId !== empleado.id">schedule</mat-icon>
+              <mat-spinner *ngIf="cargandoHistorialId === empleado.id" diameter="18"></mat-spinner>
               {{ empleado.nombre }}
             </li>
           </ul>
@@ -100,6 +110,13 @@ interface EmpleadoHoy {
     .lista-empleados li:hover {
       background: #f5f5f5;
     }
+    .lista-empleados li.cargando-fila {
+      cursor: wait;
+      opacity: 0.7;
+    }
+    .lista-empleados mat-spinner {
+      display: inline-block;
+    }
     .icono-ok {
       color: #2b8a3e;
       font-size: 20px;
@@ -129,6 +146,7 @@ export class PresenteHoyDialogComponent implements OnInit {
   presentes: EmpleadoHoy[] = [];
   pendientes: EmpleadoHoy[] = [];
   cargando = true;
+  cargandoHistorialId: number | null = null;
 
   constructor(
     public dialogRef: MatDialogRef<PresenteHoyDialogComponent>,
@@ -194,15 +212,26 @@ export class PresenteHoyDialogComponent implements OnInit {
 
   /** Abre el mismo calendario de cumplimiento (Reportado/Pendiente/Justificado) que usa Reportes, para el mes en curso */
   verHistorial(empleado: EmpleadoHoy): void {
+    // Mientras carga, la fila no da ninguna señal visual de que el clic
+    // registró: eso hacía que se pareciera a que no pasó nada y, con varios
+    // usuarios en el mismo panel, varios clics (y varios diálogos) se
+    // acumulaban. Se bloquean clics nuevos mientras se resuelve este.
+    if (this.cargandoHistorialId !== null) return;
+
+    this.cargandoHistorialId = empleado.id;
     const hoy = new Date();
     const mes = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
 
     this.reportesService.obtenerDetalleCumplimientoEmpleado(empleado.id, mes).subscribe({
       next: (response) => {
+        this.cargandoHistorialId = null;
         this.dialog.open(DetalleCumplimientoDialogComponent, {
           width: '420px',
           data: { detalle: response.data, mes },
         });
+      },
+      error: () => {
+        this.cargandoHistorialId = null;
       },
     });
   }
