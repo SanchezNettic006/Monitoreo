@@ -55,6 +55,39 @@ export class SolicitudController {
   }
 
   /**
+   * GET /api/solicitudes/calcular-dias-vacaciones?fecha_inicio=&fecha_fin=
+   * Vista previa en vivo de cuántos días se descontarían (domingo no cuenta,
+   * sábado medio día, asueto/feriado no cuenta), antes de enviar la solicitud
+   */
+  async calcularDiasVacaciones(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { fecha_inicio, fecha_fin } = req.query;
+
+      if (!fecha_inicio || !fecha_fin) {
+        return res.status(400).json({
+          exitoso: false,
+          mensaje: 'Faltan campos: fecha_inicio, fecha_fin',
+        });
+      }
+
+      const empleado = await solicitudService.obtenerEmpleadoPorUsuario(req.userId!);
+      if (!empleado) {
+        return res.status(404).json({ exitoso: false, mensaje: 'Empleado no encontrado' });
+      }
+
+      const dias = await solicitudService.calcularDiasVacaciones(
+        empleado.id,
+        String(fecha_inicio),
+        String(fecha_fin),
+      );
+
+      return res.status(200).json({ exitoso: true, data: { dias } });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * GET /api/solicitudes/mis-solicitudes
    * Obtener mis solicitudes
    */

@@ -1,14 +1,16 @@
-import { In } from 'typeorm';
+import { Between, In } from 'typeorm';
 import { AppDataSource } from '@config/database';
 import { SolicitudTramite, TipoTramite, EstadoSolicitud } from '@entities/SolicitudTramite';
 import { SolicitudHistorial } from '@entities/SolicitudHistorial';
 import { NotificacionEmail } from '@entities/NotificacionEmail';
 import { Empleado } from '@entities/Empleado';
 import { LiderDepartamentoExtra } from '@entities/LiderDepartamentoExtra';
+import { DiaCalendario } from '@entities/DiaCalendario';
 import { emailTemplates } from '@utils/emailTemplates';
 import { config } from '@config/env';
 import { OperationalError } from '@middleware/errorHandler';
 import { telegramService } from '@services/telegram.service';
+import { contarDiasVacaciones } from '@utils/fecha.utils';
 
 interface CrearSolicitudDTO {
   empleado_id: number;
@@ -35,6 +37,29 @@ export class SolicitudService {
   private notificacionRepository = AppDataSource.getRepository(NotificacionEmail);
   private empleadoRepository = AppDataSource.getRepository(Empleado);
   private liderDepartamentoExtraRepository = AppDataSource.getRepository(LiderDepartamentoExtra);
+  private diaCalendarioRepository = AppDataSource.getRepository(DiaCalendario);
+
+  /**
+   * Días de vacaciones que corresponde descontar por un rango de fechas,
+   * según la regla de la empresa (domingo no cuenta, sábado medio día,
+   * asueto/feriado del calendario tampoco cuenta). Se usa tanto para calcular
+   * en vivo mientras el empleado elige fechas, como para fijar el valor real
+   * al crear la solicitud — nunca se confía en un número escrito a mano.
+   */
+  async calcularDiasVacaciones(empleadoId: number, fechaInicio: string, fechaFin: string): Promise<number> {
+    const diasEspeciales = await this.diaCalendarioRepository.find({
+      where: { fecha: Between(fechaInicio, fechaFin) },
+      relations: ['empleadosExceptuados'],
+    });
+
+    const fechasFeriado = new Set(
+      diasEspeciales
+        .filter((d) => !d.empleadosExceptuados?.some((e) => e.id === empleadoId))
+        .map((d) => d.fecha),
+    );
+
+    return contarDiasVacaciones(fechaInicio, fechaFin, fechasFeriado);
+  }
 
   /**
    * Crear nueva solicitud de trámite a partir del usuario logueado
@@ -66,13 +91,21 @@ export class SolicitudService {
         throw new Error('Empleado no encontrado');
       }
 
+      // Para vacaciones, los días nunca se confían del cliente: se calculan
+      // aquí mismo a partir del rango de fechas, para que nunca queden
+      // descuadrados entre sí (ver calcularDiasVacaciones).
+      const diasSolicitados =
+        datos.tipo === 'vacaciones' && datos.fecha_fin
+          ? await this.calcularDiasVacaciones(datos.empleado_id, datos.fecha_inicio, datos.fecha_fin)
+          : datos.dias_solicitados || 0;
+
       // Crear solicitud
       const solicitud = this.solicitudRepository.create({
         empleado_id: datos.empleado_id,
         tipo: datos.tipo,
         fecha_inicio: datos.fecha_inicio,
         fecha_fin: datos.fecha_fin,
-        dias_solicitados: datos.dias_solicitados || 0,
+        dias_solicitados: diasSolicitados,
         motivo: datos.motivo,
         descripcion: datos.descripcion,
         url_foto: datos.url_foto,

@@ -84,17 +84,34 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
                 </mat-hint>
               </mat-form-field>
 
-              <mat-form-field appearance="fill" class="full-width">
+              <mat-form-field appearance="fill" class="full-width" *ngIf="formulario.get('tipo')?.value !== 'vacaciones'">
                 <mat-label>Dias Solicitados *</mat-label>
                 <input matInput type="number" step="0.5" min="0.5" formControlName="dias_solicitados" placeholder="0.0" />
                 <mat-hint align="end">Incluye medios dias (0.5)</mat-hint>
+              </mat-form-field>
+
+              <!-- Vacaciones: los días ya no se escriben a mano, se calculan solos a
+                   partir del rango de fechas (domingo no cuenta, sábado medio día,
+                   asueto/feriado no cuenta) — así nunca quedan descuadrados con las
+                   fechas elegidas. -->
+              <mat-form-field appearance="fill" class="full-width" *ngIf="formulario.get('tipo')?.value === 'vacaciones'">
+                <mat-label>Dias Solicitados</mat-label>
+                <input matInput type="text" [value]="calculandoDias ? 'Calculando...' : formulario.get('dias_solicitados')?.value" readonly />
+                <mat-hint align="end">Calculado: domingo no cuenta, sábado medio día, asueto no cuenta</mat-hint>
               </mat-form-field>
             </div>
 
             <div class="form-grid-2">
               <mat-form-field appearance="fill" class="full-width">
                 <mat-label>Fecha de Inicio</mat-label>
-                <input matInput [matDatepicker]="picker1" formControlName="fecha_inicio" required [errorStateMatcher]="matcher" />
+                <input
+                  matInput
+                  [matDatepicker]="picker1"
+                  formControlName="fecha_inicio"
+                  required
+                  [errorStateMatcher]="matcher"
+                  (dateChange)="actualizarDiasVacaciones()"
+                />
                 <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
                 <mat-datepicker #picker1></mat-datepicker>
                 <mat-error>Selecciona una fecha de inicio</mat-error>
@@ -102,7 +119,15 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
 
               <mat-form-field appearance="fill" class="full-width">
                 <mat-label>Fecha de Fin</mat-label>
-                <input matInput [matDatepicker]="picker2" formControlName="fecha_fin" placeholder="Hasta..." required [errorStateMatcher]="matcher" />
+                <input
+                  matInput
+                  [matDatepicker]="picker2"
+                  formControlName="fecha_fin"
+                  placeholder="Hasta..."
+                  required
+                  [errorStateMatcher]="matcher"
+                  (dateChange)="actualizarDiasVacaciones()"
+                />
                 <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
                 <mat-datepicker #picker2></mat-datepicker>
                 <mat-error>Selecciona una fecha de fin</mat-error>
@@ -385,6 +410,7 @@ export class CrearSolicitudComponent {
   matcher = new MostrarErrorAlEnviar(() => this.intentoEnvio);
   fotoCapturada: File | null = null;
   previewFoto: string | null = null;
+  calculandoDias = false;
 
   constructor(
     private fb: FormBuilder,
@@ -401,12 +427,43 @@ export class CrearSolicitudComponent {
   }
 
   onTipoChange(tipo: string): void {
-    if (tipo === 'vacaciones' && !this.saldoVacaciones) {
-      this.solicitudService.obtenerMiSaldoVacaciones().subscribe({
-        next: (saldo) => (this.saldoVacaciones = saldo),
-        error: () => {},
-      });
+    if (tipo === 'vacaciones') {
+      if (!this.saldoVacaciones) {
+        this.solicitudService.obtenerMiSaldoVacaciones().subscribe({
+          next: (saldo) => (this.saldoVacaciones = saldo),
+          error: () => {},
+        });
+      }
+      this.actualizarDiasVacaciones();
     }
+  }
+
+  /** Recalcula "Días Solicitados" para vacaciones, a partir del rango de fechas elegido */
+  actualizarDiasVacaciones(): void {
+    if (this.formulario.get('tipo')?.value !== 'vacaciones') return;
+
+    const fechaInicio = this.formulario.get('fecha_inicio')?.value;
+    const fechaFin = this.formulario.get('fecha_fin')?.value;
+    if (!fechaInicio || !fechaFin) {
+      this.formulario.get('dias_solicitados')?.setValue(0);
+      return;
+    }
+
+    const aYYYYMMDD = (valor: Date | string): string => {
+      const fecha = valor instanceof Date ? valor : new Date(valor);
+      return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
+    };
+
+    this.calculandoDias = true;
+    this.solicitudService.calcularDiasVacaciones(aYYYYMMDD(fechaInicio), aYYYYMMDD(fechaFin)).subscribe({
+      next: (dias) => {
+        this.formulario.get('dias_solicitados')?.setValue(dias);
+        this.calculandoDias = false;
+      },
+      error: () => {
+        this.calculandoDias = false;
+      },
+    });
   }
 
   onFotoSeleccionada(event: any): void {

@@ -206,6 +206,17 @@ export class SolicitudService {
   }
 
   /**
+   * Vista previa de cuántos días de vacaciones se descontarían por un rango
+   * de fechas (domingo no cuenta, sábado medio día, asueto/feriado no
+   * cuenta) — antes de enviar la solicitud. El valor real y definitivo lo
+   * vuelve a calcular el backend al crear la solicitud.
+   */
+  calcularDiasVacaciones(fechaInicio: string, fechaFin: string): Observable<number> {
+    const url = `${this.apiUrl}/calcular-dias-vacaciones?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
+    return this.http.get<{ exitoso: boolean; data: { dias: number } }>(url).pipe(map((r) => r.data.dias));
+  }
+
+  /**
    * Saldo de vacaciones del usuario logueado
    */
   obtenerMiSaldoVacaciones(anio?: number): Observable<SaldoVacaciones> {

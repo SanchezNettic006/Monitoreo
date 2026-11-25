@@ -58,6 +58,27 @@ export function resolverFechaCaptura(capturadoEn?: string): Date {
   return fecha;
 }
 
+/**
+ * Cuenta los días de vacaciones entre dos fechas (inclusive) con la regla de
+ * la empresa: domingo no cuenta, sábado cuenta medio día, un asueto/feriado
+ * registrado en el calendario tampoco cuenta (aunque sea entre semana), y
+ * cualquier otro día cuenta completo.
+ */
+export function contarDiasVacaciones(
+  fechaInicio: string,
+  fechaFin: string,
+  fechasFeriado: Set<string>,
+): number {
+  let total = 0;
+  for (const fecha of enumerarFechas(fechaInicio, fechaFin)) {
+    const diaSemana = new Date(`${fecha}T00:00:00`).getDay();
+    if (diaSemana === 0) continue; // domingo
+    if (fechasFeriado.has(fecha)) continue; // asueto/feriado
+    total += diaSemana === 6 ? 0.5 : 1; // sábado medio día
+  }
+  return total;
+}
+
 /** Enumera cada fecha 'YYYY-MM-DD' entre inicio y fin (inclusive) */
 export function enumerarFechas(inicio: string, fin: string): string[] {
   const fechas: string[] = [];
