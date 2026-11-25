@@ -22,9 +22,9 @@ router.get('/mis-solicitudes', (req, res, next) =>
   controller.misSolicitudes(req, res, next),
 );
 
-// Vista previa de días de vacaciones para un rango de fechas (antes de enviar la solicitud)
-router.get('/calcular-dias-vacaciones', (req, res, next) =>
-  controller.calcularDiasVacaciones(req, res, next),
+// Vista previa de días (cualquier tipo de trámite) para un rango de fechas (antes de enviar la solicitud)
+router.get('/calcular-dias', (req, res, next) =>
+  controller.calcularDias(req, res, next),
 );
 
 // Obtener solicitudes pendientes (admin: todas; líder: solo su departamento)

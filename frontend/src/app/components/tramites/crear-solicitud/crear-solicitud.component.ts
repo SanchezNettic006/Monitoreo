@@ -84,17 +84,11 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
                 </mat-hint>
               </mat-form-field>
 
-              <mat-form-field appearance="fill" class="full-width" *ngIf="formulario.get('tipo')?.value !== 'vacaciones'">
-                <mat-label>Dias Solicitados *</mat-label>
-                <input matInput type="number" step="0.5" min="0.5" formControlName="dias_solicitados" placeholder="0.0" />
-                <mat-hint align="end">Incluye medios dias (0.5)</mat-hint>
-              </mat-form-field>
-
-              <!-- Vacaciones: los días ya no se escriben a mano, se calculan solos a
-                   partir del rango de fechas (domingo no cuenta, sábado medio día,
-                   asueto/feriado no cuenta) — así nunca quedan descuadrados con las
-                   fechas elegidas. -->
-              <mat-form-field appearance="fill" class="full-width" *ngIf="formulario.get('tipo')?.value === 'vacaciones'">
+              <!-- Los días ya no se escriben a mano en ningún tipo de trámite: se
+                   calculan solos a partir del rango de fechas (domingo no cuenta,
+                   sábado medio día, asueto/feriado no cuenta) — así nunca quedan
+                   descuadrados con las fechas elegidas. -->
+              <mat-form-field appearance="fill" class="full-width">
                 <mat-label>Dias Solicitados</mat-label>
                 <input matInput type="text" [value]="calculandoDias ? 'Calculando...' : formulario.get('dias_solicitados')?.value" readonly />
                 <mat-hint align="end">Calculado: domingo no cuenta, sábado medio día, asueto no cuenta</mat-hint>
@@ -110,7 +104,7 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
                   formControlName="fecha_inicio"
                   required
                   [errorStateMatcher]="matcher"
-                  (dateChange)="actualizarDiasVacaciones()"
+                  (dateChange)="actualizarDias()"
                 />
                 <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
                 <mat-datepicker #picker1></mat-datepicker>
@@ -126,7 +120,7 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
                   placeholder="Hasta..."
                   required
                   [errorStateMatcher]="matcher"
-                  (dateChange)="actualizarDiasVacaciones()"
+                  (dateChange)="actualizarDias()"
                 />
                 <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
                 <mat-datepicker #picker2></mat-datepicker>
@@ -427,21 +421,17 @@ export class CrearSolicitudComponent {
   }
 
   onTipoChange(tipo: string): void {
-    if (tipo === 'vacaciones') {
-      if (!this.saldoVacaciones) {
-        this.solicitudService.obtenerMiSaldoVacaciones().subscribe({
-          next: (saldo) => (this.saldoVacaciones = saldo),
-          error: () => {},
-        });
-      }
-      this.actualizarDiasVacaciones();
+    if (tipo === 'vacaciones' && !this.saldoVacaciones) {
+      this.solicitudService.obtenerMiSaldoVacaciones().subscribe({
+        next: (saldo) => (this.saldoVacaciones = saldo),
+        error: () => {},
+      });
     }
+    this.actualizarDias();
   }
 
-  /** Recalcula "Días Solicitados" para vacaciones, a partir del rango de fechas elegido */
-  actualizarDiasVacaciones(): void {
-    if (this.formulario.get('tipo')?.value !== 'vacaciones') return;
-
+  /** Recalcula "Días Solicitados", para cualquier tipo, a partir del rango de fechas elegido */
+  actualizarDias(): void {
     const fechaInicio = this.formulario.get('fecha_inicio')?.value;
     const fechaFin = this.formulario.get('fecha_fin')?.value;
     if (!fechaInicio || !fechaFin) {
@@ -455,7 +445,7 @@ export class CrearSolicitudComponent {
     };
 
     this.calculandoDias = true;
-    this.solicitudService.calcularDiasVacaciones(aYYYYMMDD(fechaInicio), aYYYYMMDD(fechaFin)).subscribe({
+    this.solicitudService.calcularDias(aYYYYMMDD(fechaInicio), aYYYYMMDD(fechaFin)).subscribe({
       next: (dias) => {
         this.formulario.get('dias_solicitados')?.setValue(dias);
         this.calculandoDias = false;

@@ -40,13 +40,14 @@ export class SolicitudService {
   private diaCalendarioRepository = AppDataSource.getRepository(DiaCalendario);
 
   /**
-   * Días de vacaciones que corresponde descontar por un rango de fechas,
-   * según la regla de la empresa (domingo no cuenta, sábado medio día,
-   * asueto/feriado del calendario tampoco cuenta). Se usa tanto para calcular
-   * en vivo mientras el empleado elige fechas, como para fijar el valor real
-   * al crear la solicitud — nunca se confía en un número escrito a mano.
+   * Días que corresponde descontar por un rango de fechas, para cualquier
+   * tipo de trámite (vacaciones, permiso, cita médica, etc.), según la regla
+   * de la empresa (domingo no cuenta, sábado medio día, asueto/feriado del
+   * calendario tampoco cuenta). Se usa tanto para calcular en vivo mientras
+   * el empleado elige fechas, como para fijar el valor real al crear la
+   * solicitud — nunca se confía en un número escrito a mano.
    */
-  async calcularDiasVacaciones(empleadoId: number, fechaInicio: string, fechaFin: string): Promise<number> {
+  async calcularDiasSolicitud(empleadoId: number, fechaInicio: string, fechaFin: string): Promise<number> {
     const diasEspeciales = await this.diaCalendarioRepository.find({
       where: { fecha: Between(fechaInicio, fechaFin) },
       relations: ['empleadosExceptuados'],
@@ -91,13 +92,13 @@ export class SolicitudService {
         throw new Error('Empleado no encontrado');
       }
 
-      // Para vacaciones, los días nunca se confían del cliente: se calculan
-      // aquí mismo a partir del rango de fechas, para que nunca queden
-      // descuadrados entre sí (ver calcularDiasVacaciones).
-      const diasSolicitados =
-        datos.tipo === 'vacaciones' && datos.fecha_fin
-          ? await this.calcularDiasVacaciones(datos.empleado_id, datos.fecha_inicio, datos.fecha_fin)
-          : datos.dias_solicitados || 0;
+      // Los días nunca se confían del cliente: se calculan aquí mismo a
+      // partir del rango de fechas, para cualquier tipo de trámite, así
+      // nunca quedan descuadrados con las fechas elegidas (ver
+      // calcularDiasSolicitud).
+      const diasSolicitados = datos.fecha_fin
+        ? await this.calcularDiasSolicitud(datos.empleado_id, datos.fecha_inicio, datos.fecha_fin)
+        : datos.dias_solicitados || 0;
 
       // Crear solicitud
       const solicitud = this.solicitudRepository.create({
