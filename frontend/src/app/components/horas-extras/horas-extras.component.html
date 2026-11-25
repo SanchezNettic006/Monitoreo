@@ -414,9 +414,29 @@
           <div class="filters-grid filters-grid-horas-aprobadas">
             <mat-form-field class="filter-field">
               <mat-label>Mes</mat-label>
-              <mat-select [(ngModel)]="mesHorasAprobadas" (selectionChange)="cargarHorasAprobadas()">
+              <mat-select
+                [(ngModel)]="mesHorasAprobadas"
+                [disabled]="!!(desdeHorasAprobadas && hastaHorasAprobadas)"
+                (selectionChange)="cargarHorasAprobadas()"
+              >
                 <mat-option *ngFor="let opcion of opcionesMesHorasAprobadas" [value]="opcion.value">{{ opcion.label }}</mat-option>
               </mat-select>
+              <mat-hint *ngIf="desdeHorasAprobadas && hastaHorasAprobadas">Ignorado mientras haya un rango Desde/Hasta</mat-hint>
+            </mat-form-field>
+
+            <!-- Rango de fechas explícito: pisa al mes mientras ambas estén elegidas -->
+            <mat-form-field class="filter-field">
+              <mat-label>Desde</mat-label>
+              <input matInput [matDatepicker]="pickerDesdeHorasAprobadas" [(ngModel)]="desdeHorasAprobadas" (dateChange)="cargarHorasAprobadas()" />
+              <mat-datepicker-toggle matIconSuffix [for]="pickerDesdeHorasAprobadas"></mat-datepicker-toggle>
+              <mat-datepicker #pickerDesdeHorasAprobadas></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field class="filter-field">
+              <mat-label>Hasta</mat-label>
+              <input matInput [matDatepicker]="pickerHastaHorasAprobadas" [(ngModel)]="hastaHorasAprobadas" (dateChange)="cargarHorasAprobadas()" />
+              <mat-datepicker-toggle matIconSuffix [for]="pickerHastaHorasAprobadas"></mat-datepicker-toggle>
+              <mat-datepicker #pickerHastaHorasAprobadas></mat-datepicker>
             </mat-form-field>
 
             <mat-form-field class="filter-field">

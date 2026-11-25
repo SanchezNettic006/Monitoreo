@@ -187,9 +187,16 @@ export class ReportesService {
   /**
    * Horas extra aprobadas (total o parcial) del mes, por departamento y técnico
    */
-  obtenerHorasAprobadas(mes: string, departamentoId?: number): Observable<{ exitoso: boolean; data: HorasAprobadasResponse }> {
+  obtenerHorasAprobadas(
+    mes: string,
+    departamentoId?: number,
+    desde?: string,
+    hasta?: string,
+  ): Observable<{ exitoso: boolean; data: HorasAprobadasResponse }> {
     let url = `${this.apiUrl}/horas-aprobadas?mes=${mes}`;
     if (departamentoId) url += `&departamentoId=${departamentoId}`;
+    if (desde) url += `&desde=${desde}`;
+    if (hasta) url += `&hasta=${hasta}`;
     return this.http.get<{ exitoso: boolean; data: HorasAprobadasResponse }>(url);
   }
 

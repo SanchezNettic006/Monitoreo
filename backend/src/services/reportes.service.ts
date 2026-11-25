@@ -826,10 +826,19 @@ export class ReportesService {
    * y desglosadas por técnico. `horas_aprobadas` ya refleja el monto aprobado
    * sea total o parcial, así que sumarlo cubre ambos casos.
    */
-  async obtenerHorasAprobadas(mes: string, departamentoId?: number[]) {
-    const [anio, mesNum] = mes.split('-').map(Number);
-    const inicioMes = new Date(anio, mesNum - 1, 1);
-    const finMes = new Date(anio, mesNum, 0, 23, 59, 59, 999);
+  async obtenerHorasAprobadas(mes: string, departamentoId?: number[], fechaInicio?: string, fechaFin?: string) {
+    // Un rango de fechas explícito (Desde/Hasta) pisa al mes; si no viene,
+    // se usa el mes completo como siempre.
+    let inicio: Date;
+    let fin: Date;
+    if (fechaInicio && fechaFin) {
+      inicio = new Date(`${fechaInicio}T00:00:00`);
+      fin = new Date(`${fechaFin}T23:59:59.999`);
+    } else {
+      const [anio, mesNum] = mes.split('-').map(Number);
+      inicio = new Date(anio, mesNum - 1, 1);
+      fin = new Date(anio, mesNum, 0, 23, 59, 59, 999);
+    }
 
     let query = this.horaExtraRepository
       .createQueryBuilder('he')
@@ -844,7 +853,7 @@ export class ReportesService {
       .addSelect('SUM(CAST(he.horas_aprobadas AS NUMERIC))', 'totalHoras')
       .addSelect('COUNT(he.id)', 'totalTickets')
       .where('he.estado_aprobacion = :estado', { estado: 'aprobada' })
-      .andWhere('he.hora_inicio BETWEEN :inicio AND :fin', { inicio: inicioMes, fin: finMes })
+      .andWhere('he.hora_inicio BETWEEN :inicio AND :fin', { inicio, fin })
       .groupBy('empleado.id')
       .addGroupBy('empleado.nombre')
       .addGroupBy('empleado.apellido')

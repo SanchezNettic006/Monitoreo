@@ -211,8 +211,10 @@ export class ReportesController {
       const mes = (req.query.mes as string) || new Date().toISOString().slice(0, 7);
       const departamentoId =
         req.departamentoId ?? (req.query.departamentoId ? [parseInt(String(req.query.departamentoId), 10)] : undefined);
+      const desde = normalizarFechaParam(req.query.desde as string);
+      const hasta = normalizarFechaParam(req.query.hasta as string);
 
-      const resultado = await reportesService.obtenerHorasAprobadas(mes, departamentoId);
+      const resultado = await reportesService.obtenerHorasAprobadas(mes, departamentoId, desde, hasta);
 
       return res.status(200).json({ exitoso: true, data: resultado });
     } catch (error) {

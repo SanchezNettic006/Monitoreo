@@ -105,6 +105,8 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
   departamentosHorasAprobadas: string[] = [];
   filtroTecnico = '';
   filtroDepartamentoHorasAprobadas = '';
+  desdeHorasAprobadas: Date | null = null;
+  hastaHorasAprobadas: Date | null = null;
 
   constructor(
     private horaExtraService: HoraExtraService,
@@ -138,9 +140,16 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
    * Horas extra aprobadas (total o parcial) del mes, por técnico
    * (admin: todos los departamentos; líder: solo el suyo, vía este mismo componente en Mi Equipo)
    */
+  private aYYYYMMDD(fecha: Date): string {
+    return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
+  }
+
   cargarHorasAprobadas(): void {
     this.cargandoHorasAprobadas = true;
-    this.reportesService.obtenerHorasAprobadas(this.mesHorasAprobadas).subscribe({
+    // Un rango Desde/Hasta explícito pisa al mes (el backend prioriza el rango)
+    const desde = this.desdeHorasAprobadas ? this.aYYYYMMDD(this.desdeHorasAprobadas) : undefined;
+    const hasta = this.hastaHorasAprobadas ? this.aYYYYMMDD(this.hastaHorasAprobadas) : undefined;
+    this.reportesService.obtenerHorasAprobadas(this.mesHorasAprobadas, undefined, desde, hasta).subscribe({
       next: (response) => {
         const departamentos = response.data.departamentos;
         this.tecnicosHorasAprobadas = departamentos
@@ -174,7 +183,11 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
   limpiarFiltroHorasAprobadas(): void {
     this.filtroTecnico = '';
     this.filtroDepartamentoHorasAprobadas = '';
+    const habiaRango = this.desdeHorasAprobadas || this.hastaHorasAprobadas;
+    this.desdeHorasAprobadas = null;
+    this.hastaHorasAprobadas = null;
     this.aplicarFiltroHorasAprobadas();
+    if (habiaRango) this.cargarHorasAprobadas(); // vuelve a traer datos del mes, ya sin el rango
   }
 
   get esAdmin(): boolean {
