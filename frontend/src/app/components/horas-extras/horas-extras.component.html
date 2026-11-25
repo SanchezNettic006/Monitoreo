@@ -490,12 +490,30 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let tecnico of tecnicosHorasAprobadasFiltrados" class="table-row">
-                <td>{{ tecnico.nombre }}</td>
-                <td>{{ tecnico.departamento }}</td>
-                <td>{{ tecnico.totalTickets }}</td>
-                <td><span class="badge badge-duration-complete">{{ formatearDuracion(tecnico.totalHoras) }}</span></td>
-              </tr>
+              <ng-container *ngFor="let tecnico of tecnicosHorasAprobadasFiltrados">
+                <tr
+                  class="table-row fila-clickeable-he"
+                  [class.fila-activa-he]="tecnicoExpandidoId === tecnico.empleadoId"
+                  (click)="toggleDetalleTecnico(tecnico.empleadoId)"
+                >
+                  <td>{{ tecnico.nombre }}</td>
+                  <td>{{ tecnico.departamento }}</td>
+                  <td>{{ tecnico.totalTickets }}</td>
+                  <td><span class="badge badge-duration-complete">{{ formatearDuracion(tecnico.totalHoras) }}</span></td>
+                </tr>
+                <tr *ngIf="tecnicoExpandidoId === tecnico.empleadoId">
+                  <td colspan="4" class="detalle-tecnico-celda">
+                    <ul class="detalle-tecnico-lista">
+                      <li *ngFor="let ticket of tecnico.detalle">
+                        <span class="detalle-ticket">{{ ticket.numeroTicket }}</span>
+                        <span class="detalle-tipo-trabajo">{{ ticket.tipoTrabajo === 'averia' ? 'Avería' : ticket.tipoTrabajo === 'motivo' ? 'Motivo' : 'Instalación' }}</span>
+                        <span class="detalle-fecha">{{ formatearFecha(ticket.fecha) }}</span>
+                        <span class="detalle-horas">{{ formatearDuracion(ticket.horasAprobadas) }}</span>
+                      </li>
+                    </ul>
+                  </td>
+                </tr>
+              </ng-container>
             </tbody>
           </table>
         </div>

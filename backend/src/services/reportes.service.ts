@@ -866,6 +866,42 @@ export class ReportesService {
 
     const filas = await query.getRawMany();
 
+    // Detalle: cada ticket aprobado por separado (mismo filtro, sin agrupar),
+    // para que la pantalla pueda desplegar el desglose de un técnico en vez
+    // de solo mostrar la suma.
+    let queryDetalle = this.horaExtraRepository
+      .createQueryBuilder('he')
+      .innerJoin('he.usuario', 'usuario')
+      .innerJoin('usuario.empleado', 'empleado')
+      .innerJoin('empleado.departamento', 'departamento')
+      .select('empleado.id', 'empleadoId')
+      .addSelect('he.numero_ticket', 'numeroTicket')
+      .addSelect('he.tipo_trabajo', 'tipoTrabajo')
+      .addSelect('he.hora_inicio', 'horaInicio')
+      .addSelect('he.hora_fin', 'horaFin')
+      .addSelect('he.horas_aprobadas', 'horasAprobadas')
+      .where('he.estado_aprobacion = :estado', { estado: 'aprobada' })
+      .andWhere('he.hora_inicio BETWEEN :inicio AND :fin', { inicio, fin })
+      .orderBy('he.hora_inicio', 'ASC');
+
+    if (departamentoId?.length) {
+      queryDetalle = queryDetalle.andWhere('departamento.id IN (:...departamentoId)', { departamentoId });
+    }
+
+    const filasDetalle = await queryDetalle.getRawMany();
+    const detallePorEmpleado = new Map<number, { numeroTicket: string; tipoTrabajo: string; fecha: Date; horasAprobadas: number }[]>();
+    for (const f of filasDetalle) {
+      const empleadoId = parseInt(f.empleadoId, 10);
+      const lista = detallePorEmpleado.get(empleadoId) || [];
+      lista.push({
+        numeroTicket: f.numeroTicket,
+        tipoTrabajo: f.tipoTrabajo,
+        fecha: f.horaInicio,
+        horasAprobadas: Math.round(parseFloat(f.horasAprobadas || '0') * 100) / 100,
+      });
+      detallePorEmpleado.set(empleadoId, lista);
+    }
+
     const tecnicos = filas.map((f) => ({
       empleadoId: parseInt(f.empleadoId, 10),
       nombre: `${f.nombre} ${f.apellido}`,
@@ -873,6 +909,7 @@ export class ReportesService {
       departamento: f.departamento as string,
       totalHoras: Math.round(parseFloat(f.totalHoras || '0') * 100) / 100,
       totalTickets: parseInt(f.totalTickets, 10),
+      detalle: detallePorEmpleado.get(parseInt(f.empleadoId, 10)) || [],
     }));
 
     const departamentosMap = new Map<number, { departamentoId: number; departamento: string; totalHoras: number; tecnicos: typeof tecnicos }>();

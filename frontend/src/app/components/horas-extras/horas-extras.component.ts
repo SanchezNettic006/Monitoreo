@@ -107,6 +107,7 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
   filtroDepartamentoHorasAprobadas = '';
   desdeHorasAprobadas: Date | null = null;
   hastaHorasAprobadas: Date | null = null;
+  tecnicoExpandidoId: number | null = null;
 
   constructor(
     private horaExtraService: HoraExtraService,
@@ -146,6 +147,7 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
 
   cargarHorasAprobadas(): void {
     this.cargandoHorasAprobadas = true;
+    this.tecnicoExpandidoId = null;
     // Un rango Desde/Hasta explícito pisa al mes (el backend prioriza el rango)
     const desde = this.desdeHorasAprobadas ? this.aYYYYMMDD(this.desdeHorasAprobadas) : undefined;
     const hasta = this.hastaHorasAprobadas ? this.aYYYYMMDD(this.hastaHorasAprobadas) : undefined;
@@ -178,6 +180,10 @@ export class HorasExtrasComponent implements OnInit, OnDestroy {
       return coincideNombre && coincideDepto;
     });
     this.totalHorasAprobadas = this.tecnicosHorasAprobadasFiltrados.reduce((sum, t) => sum + t.totalHoras, 0);
+  }
+
+  toggleDetalleTecnico(empleadoId: number): void {
+    this.tecnicoExpandidoId = this.tecnicoExpandidoId === empleadoId ? null : empleadoId;
   }
 
   limpiarFiltroHorasAprobadas(): void {

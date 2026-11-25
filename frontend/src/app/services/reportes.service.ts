@@ -77,6 +77,13 @@ export interface DetalleCumplimientoEmpleado {
   dias: { fecha: string; estado: 'reportado' | 'pendiente' | 'justificado' }[];
 }
 
+export interface TicketHorasAprobadas {
+  numeroTicket: string;
+  tipoTrabajo: string;
+  fecha: string;
+  horasAprobadas: number;
+}
+
 export interface TecnicoHorasAprobadas {
   empleadoId: number;
   nombre: string;
@@ -84,6 +91,7 @@ export interface TecnicoHorasAprobadas {
   departamento: string;
   totalHoras: number;
   totalTickets: number;
+  detalle: TicketHorasAprobadas[];
 }
 
 export interface DepartamentoHorasAprobadas {

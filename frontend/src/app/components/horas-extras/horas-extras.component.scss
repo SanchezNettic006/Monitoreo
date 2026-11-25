@@ -726,3 +726,65 @@ $superficie: #182d19;
     }
   }
 }
+
+// ============= DETALLE POR TÉCNICO (Horas Aprobadas) =============
+.fila-clickeable-he {
+  cursor: pointer;
+}
+
+.fila-clickeable-he:hover td {
+  color: $verde-claro;
+}
+
+.fila-activa-he td {
+  color: $verde-claro;
+  font-weight: 600;
+}
+
+.detalle-tecnico-celda {
+  background: $fondo-suave;
+  padding: 0 !important;
+}
+
+.detalle-tecnico-lista {
+  list-style: none;
+  margin: 0;
+  padding: 4px 8px;
+  max-height: 260px;
+  overflow-y: auto;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 12px;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .detalle-ticket {
+    font-weight: 600;
+    color: $texto;
+    min-width: 110px;
+  }
+
+  .detalle-tipo-trabajo {
+    color: $texto-suave;
+    min-width: 90px;
+  }
+
+  .detalle-fecha {
+    color: $texto-suave;
+    min-width: 90px;
+  }
+
+  .detalle-horas {
+    color: $verde-claro;
+    font-weight: 600;
+    margin-left: auto;
+  }
+}
