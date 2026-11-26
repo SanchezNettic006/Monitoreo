@@ -9,14 +9,14 @@
         no contará como falta ni aparecerá como "aún no ha iniciado" en los resúmenes.
       </p>
       <p class="descripcion" *ngIf="vista === 'anio'">
-        Vista del año completo. Toca cualquier día para marcarlo o quitarlo como descanso
-        (se guarda al instante en esta vista).
+        Vista anual de los descansos. Toca cualquier día para cambiarlo, o el nombre de un
+        mes para abrirlo en detalle.
       </p>
     </div>
 
-    <div class="header-acciones" *ngIf="vista === 'mes' && empleadoSeleccionadoId && !cargando">
-      <button type="button" class="btn-secundario" [disabled]="!hayCambiosSinGuardar" (click)="restablecerMes()">
-        Restablecer mes
+    <div class="header-acciones" *ngIf="empleadoSeleccionadoId && !cargando">
+      <button type="button" class="btn-secundario" [disabled]="!hayCambiosSinGuardar" (click)="restablecerCambios()">
+        {{ vista === 'mes' ? 'Restablecer mes' : 'Restablecer año' }}
       </button>
       <button type="button" class="btn-primario" [disabled]="!hayCambiosSinGuardar || guardando" (click)="guardarCambios()">
         <mat-icon>check</mat-icon> Guardar cambios
@@ -62,14 +62,14 @@
     <div class="leyenda">
       <span class="leyenda-item"><span class="dot trabaja"></span> Trabaja</span>
       <span class="leyenda-item"><span class="dot descanso"></span> Descansa</span>
-      <span class="leyenda-item" *ngIf="vista === 'mes'"><span class="dot hoy"></span> Hoy</span>
+      <span class="leyenda-item"><span class="dot hoy"></span> Hoy</span>
     </div>
     <span class="leyenda-hint">Toca un día para cambiarlo</span>
   </div>
 
   <div class="contenido" *ngIf="empleadoSeleccionadoId && !cargando">
     <div class="calendario-col">
-      <!-- Vista Mes: calendario normal -->
+      <!-- Vista Mes: un solo calendario a todo lo ancho -->
       <ng-container *ngIf="vista === 'mes'">
         <div class="dias-semana">
           <span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sa</span><span>Do</span>
@@ -81,7 +81,7 @@
             [class.vacio]="!dia"
             [class.trabaja]="dia && !descansaEnFecha(dia.fecha)"
             [class.descanso]="dia && descansaEnFecha(dia.fecha)"
-            [class.es-hoy]="dia && esHoy && dia.numero === hoy.getDate()"
+            [class.es-hoy]="dia && esFechaHoy(dia.fecha)"
             [title]="dia ? (descansaEnFecha(dia.fecha) ? 'Descansa este día — toca para marcar que trabaja' : 'Trabaja este día — toca para marcar descanso') : ''"
             (click)="onClickDia(dia)"
           >
@@ -96,37 +96,41 @@
         </div>
       </ng-container>
 
-      <!-- Vista Año: mosaico compacto estilo GitHub (53 semanas x 7 días) -->
-      <div class="mosaico-anio-wrapper" *ngIf="vista === 'anio'">
-        <div class="mosaico-anio">
-          <div class="mosaico-labels-mes">
-            <span
-              *ngFor="let semana of semanasAnio; let i = index"
-              class="mosaico-label-mes"
-              [style.grid-column]="i + 1"
-            >{{ labelMesDeSemana(i) }}</span>
+      <!-- Vista Año: los 12 meses como mini-calendarios -->
+      <div class="meses-grid" *ngIf="vista === 'anio'">
+        <div
+          class="mes-card"
+          *ngFor="let mesAnio of mesesDelAnio"
+          [class.mes-actual]="anio === hoy.getFullYear() && mesAnio.numero === hoy.getMonth() + 1"
+        >
+          <div class="mes-card-header">
+            <button type="button" class="mes-card-titulo" (click)="abrirMesEnDetalle(mesAnio.numero)">{{ mesAnio.nombre }}</button>
+            <span class="mes-card-contador">
+              {{ descansosPorMes[mesAnio.numero - 1].cantidad === 0 ? 'Sin descansos' : (descansosPorMes[mesAnio.numero - 1].cantidad + ' descansos') }}
+            </span>
           </div>
-          <div class="mosaico-grid">
-            <div class="mosaico-semana" *ngFor="let semana of semanasAnio">
-              <div
-                *ngFor="let celda of semana"
-                class="mosaico-celda"
-                [class.vacio]="!celda.fecha"
-                [class.trabaja]="celda.fecha && !celda.descansa"
-                [class.descanso]="celda.fecha && celda.descansa"
-                [title]="celda.fecha || ''"
-                (click)="onClickCeldaAnio(celda)"
-              ></div>
-            </div>
+          <div class="mini-dias-semana">
+            <span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sa</span><span>Do</span>
+          </div>
+          <div class="mini-dias-grid">
+            <div
+              *ngFor="let dia of mesAnio.dias"
+              class="mini-dia"
+              [class.vacio]="!dia"
+              [class.trabaja]="dia && !descansaEnFecha(dia.fecha)"
+              [class.descanso]="dia && descansaEnFecha(dia.fecha)"
+              [class.es-hoy]="dia && esFechaHoy(dia.fecha)"
+              [title]="dia ? (descansaEnFecha(dia.fecha) ? 'Descansa' : 'Trabaja') : ''"
+              (click)="onClickDia(dia)"
+            >{{ dia?.numero || '' }}</div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="resumen-col">
-      <!-- Resumen y patrón semanal: solo tienen sentido en la vista Mes -->
-      <div class="resumen-card" *ngIf="vista === 'mes'">
-        <h3>Resumen de {{ nombreMes | lowercase }}</h3>
+      <div class="resumen-card">
+        <h3>Resumen {{ vista === 'mes' ? (nombreMes | lowercase) : anio }}</h3>
         <div class="resumen-stats">
           <div class="stat">
             <span class="stat-valor">{{ diasQueTrabaja }}</span>
@@ -143,9 +147,11 @@
         </div>
       </div>
 
-      <div class="resumen-card" *ngIf="vista === 'mes'">
-        <h3>Patrón semanal</h3>
-        <p class="resumen-periodo">Marca un día fijo de descanso para todo el mes.</p>
+      <div class="resumen-card">
+        <h3>Patrón semanal{{ vista === 'anio' ? ' del año' : '' }}</h3>
+        <p class="resumen-periodo">
+          {{ vista === 'mes' ? 'Marca un día fijo de descanso para todo el mes.' : 'Aplica un día fijo de descanso a los 12 meses.' }}
+        </p>
         <div class="patron-semanal">
           <button
             type="button"
@@ -155,7 +161,7 @@
         </div>
       </div>
 
-      <div class="resumen-card">
+      <div class="resumen-card" *ngIf="vista === 'mes'">
         <h3>Días de descanso <span class="contador">{{ descansosEmpleadoActual.length }} marcados</span></h3>
 
         <p class="resumen-vacio" *ngIf="descansosEmpleadoActual.length === 0">
@@ -165,12 +171,21 @@
         <div class="chips-descanso" *ngIf="descansosEmpleadoActual.length > 0">
           <span class="chip" *ngFor="let descanso of descansosEmpleadoActual">
             {{ formatearFechaCorta(descanso.fecha) }}
-            <button
-              type="button"
-              (click)="vista === 'mes' ? onClickDia({ numero: 0, fecha: descanso.fecha, diaSemana: 0 }) : quitarDescansoAnio(descanso.fecha)"
-              title="Quitar descanso"
-            >×</button>
+            <button type="button" (click)="onClickDia({ numero: 0, fecha: descanso.fecha, diaSemana: 0 })" title="Quitar descanso">×</button>
           </span>
+        </div>
+      </div>
+
+      <div class="resumen-card" *ngIf="vista === 'anio'">
+        <h3>Descansos por mes</h3>
+        <div class="barras-mes">
+          <div class="barra-mes-fila" *ngFor="let m of descansosPorMes">
+            <span class="barra-mes-label">{{ m.nombreCorto }}</span>
+            <span class="barra-mes-track">
+              <span class="barra-mes-relleno" [style.width.%]="(m.cantidad / maxDescansosPorMes) * 100"></span>
+            </span>
+            <span class="barra-mes-valor">{{ m.cantidad }}</span>
+          </div>
         </div>
       </div>
     </div>

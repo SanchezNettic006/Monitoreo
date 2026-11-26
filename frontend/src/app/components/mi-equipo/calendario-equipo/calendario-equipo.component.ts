@@ -14,14 +14,10 @@ interface DiaCelda {
   diaSemana: number; // 0 = Lunes .. 6 = Domingo
 }
 
-interface CeldaAnio {
-  fecha: string | null;
-  descansa: boolean;
-}
-
-interface LabelMes {
-  semanaIndex: number;
-  label: string;
+interface MesAnio {
+  numero: number; // 1-12
+  nombre: string;
+  dias: (DiaCelda | null)[];
 }
 
 const NOMBRES_MES_CORTO = [
@@ -31,6 +27,11 @@ const NOMBRES_MES_CORTO = [
 const NOMBRES_DIA_SEMANA = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 const DIAS_SEMANA_CORTO = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do']; // índice = diaSemana (0=Lunes)
+
+const NOMBRES_MESES = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+];
 
 @Component({
   selector: 'app-calendario-equipo',
@@ -57,24 +58,18 @@ export class CalendarioEquipoComponent implements OnInit {
   anio = this.hoy.getFullYear();
   mes = this.hoy.getMonth() + 1; // 1-12
 
-  /** 'mes' (por defecto, el mes actual) o 'anio' (mosaico estilo GitHub del año completo) */
+  /** 'mes' (por defecto, el mes actual) o 'anio' (los 12 meses en mini-calendarios) */
   vista: 'mes' | 'anio' = 'mes';
 
   dias: (DiaCelda | null)[] = [];
+  mesesDelAnio: MesAnio[] = [];
   descansosDelMes: DescansoEmpleado[] = [];
   descansosDelAnio: DescansoEmpleado[] = [];
-  semanasAnio: CeldaAnio[][] = [];
-  labelsMesAnio: LabelMes[] = [];
   cargando = false;
   guardando = false;
 
   /** Cambios sin guardar todavía: fecha -> nuevo valor de "descansa" (solo entradas que difieren del servidor) */
   cambiosLocales = new Map<string, boolean>();
-
-  private readonly nombresMeses = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-  ];
 
   constructor(
     private descansoService: DescansoService,
@@ -97,7 +92,7 @@ export class CalendarioEquipoComponent implements OnInit {
   }
 
   get nombreMes(): string {
-    return this.nombresMeses[this.mes - 1];
+    return NOMBRES_MESES[this.mes - 1];
   }
 
   get nombreEmpleadoSeleccionado(): string {
@@ -121,28 +116,38 @@ export class CalendarioEquipoComponent implements OnInit {
     return this.cambiosLocales.size > 0;
   }
 
-  /** Descansos marcados (ya guardados en servidor) del empleado seleccionado, en el mes visible */
-  private get descansosOriginalesDelMes(): Map<string, DescansoEmpleado> {
+  esFechaHoy(fecha: string): boolean {
+    return fecha === this.fechaHoyStr;
+  }
+
+  private get fechaHoyStr(): string {
+    return `${this.hoy.getFullYear()}-${String(this.hoy.getMonth() + 1).padStart(2, '0')}-${String(this.hoy.getDate()).padStart(2, '0')}`;
+  }
+
+  /** Descansos marcados (ya guardados en servidor) del empleado seleccionado, en el período visible (mes o año) */
+  private get descansosOriginalesDelPeriodo(): Map<string, DescansoEmpleado> {
     const mapa = new Map<string, DescansoEmpleado>();
     if (!this.empleadoSeleccionadoId) return mapa;
-    for (const d of this.descansosDelMes) {
+    const fuente = this.vista === 'mes' ? this.descansosDelMes : this.descansosDelAnio;
+    for (const d of fuente) {
       if (d.empleado_id === this.empleadoSeleccionadoId) mapa.set(d.fecha.slice(0, 10), d);
     }
     return mapa;
   }
 
-  /** Lista para el panel lateral: fecha + si descansa, ya mezclando cambios sin guardar */
+  /** Todas las celdas de día visibles en el período actual (mes: ese mes; año: los 12 meses) */
+  private get todasLasCeldas(): DiaCelda[] {
+    if (this.vista === 'mes') {
+      return this.dias.filter((d): d is DiaCelda => !!d);
+    }
+    return this.mesesDelAnio.flatMap((m) => m.dias.filter((d): d is DiaCelda => !!d));
+  }
+
+  /** Lista para el panel lateral (solo vista Mes): fecha + si descansa, ya mezclando cambios sin guardar */
   get descansosEmpleadoActual(): { fecha: string; descansa: boolean }[] {
     if (!this.empleadoSeleccionadoId) return [];
 
-    if (this.vista === 'anio') {
-      return this.descansosDelAnio
-        .filter((d) => d.empleado_id === this.empleadoSeleccionadoId)
-        .map((d) => ({ fecha: d.fecha.slice(0, 10), descansa: true }))
-        .sort((a, b) => a.fecha.localeCompare(b.fecha));
-    }
-
-    const originales = this.descansosOriginalesDelMes;
+    const originales = this.descansosOriginalesDelPeriodo;
     const fechas = new Set([...originales.keys(), ...this.cambiosLocales.keys()]);
     return Array.from(fechas)
       .map((fecha) => ({ fecha, descansa: this.descansaEnFecha(fecha) }))
@@ -150,10 +155,10 @@ export class CalendarioEquipoComponent implements OnInit {
       .sort((a, b) => a.fecha.localeCompare(b.fecha));
   }
 
-  /** Estado efectivo (ya con cambios sin guardar aplicados) de una fecha del mes visible */
+  /** Estado efectivo (ya con cambios sin guardar aplicados) de una fecha del período visible */
   descansaEnFecha(fecha: string): boolean {
     if (this.cambiosLocales.has(fecha)) return this.cambiosLocales.get(fecha)!;
-    return this.descansosOriginalesDelMes.has(fecha);
+    return this.descansosOriginalesDelPeriodo.has(fecha);
   }
 
   formatearFechaCorta(fecha: string): string {
@@ -162,18 +167,31 @@ export class CalendarioEquipoComponent implements OnInit {
     return `${NOMBRES_DIA_SEMANA[fechaLocal.getDay()]} ${dia} ${NOMBRES_MES_CORTO[mes - 1]}`;
   }
 
-  // ==================== Resumen del mes ====================
+  // ==================== Resumen del período (mes o año) ====================
 
   get diasQueTrabaja(): number {
-    return this.dias.filter((d) => d && !this.descansaEnFecha(d.fecha)).length;
+    return this.todasLasCeldas.filter((d) => !this.descansaEnFecha(d.fecha)).length;
   }
 
   get totalDescansos(): number {
-    return this.dias.filter((d) => d && this.descansaEnFecha(d.fecha)).length;
+    return this.todasLasCeldas.filter((d) => this.descansaEnFecha(d.fecha)).length;
   }
 
   get domingosTrabajados(): number {
-    return this.dias.filter((d) => d && d.diaSemana === 6 && !this.descansaEnFecha(d.fecha)).length;
+    return this.todasLasCeldas.filter((d) => d.diaSemana === 6 && !this.descansaEnFecha(d.fecha)).length;
+  }
+
+  /** Cantidad de descansos por cada uno de los 12 meses del año visible, para la barra lateral */
+  get descansosPorMes(): { numero: number; nombreCorto: string; cantidad: number }[] {
+    return this.mesesDelAnio.map((m) => ({
+      numero: m.numero,
+      nombreCorto: NOMBRES_MES_CORTO[m.numero - 1],
+      cantidad: (m.dias.filter((d): d is DiaCelda => !!d)).filter((d) => this.descansaEnFecha(d.fecha)).length,
+    }));
+  }
+
+  get maxDescansosPorMes(): number {
+    return Math.max(1, ...this.descansosPorMes.map((m) => m.cantidad));
   }
 
   // ==================== Navegación ====================
@@ -222,11 +240,19 @@ export class CalendarioEquipoComponent implements OnInit {
     this.cargar();
   }
 
+  /** Clic en el nombre de un mes dentro de la vista Año: lo abre en detalle (vista Mes) */
+  abrirMesEnDetalle(numero: number): void {
+    if (this.hayCambiosSinGuardar) {
+      this.snackBar.open('Guarda o descarta tus cambios antes de abrir otro mes', 'Cerrar', { duration: 3000 });
+      return;
+    }
+    this.mes = numero;
+    this.vista = 'mes';
+    this.cargarMes();
+  }
+
   cambiarEmpleado(): void {
     this.cambiosLocales.clear();
-    if (this.vista === 'anio') {
-      this.construirMosaicoAnio();
-    }
   }
 
   private cargar(): void {
@@ -259,7 +285,7 @@ export class CalendarioEquipoComponent implements OnInit {
     this.descansoService.listarPorAnio(this.anio).subscribe({
       next: (descansos) => {
         this.descansosDelAnio = descansos;
-        this.construirMosaicoAnio();
+        this.construirMesesDelAnio();
         this.cargando = false;
       },
       error: () => {
@@ -270,86 +296,38 @@ export class CalendarioEquipoComponent implements OnInit {
   }
 
   private construirDiasMes(): void {
-    const diasEnMes = new Date(this.anio, this.mes, 0).getDate();
-    const primerDiaSemana = (new Date(this.anio, this.mes - 1, 1).getDay() + 6) % 7; // Lunes = 0
+    this.dias = this.construirDiasDeMes(this.anio, this.mes);
+  }
+
+  private construirMesesDelAnio(): void {
+    this.mesesDelAnio = NOMBRES_MESES.map((nombre, i) => ({
+      numero: i + 1,
+      nombre,
+      dias: this.construirDiasDeMes(this.anio, i + 1),
+    }));
+  }
+
+  private construirDiasDeMes(anio: number, mes: number): (DiaCelda | null)[] {
+    const diasEnMes = new Date(anio, mes, 0).getDate();
+    const primerDiaSemana = (new Date(anio, mes - 1, 1).getDay() + 6) % 7; // Lunes = 0
 
     const dias: (DiaCelda | null)[] = new Array(primerDiaSemana).fill(null);
     for (let numero = 1; numero <= diasEnMes; numero++) {
-      const fecha = `${this.anio}-${String(this.mes).padStart(2, '0')}-${String(numero).padStart(2, '0')}`;
-      const diaSemana = (new Date(this.anio, this.mes - 1, numero).getDay() + 6) % 7; // Lunes = 0
+      const fecha = `${anio}-${String(mes).padStart(2, '0')}-${String(numero).padStart(2, '0')}`;
+      const diaSemana = (new Date(anio, mes - 1, numero).getDay() + 6) % 7; // Lunes = 0
       dias.push({ numero, fecha, diaSemana });
     }
-    this.dias = dias;
+    return dias;
   }
 
-  /** Arma la cuadrícula de 53 semanas x 7 días (estilo GitHub) para el empleado seleccionado */
-  private construirMosaicoAnio(): void {
-    if (!this.empleadoSeleccionadoId) {
-      this.semanasAnio = [];
-      this.labelsMesAnio = [];
-      return;
-    }
-
-    const fechasDescanso = new Set(
-      this.descansosDelAnio
-        .filter((d) => d.empleado_id === this.empleadoSeleccionadoId)
-        .map((d) => d.fecha.slice(0, 10)),
-    );
-
-    const inicioAnio = new Date(this.anio, 0, 1);
-    const inicioGrid = new Date(inicioAnio);
-    inicioGrid.setDate(inicioGrid.getDate() - inicioGrid.getDay());
-
-    const semanas: CeldaAnio[][] = [];
-    const labelsMes: LabelMes[] = [];
-    let mesAnterior = -1;
-    const cursor = new Date(inicioGrid);
-
-    for (let semana = 0; semana < 53; semana++) {
-      const columna: CeldaAnio[] = [];
-      let primeraFechaDelAnioEnSemana: Date | null = null;
-
-      for (let dia = 0; dia < 7; dia++) {
-        const perteneceAlAnio = cursor.getFullYear() === this.anio;
-        const fecha = perteneceAlAnio
-          ? `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`
-          : null;
-
-        if (fecha && !primeraFechaDelAnioEnSemana) {
-          primeraFechaDelAnioEnSemana = new Date(cursor);
-        }
-
-        columna.push({ fecha, descansa: fecha ? fechasDescanso.has(fecha) : false });
-        cursor.setDate(cursor.getDate() + 1);
-      }
-
-      if (primeraFechaDelAnioEnSemana) {
-        const mes = primeraFechaDelAnioEnSemana.getMonth();
-        if (mes !== mesAnterior) {
-          labelsMes.push({ semanaIndex: semana, label: NOMBRES_MES_CORTO[mes] });
-          mesAnterior = mes;
-        }
-      }
-
-      semanas.push(columna);
-    }
-
-    this.semanasAnio = semanas;
-    this.labelsMesAnio = labelsMes;
-  }
-
-  labelMesDeSemana(semanaIndex: number): string {
-    return this.labelsMesAnio.find((l) => l.semanaIndex === semanaIndex)?.label || '';
-  }
-
-  // ==================== Edición (vista Mes, por lotes) ====================
+  // ==================== Edición por lotes (mes o año, según la vista activa) ====================
 
   /** Clic en un día: alterna el estado EN MEMORIA; no se guarda hasta "Guardar cambios" */
   onClickDia(celda: DiaCelda | null): void {
     if (!celda || !this.empleadoSeleccionadoId) return;
 
     const nuevoValor = !this.descansaEnFecha(celda.fecha);
-    const original = this.descansosOriginalesDelMes.has(celda.fecha);
+    const original = this.descansosOriginalesDelPeriodo.has(celda.fecha);
 
     if (nuevoValor === original) {
       this.cambiosLocales.delete(celda.fecha);
@@ -358,18 +336,19 @@ export class CalendarioEquipoComponent implements OnInit {
     }
   }
 
-  /** Patrón semanal: alterna TODAS las fechas del mes que caen en ese día de semana */
+  /** Patrón semanal: alterna TODAS las fechas del período visible que caen en ese día de semana */
   toggleDiaSemana(diaSemana: number): void {
     if (!this.empleadoSeleccionadoId) return;
 
-    const fechasDelDia = (this.dias.filter((d) => d && d.diaSemana === diaSemana) as DiaCelda[]).map((d) => d.fecha);
+    const fechasDelDia = this.todasLasCeldas.filter((d) => d.diaSemana === diaSemana).map((d) => d.fecha);
     if (fechasDelDia.length === 0) return;
 
+    const originales = this.descansosOriginalesDelPeriodo;
     const todasDescansan = fechasDelDia.every((f) => this.descansaEnFecha(f));
     const nuevoValor = !todasDescansan;
 
     for (const fecha of fechasDelDia) {
-      const original = this.descansosOriginalesDelMes.has(fecha);
+      const original = originales.has(fecha);
       if (nuevoValor === original) {
         this.cambiosLocales.delete(fecha);
       } else {
@@ -378,7 +357,7 @@ export class CalendarioEquipoComponent implements OnInit {
     }
   }
 
-  restablecerMes(): void {
+  restablecerCambios(): void {
     this.cambiosLocales.clear();
   }
 
@@ -386,8 +365,9 @@ export class CalendarioEquipoComponent implements OnInit {
     if (!this.empleadoSeleccionadoId || this.cambiosLocales.size === 0 || this.guardando) return;
 
     const empleadoId = this.empleadoSeleccionadoId;
-    const originales = this.descansosOriginalesDelMes;
+    const originales = this.descansosOriginalesDelPeriodo;
     const cambios = Array.from(this.cambiosLocales.entries());
+    const vistaGuardada = this.vista;
 
     this.guardando = true;
     let pendientes = cambios.length;
@@ -403,7 +383,11 @@ export class CalendarioEquipoComponent implements OnInit {
       } else {
         this.snackBar.open('✅ Cambios guardados', 'Cerrar', { duration: 2000 });
       }
-      this.cargarMes();
+      if (vistaGuardada === 'mes') {
+        this.cargarMes();
+      } else {
+        this.cargarAnio();
+      }
     };
 
     for (const [fecha, descansaNuevo] of cambios) {
@@ -430,50 +414,5 @@ export class CalendarioEquipoComponent implements OnInit {
         });
       }
     }
-  }
-
-  /** Clic en una celda del mosaico anual: ahí sí se guarda al instante (no tiene "Guardar cambios" propio) */
-  onClickCeldaAnio(celda: CeldaAnio): void {
-    if (!celda.fecha || !this.empleadoSeleccionadoId || this.guardando) return;
-
-    this.guardando = true;
-    const existente = this.descansosDelAnio.find(
-      (d) => d.empleado_id === this.empleadoSeleccionadoId && d.fecha.slice(0, 10) === celda.fecha,
-    );
-
-    if (existente) {
-      this.descansoService.eliminar(existente.id).subscribe({
-        next: () => {
-          this.descansosDelAnio = this.descansosDelAnio.filter((d) => d.id !== existente.id);
-          this.construirMosaicoAnio();
-          this.guardando = false;
-        },
-        error: (error) => {
-          this.snackBar.open(error.error?.mensaje || 'Error al quitar el descanso', 'Cerrar', { duration: 3000 });
-          this.guardando = false;
-        },
-      });
-      return;
-    }
-
-    this.descansoService.crear(this.empleadoSeleccionadoId, celda.fecha).subscribe({
-      next: (descanso) => {
-        this.descansosDelAnio = [...this.descansosDelAnio, descanso];
-        this.construirMosaicoAnio();
-        this.guardando = false;
-      },
-      error: (error) => {
-        this.snackBar.open(error.error?.mensaje || 'Error al marcar el descanso', 'Cerrar', { duration: 3000 });
-        this.guardando = false;
-      },
-    });
-  }
-
-  /** Quitar un descanso directamente desde el panel lateral (vista Año: guarda al instante) */
-  quitarDescansoAnio(fecha: string): void {
-    const existente = this.descansosDelAnio.find(
-      (d) => d.empleado_id === this.empleadoSeleccionadoId && d.fecha.slice(0, 10) === fecha,
-    );
-    if (existente) this.onClickCeldaAnio({ fecha, descansa: true });
   }
 }
