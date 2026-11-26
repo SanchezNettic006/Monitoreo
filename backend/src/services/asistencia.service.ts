@@ -322,38 +322,45 @@ export class AsistenciaService {
    * Iniciar pausa
    */
   async iniciarPausa(recordId: number, tipoPausa: TipoPausa) {
-    const record = await this.recordRepository.findOne({
-      where: { id: recordId },
-      relations: ['pausas'],
+    return AppDataSource.transaction(async (manager) => {
+      const recordRepo = manager.getRepository(RecordAsistencia);
+      const pausaRepo = manager.getRepository(PausaAsistencia);
+
+      // Bloquea la fila del registro (siempre existe) hasta que termine la transacción,
+      // para que dos peticiones simultáneas no pasen ambas el chequeo de "sin pausa activa".
+      const record = await recordRepo
+        .createQueryBuilder('record')
+        .setLock('pessimistic_write')
+        .where('record.id = :recordId', { recordId })
+        .getOne();
+
+      if (!record) {
+        throw new OperationalError(404, 'Registro de asistencia no encontrado');
+      }
+
+      const pausaActiva = await pausaRepo.findOne({
+        where: { record: { id: recordId }, estado: EstadoPausa.PAUSA_ACTIVA },
+      });
+
+      if (pausaActiva) {
+        throw new OperationalError(400, 'Ya hay una pausa activa. Debes finalizarla primero.');
+      }
+
+      // Crear nueva pausa
+      const pausa = pausaRepo.create({
+        record,
+        tipo_pausa: tipoPausa,
+        hora_inicio: new Date(),
+        estado: EstadoPausa.PAUSA_ACTIVA,
+      });
+
+      const pausaGuardada = await pausaRepo.save(pausa);
+
+      return {
+        mensaje: `✅ Pausa ${tipoPausa} iniciada`,
+        pausa: pausaGuardada,
+      };
     });
-
-    if (!record) {
-      throw new OperationalError(404, 'Registro de asistencia no encontrado');
-    }
-
-    // Verificar que no haya pausa activa
-    const pausaActiva = await this.pausaRepository.findOne({
-      where: { record: { id: recordId }, estado: EstadoPausa.PAUSA_ACTIVA },
-    });
-
-    if (pausaActiva) {
-      throw new OperationalError(400, 'Ya hay una pausa activa. Debes finalizarla primero.');
-    }
-
-    // Crear nueva pausa
-    const pausa = this.pausaRepository.create({
-      record,
-      tipo_pausa: tipoPausa,
-      hora_inicio: new Date(),
-      estado: EstadoPausa.PAUSA_ACTIVA,
-    });
-
-    const pausaGuardada = await this.pausaRepository.save(pausa);
-
-    return {
-      mensaje: `✅ Pausa ${tipoPausa} iniciada`,
-      pausa: pausaGuardada,
-    };
   }
 
   /**
