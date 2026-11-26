@@ -4,62 +4,127 @@
   margin: 0 auto;
 }
 
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  color: #999;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
 .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
   margin-bottom: 16px;
 
   h1 {
     color: #2b8a3e;
-    margin: 0;
+    margin: 0 0 4px;
   }
 }
 
 .descripcion {
   color: #666;
   font-size: 13px;
-  margin: 0 0 16px;
+  margin: 0;
   max-width: 640px;
 }
 
-.leyenda {
+.header-acciones {
   display: flex;
-  gap: 20px;
-  margin-bottom: 16px;
+  gap: 10px;
+  flex-shrink: 0;
+}
 
-  .leyenda-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: #666;
+.btn-secundario,
+.btn-primario {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 16px;
+  cursor: pointer;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
   }
 
-  .dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 4px;
-    display: inline-block;
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+}
 
-    &.trabaja {
-      background: #cde8cf;
-      border: 1px solid #2b8a3e;
-    }
+.btn-secundario {
+  background: #fff;
+  border: 1px solid #ccc;
+  color: #555;
 
-    &.descanso {
-      background: #6b7d94;
-    }
+  &:not(:disabled):hover {
+    background: #f5f5f5;
+  }
+}
+
+.btn-primario {
+  background: #2b8a3e;
+  border: none;
+  color: #fff;
+
+  &:not(:disabled):hover {
+    background: #237032;
   }
 }
 
 .controles {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
   flex-wrap: wrap;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+
+.selector-empleado-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #cde8cf;
+    color: #2b8a3e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
 }
 
 .selector-empleado {
-  min-width: 280px;
+  min-width: 220px;
 }
 
 .vista-toggle {
@@ -100,6 +165,20 @@
     min-width: 140px;
     text-align: center;
   }
+
+  .btn-hoy {
+    border: 1px solid #ccc;
+    background: #fff;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: #555;
+    cursor: pointer;
+
+    &:hover {
+      background: #f5f5f5;
+    }
+  }
 }
 
 .sin-empleados {
@@ -107,92 +186,75 @@
   padding: 24px 0;
 }
 
+.leyenda-fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.leyenda {
+  display: flex;
+  gap: 20px;
+
+  .leyenda-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #666;
+  }
+
+  .dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    display: inline-block;
+
+    &.trabaja {
+      background: #cde8cf;
+      border: 1px solid #2b8a3e;
+    }
+
+    &.descanso {
+      background: #37474f;
+    }
+
+    &.hoy {
+      background: #fff;
+      border: 2px solid #2b8a3e;
+    }
+  }
+}
+
+.leyenda-hint {
+  font-size: 12px;
+  color: #999;
+}
+
 .contenido {
   display: flex;
-  gap: 32px;
+  gap: 24px;
   align-items: flex-start;
   flex-wrap: wrap;
 }
 
 .calendario-col {
-  flex: 1 1 420px;
+  flex: 1 1 480px;
   min-width: 0;
-}
-
-.resumen-col {
-  flex: 0 0 300px;
-}
-
-.resumen-card {
   background: #fff;
   border: 1px solid #e0e0e0;
   border-radius: 10px;
-  padding: 18px 20px;
-
-  h3 {
-    margin: 0 0 2px;
-    font-size: 15px;
-    color: #222;
-  }
-
-  .resumen-periodo {
-    margin: 0 0 14px;
-    font-size: 12px;
-    color: #999;
-    text-transform: capitalize;
-  }
-
-  .resumen-vacio {
-    color: #999;
-    font-size: 13px;
-    margin: 0;
-  }
+  padding: 16px;
 }
 
-.resumen-lista {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  max-height: 420px;
-  overflow-y: auto;
-
-  li {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 8px 0;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 13px;
-    color: #333;
-    text-transform: capitalize;
-
-    &:last-child {
-      border-bottom: none;
-    }
-  }
-
-  .quitar {
-    border: none;
-    background: transparent;
-    color: #999;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    padding: 2px;
-    border-radius: 50%;
-
-    &:hover {
-      background: #f0f0f0;
-      color: #d32f2f;
-    }
-
-    mat-icon {
-      font-size: 16px;
-      width: 16px;
-      height: 16px;
-    }
-  }
+.resumen-col {
+  flex: 0 0 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .dias-semana {
@@ -201,52 +263,200 @@
   font-size: 12px;
   color: #999;
   text-align: center;
-  margin-bottom: 6px;
-  max-width: 420px;
+  margin-bottom: 8px;
 }
 
 .dias-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-  max-width: 420px;
+  gap: 6px;
 }
 
 .dia-celda {
   position: relative;
   text-align: center;
-  font-size: 13px;
-  padding: 10px 0;
-  border-radius: 6px;
+  padding: 8px 4px;
+  border-radius: 8px;
   cursor: pointer;
   color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: 56px;
 
   &.vacio {
     cursor: default;
     background: transparent;
+  }
 
-    &:hover {
-      background: transparent;
+  .dia-numero {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .dia-estado {
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+
+    mat-icon {
+      font-size: 12px;
+      width: 12px;
+      height: 12px;
     }
   }
 
   &.trabaja {
-    background: #cde8cf;
+    background: #e3f3e4;
     color: #1d5e2a;
-    font-weight: 600;
 
     &:hover {
-      background: #b9dcbc;
+      background: #cde8cf;
     }
   }
 
   &.descanso {
-    background: #6b7d94;
+    background: #37474f;
     color: #fff;
     font-weight: 700;
 
+    .dia-estado {
+      color: #cfd8dc;
+    }
+
     &:hover {
-      background: #5c6e82;
+      background: #2c383e;
+    }
+  }
+
+  &.es-hoy {
+    outline: 2px solid #2b8a3e;
+    outline-offset: -2px;
+  }
+}
+
+.resumen-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 16px 18px;
+
+  h3 {
+    margin: 0 0 2px;
+    font-size: 14px;
+    color: #222;
+    text-transform: capitalize;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .contador {
+    font-size: 11px;
+    font-weight: 400;
+    color: #999;
+    text-transform: none;
+  }
+
+  .resumen-periodo {
+    margin: 0 0 12px;
+    font-size: 12px;
+    color: #999;
+  }
+
+  .resumen-vacio {
+    color: #999;
+    font-size: 13px;
+    margin: 8px 0 0;
+  }
+}
+
+.resumen-stats {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+
+  .stat {
+    flex: 1;
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+
+  .stat-valor {
+    display: block;
+    font-size: 20px;
+    font-weight: 700;
+    color: #2b8a3e;
+  }
+
+  .stat-label {
+    display: block;
+    font-size: 10px;
+    color: #666;
+    margin-top: 2px;
+  }
+}
+
+.patron-semanal {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+
+  button {
+    flex: 1;
+    min-width: 32px;
+    border: 1px solid #ccc;
+    background: #fff;
+    border-radius: 6px;
+    padding: 8px 0;
+    font-size: 12px;
+    color: #555;
+    cursor: pointer;
+
+    &:hover {
+      background: #f5f5f5;
+    }
+  }
+}
+
+.chips-descanso {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #37474f;
+    color: #fff;
+    border-radius: 999px;
+    padding: 6px 8px 6px 12px;
+    font-size: 12px;
+
+    button {
+      border: none;
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      cursor: pointer;
+      line-height: 1;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
     }
   }
 }
@@ -306,10 +516,10 @@
   }
 
   &.descanso {
-    background: #6b7d94;
+    background: #37474f;
 
     &:hover {
-      background: #5c6e82;
+      background: #2c383e;
     }
   }
 }

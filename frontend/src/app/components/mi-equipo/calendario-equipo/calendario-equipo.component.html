@@ -1,27 +1,39 @@
 <div class="calendario-equipo">
+  <p class="breadcrumb">Asistencia <mat-icon>chevron_right</mat-icon> Calendario</p>
+
   <div class="header">
-    <h1>Calendario de mi equipo</h1>
-  </div>
+    <div class="header-texto">
+      <h1>Calendario de mi equipo</h1>
+      <p class="descripcion" *ngIf="vista === 'mes'">
+        Todos los días cuentan como laborables. Toca un día para marcarlo como descanso:
+        no contará como falta ni aparecerá como "aún no ha iniciado" en los resúmenes.
+      </p>
+      <p class="descripcion" *ngIf="vista === 'anio'">
+        Vista del año completo. Toca cualquier día para marcarlo o quitarlo como descanso
+        (se guarda al instante en esta vista).
+      </p>
+    </div>
 
-  <p class="descripcion">
-    Por defecto todos los días están marcados como "trabaja". Haz clic en un día para
-    quitarle la marca y señalar que ese día descansa (ej. quien trabaja domingo y
-    descansa otro día entre semana). Un día sin marcar no contará como falta ni
-    aparecerá como "aún no ha iniciado" en los resúmenes de asistencia.
-  </p>
-
-  <div class="leyenda">
-    <span class="leyenda-item"><span class="dot trabaja"></span> Trabaja</span>
-    <span class="leyenda-item"><span class="dot descanso"></span> Descansa</span>
+    <div class="header-acciones" *ngIf="vista === 'mes' && empleadoSeleccionadoId && !cargando">
+      <button type="button" class="btn-secundario" [disabled]="!hayCambiosSinGuardar" (click)="restablecerMes()">
+        Restablecer mes
+      </button>
+      <button type="button" class="btn-primario" [disabled]="!hayCambiosSinGuardar || guardando" (click)="guardarCambios()">
+        <mat-icon>check</mat-icon> Guardar cambios
+      </button>
+    </div>
   </div>
 
   <div class="controles">
-    <mat-form-field appearance="fill" class="selector-empleado">
-      <mat-label>Empleado</mat-label>
-      <mat-select [(ngModel)]="empleadoSeleccionadoId" (selectionChange)="cambiarEmpleado()">
-        <mat-option *ngFor="let empleado of empleados" [value]="empleado.id">{{ empleado.nombre }}</mat-option>
-      </mat-select>
-    </mat-form-field>
+    <div class="selector-empleado-chip">
+      <span class="avatar">{{ inicialesEmpleadoSeleccionado }}</span>
+      <mat-form-field appearance="fill" class="selector-empleado">
+        <mat-label>Empleado</mat-label>
+        <mat-select [(ngModel)]="empleadoSeleccionadoId" (selectionChange)="cambiarEmpleado()">
+          <mat-option *ngFor="let empleado of empleados" [value]="empleado.id">{{ empleado.nombre }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
 
     <div class="vista-toggle">
       <button type="button" [class.activo]="vista === 'mes'" (click)="cambiarVista('mes')">Mes</button>
@@ -32,6 +44,7 @@
       <button mat-icon-button (click)="cambiarMes(-1)"><mat-icon>chevron_left</mat-icon></button>
       <span class="mes-actual">{{ nombreMes }} {{ anio }}</span>
       <button mat-icon-button (click)="cambiarMes(1)"><mat-icon>chevron_right</mat-icon></button>
+      <button type="button" class="btn-hoy" *ngIf="!esHoy" (click)="irAHoy()">Hoy</button>
     </div>
 
     <div class="mes-selector" *ngIf="vista === 'anio'">
@@ -45,6 +58,15 @@
     No hay empleados en tu equipo para asignarles descanso.
   </p>
 
+  <div class="leyenda-fila" *ngIf="empleadoSeleccionadoId && !cargando">
+    <div class="leyenda">
+      <span class="leyenda-item"><span class="dot trabaja"></span> Trabaja</span>
+      <span class="leyenda-item"><span class="dot descanso"></span> Descansa</span>
+      <span class="leyenda-item" *ngIf="vista === 'mes'"><span class="dot hoy"></span> Hoy</span>
+    </div>
+    <span class="leyenda-hint">Toca un día para cambiarlo</span>
+  </div>
+
   <div class="contenido" *ngIf="empleadoSeleccionadoId && !cargando">
     <div class="calendario-col">
       <!-- Vista Mes: calendario normal -->
@@ -57,12 +79,19 @@
             *ngFor="let dia of dias"
             class="dia-celda"
             [class.vacio]="!dia"
-            [class.trabaja]="dia && !descansoDeCelda(dia.fecha)"
-            [class.descanso]="dia && !!descansoDeCelda(dia.fecha)"
-            [title]="dia ? (descansoDeCelda(dia.fecha) ? 'Descansa este día — clic para marcar que trabaja' : 'Trabaja este día — clic para marcar descanso') : ''"
+            [class.trabaja]="dia && !descansaEnFecha(dia.fecha)"
+            [class.descanso]="dia && descansaEnFecha(dia.fecha)"
+            [class.es-hoy]="dia && esHoy && dia.numero === hoy.getDate()"
+            [title]="dia ? (descansaEnFecha(dia.fecha) ? 'Descansa este día — toca para marcar que trabaja' : 'Trabaja este día — toca para marcar descanso') : ''"
             (click)="onClickDia(dia)"
           >
-            {{ dia?.numero || '' }}
+            <ng-container *ngIf="dia">
+              <span class="dia-numero">{{ dia.numero }}</span>
+              <span class="dia-estado">
+                <mat-icon *ngIf="descansaEnFecha(dia.fecha)">schedule</mat-icon>
+                {{ descansaEnFecha(dia.fecha) ? 'Descansa' : 'Trabaja' }}
+              </span>
+            </ng-container>
           </div>
         </div>
       </ng-container>
@@ -95,22 +124,54 @@
     </div>
 
     <div class="resumen-col">
+      <!-- Resumen y patrón semanal: solo tienen sentido en la vista Mes -->
+      <div class="resumen-card" *ngIf="vista === 'mes'">
+        <h3>Resumen de {{ nombreMes | lowercase }}</h3>
+        <div class="resumen-stats">
+          <div class="stat">
+            <span class="stat-valor">{{ diasQueTrabaja }}</span>
+            <span class="stat-label">Días que trabaja</span>
+          </div>
+          <div class="stat">
+            <span class="stat-valor">{{ totalDescansos }}</span>
+            <span class="stat-label">Descansos</span>
+          </div>
+          <div class="stat">
+            <span class="stat-valor">{{ domingosTrabajados }}</span>
+            <span class="stat-label">Domingos trabajados</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="resumen-card" *ngIf="vista === 'mes'">
+        <h3>Patrón semanal</h3>
+        <p class="resumen-periodo">Marca un día fijo de descanso para todo el mes.</p>
+        <div class="patron-semanal">
+          <button
+            type="button"
+            *ngFor="let dia of diasSemanaCorto; let i = index"
+            (click)="toggleDiaSemana(i)"
+          >{{ dia }}</button>
+        </div>
+      </div>
+
       <div class="resumen-card">
-        <h3>Descansos de {{ nombreEmpleadoSeleccionado }}</h3>
-        <p class="resumen-periodo">{{ vista === 'mes' ? (nombreMes + ' ' + anio) : anio }}</p>
+        <h3>Días de descanso <span class="contador">{{ descansosEmpleadoActual.length }} marcados</span></h3>
 
         <p class="resumen-vacio" *ngIf="descansosEmpleadoActual.length === 0">
           Sin días de descanso marcados en este período.
         </p>
 
-        <ul class="resumen-lista" *ngIf="descansosEmpleadoActual.length > 0">
-          <li *ngFor="let descanso of descansosEmpleadoActual">
-            <span>{{ formatearFechaCorta(descanso.fecha) }}</span>
-            <button type="button" class="quitar" title="Quitar descanso" (click)="quitarDescanso(descanso)">
-              <mat-icon>close</mat-icon>
-            </button>
-          </li>
-        </ul>
+        <div class="chips-descanso" *ngIf="descansosEmpleadoActual.length > 0">
+          <span class="chip" *ngFor="let descanso of descansosEmpleadoActual">
+            {{ formatearFechaCorta(descanso.fecha) }}
+            <button
+              type="button"
+              (click)="vista === 'mes' ? onClickDia({ numero: 0, fecha: descanso.fecha, diaSemana: 0 }) : quitarDescansoAnio(descanso.fecha)"
+              title="Quitar descanso"
+            >×</button>
+          </span>
+        </div>
       </div>
     </div>
   </div>
