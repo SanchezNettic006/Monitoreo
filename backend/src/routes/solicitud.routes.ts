@@ -40,6 +40,9 @@ router.get('/aprobadas', liderOAdminMiddleware, cargarDepartamentoLider, (req, r
 // Resumen de solicitudes (admin)
 router.get('/resumen', adminMiddleware, (req, res, next) => controller.resumen(req, res, next));
 
+// Empleados con solicitud aprobada vigente hoy (cualquier usuario autenticado: lo usan los resúmenes de asistencia del día)
+router.get('/ausentes-hoy', (req, res, next) => controller.ausentesHoy(req, res, next));
+
 // Mi saldo de vacaciones (cualquier usuario autenticado, ve el suyo)
 router.get('/mi-saldo-vacaciones', (req, res, next) => controller.obtenerMiSaldoVacaciones(req, res, next));
 

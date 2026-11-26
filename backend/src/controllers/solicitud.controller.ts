@@ -287,4 +287,21 @@ export class SolicitudController {
       next(error);
     }
   }
+
+  /**
+   * GET /api/solicitudes/ausentes-hoy
+   * Empleados con una solicitud aprobada vigente hoy (vacaciones, permiso, etc.)
+   */
+  async ausentesHoy(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const ausentes = await solicitudService.obtenerAusentesHoy();
+
+      return res.status(200).json({
+        exitoso: true,
+        data: ausentes,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

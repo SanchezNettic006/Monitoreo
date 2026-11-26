@@ -257,4 +257,16 @@ export class SolicitudService {
         map(response => response.data || {})
       );
   }
+
+  /**
+   * Empleados con una solicitud aprobada vigente hoy (vacaciones, permiso, etc.),
+   * para no mostrarlos como "aún no ha iniciado" en los resúmenes de asistencia del día.
+   */
+  obtenerAusentesHoy(): Observable<{ empleado_id: number; nombre_completo: string; tipo: string; fecha_fin: string }[]> {
+    return this.http
+      .get<{ exitoso: boolean; data: { empleado_id: number; nombre_completo: string; tipo: string; fecha_fin: string }[] }>(
+        `${this.apiUrl}/ausentes-hoy`,
+      )
+      .pipe(map((response) => response.data || []));
+  }
 }

@@ -10,7 +10,7 @@ import { emailTemplates } from '@utils/emailTemplates';
 import { config } from '@config/env';
 import { OperationalError } from '@middleware/errorHandler';
 import { telegramService } from '@services/telegram.service';
-import { contarDiasVacaciones } from '@utils/fecha.utils';
+import { contarDiasVacaciones, hoyLocal } from '@utils/fecha.utils';
 
 interface CrearSolicitudDTO {
   empleado_id: number;
@@ -411,6 +411,31 @@ export class SolicitudService {
       console.error('Error al obtener solicitudes aprobadas:', error);
       throw error;
     }
+  }
+
+  /**
+   * Empleados con una solicitud aprobada (vacaciones, permiso, etc.) que cubre el día de hoy,
+   * para no mostrarlos como "aún no ha iniciado" en los resúmenes de asistencia del día.
+   */
+  async obtenerAusentesHoy(): Promise<
+    { empleado_id: number; nombre_completo: string; tipo: TipoTramite; fecha_fin: string }[]
+  > {
+    const hoy = hoyLocal();
+
+    const solicitudes = await this.solicitudRepository
+      .createQueryBuilder('s')
+      .leftJoinAndSelect('s.empleado', 'empleado')
+      .where('s.estado = :estado', { estado: 'aprobada' })
+      .andWhere('s.fecha_inicio <= :hoy', { hoy })
+      .andWhere('COALESCE(s.fecha_fin, s.fecha_inicio) >= :hoy', { hoy })
+      .getMany();
+
+    return solicitudes.map((s) => ({
+      empleado_id: s.empleado_id,
+      nombre_completo: s.empleado ? `${s.empleado.nombre} ${s.empleado.apellido}` : '-',
+      tipo: s.tipo,
+      fecha_fin: s.fecha_fin || s.fecha_inicio,
+    }));
   }
 
   /**

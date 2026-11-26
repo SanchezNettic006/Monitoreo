@@ -48,6 +48,7 @@ export class DashboardComponent implements OnInit {
   cargandoResumenEquipo = false;
   empleadosIniciadosHoy: string[] = [];
   empleadosPendientesHoy: string[] = [];
+  empleadosAusentesHoy: string[] = [];
   totalEmpleadosEquipo = 0;
 
   semana: DiaSemana[] = [];
@@ -234,12 +235,31 @@ export class DashboardComponent implements OnInit {
             const nombresConEntrada = new Set(
               registros.filter((r) => r.tipo === 'asistencia' && r.entrada).map((r) => r.empleado),
             );
-            this.empleadosIniciadosHoy = nombresEmpleados.filter((n) => nombresConEntrada.has(n));
-            this.empleadosPendientesHoy = nombresEmpleados.filter((n) => !nombresConEntrada.has(n));
-            this.cargandoResumenEquipo = false;
+
+            this.solicitudService.obtenerAusentesHoy().subscribe({
+              next: (ausentes) => {
+                const nombresAusentes = new Set(ausentes.map((a) => a.nombre_completo));
+                this.empleadosIniciadosHoy = nombresEmpleados.filter((n) => nombresConEntrada.has(n));
+                this.empleadosAusentesHoy = nombresEmpleados.filter(
+                  (n) => !nombresConEntrada.has(n) && nombresAusentes.has(n),
+                );
+                this.empleadosPendientesHoy = nombresEmpleados.filter(
+                  (n) => !nombresConEntrada.has(n) && !nombresAusentes.has(n),
+                );
+                this.cargandoResumenEquipo = false;
+              },
+              error: () => {
+                // Si falla, no bloquea el resumen: simplemente no se descuenta a nadie por ausencia justificada.
+                this.empleadosIniciadosHoy = nombresEmpleados.filter((n) => nombresConEntrada.has(n));
+                this.empleadosAusentesHoy = [];
+                this.empleadosPendientesHoy = nombresEmpleados.filter((n) => !nombresConEntrada.has(n));
+                this.cargandoResumenEquipo = false;
+              },
+            });
           },
           error: () => {
             this.empleadosIniciadosHoy = [];
+            this.empleadosAusentesHoy = [];
             this.empleadosPendientesHoy = [];
             this.cargandoResumenEquipo = false;
           },

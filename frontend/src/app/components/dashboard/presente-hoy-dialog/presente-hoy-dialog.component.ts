@@ -7,6 +7,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { EmpleadoService } from '../../../services/empleado.service';
 import { ReportesService, AsistenciaReporte } from '../../../services/reportes.service';
+import { SolicitudService } from '../../../services/solicitud.service';
 import { DetalleCumplimientoDialogComponent } from '../../reportes/reportes.component';
 
 interface EmpleadoHoy {
@@ -70,6 +71,20 @@ interface EmpleadoHoy {
           </ul>
           <p class="sin-datos" *ngIf="pendientes.length === 0">Todos los empleados ya marcaron</p>
         </mat-tab>
+
+        <mat-tab [label]="'De permiso/vacaciones (' + ausentes.length + ')'" *ngIf="ausentes.length > 0">
+          <ul class="lista-empleados" *ngIf="ausentes.length > 0">
+            <li
+              *ngFor="let empleado of ausentes"
+              [class.cargando-fila]="cargandoHistorialId === empleado.id"
+              (click)="verHistorial(empleado)"
+            >
+              <mat-icon class="icono-ausente" *ngIf="cargandoHistorialId !== empleado.id">event_busy</mat-icon>
+              <mat-spinner *ngIf="cargandoHistorialId === empleado.id" diameter="18"></mat-spinner>
+              {{ empleado.nombre }}
+            </li>
+          </ul>
+        </mat-tab>
       </mat-tab-group>
     </mat-dialog-content>
 
@@ -129,6 +144,12 @@ interface EmpleadoHoy {
       width: 20px;
       height: 20px;
     }
+    .icono-ausente {
+      color: #6b7d94;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
     .sin-datos {
       text-align: center;
       color: #999;
@@ -145,6 +166,7 @@ interface EmpleadoHoy {
 export class PresenteHoyDialogComponent implements OnInit {
   presentes: EmpleadoHoy[] = [];
   pendientes: EmpleadoHoy[] = [];
+  ausentes: EmpleadoHoy[] = [];
   cargando = true;
   cargandoHistorialId: number | null = null;
 
@@ -152,6 +174,7 @@ export class PresenteHoyDialogComponent implements OnInit {
     public dialogRef: MatDialogRef<PresenteHoyDialogComponent>,
     private empleadoService: EmpleadoService,
     private reportesService: ReportesService,
+    private solicitudService: SolicitudService,
     private dialog: MatDialog,
   ) {}
 
@@ -170,7 +193,11 @@ export class PresenteHoyDialogComponent implements OnInit {
     this.cargando = true;
     this.empleadoService.obtenerTodos().subscribe({
       next: (response) => {
-        const empleados = Array.isArray(response.data) ? response.data : [response.data];
+        // Quienes marcan en reloj biométrico físico (solo_tramites) nunca tendrán
+        // entrada en la app: no tiene sentido contarlos como "pendientes" de marcar.
+        const empleados = (Array.isArray(response.data) ? response.data : [response.data]).filter(
+          (e: any) => !e.solo_tramites,
+        );
         const lista: EmpleadoHoy[] = empleados.map((e: any) => ({
           id: e.id,
           nombre: `${e.nombre} ${e.apellido}`,
@@ -179,6 +206,7 @@ export class PresenteHoyDialogComponent implements OnInit {
         if (lista.length === 0) {
           this.presentes = [];
           this.pendientes = [];
+          this.ausentes = [];
           this.cargando = false;
           return;
         }
@@ -191,12 +219,29 @@ export class PresenteHoyDialogComponent implements OnInit {
             const nombresConEntrada = new Set(
               registros.filter((r) => r.tipo === 'asistencia' && r.entrada).map((r) => r.empleado),
             );
-            this.presentes = lista.filter((e) => nombresConEntrada.has(e.nombre)).sort(porNombre);
-            this.pendientes = lista.filter((e) => !nombresConEntrada.has(e.nombre)).sort(porNombre);
-            this.cargando = false;
+            this.solicitudService.obtenerAusentesHoy().subscribe({
+              next: (ausentes) => {
+                const nombresAusentes = new Set(ausentes.map((a) => a.nombre_completo));
+                this.presentes = lista.filter((e) => nombresConEntrada.has(e.nombre)).sort(porNombre);
+                this.ausentes = lista
+                  .filter((e) => !nombresConEntrada.has(e.nombre) && nombresAusentes.has(e.nombre))
+                  .sort(porNombre);
+                this.pendientes = lista
+                  .filter((e) => !nombresConEntrada.has(e.nombre) && !nombresAusentes.has(e.nombre))
+                  .sort(porNombre);
+                this.cargando = false;
+              },
+              error: () => {
+                this.presentes = lista.filter((e) => nombresConEntrada.has(e.nombre)).sort(porNombre);
+                this.ausentes = [];
+                this.pendientes = lista.filter((e) => !nombresConEntrada.has(e.nombre)).sort(porNombre);
+                this.cargando = false;
+              },
+            });
           },
           error: () => {
             this.presentes = [];
+            this.ausentes = [];
             this.pendientes = lista.sort(porNombre);
             this.cargando = false;
           },
@@ -204,6 +249,7 @@ export class PresenteHoyDialogComponent implements OnInit {
       },
       error: () => {
         this.presentes = [];
+        this.ausentes = [];
         this.pendientes = [];
         this.cargando = false;
       },
