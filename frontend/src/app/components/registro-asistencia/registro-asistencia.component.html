@@ -172,6 +172,7 @@
           <div *ngIf="pausaActiva" class="pausa-activa-chip">
             <mat-icon>pause_circle</mat-icon>
             <span>Pausa activa: <strong>{{ pausaActiva.tipo_pausa }}</strong></span>
+            <span class="pausa-activa-contador">{{ tiempoPausaActiva }}</span>
             <button type="button" (click)="finalizarPausa()" [disabled]="cargando" class="pausa-resume" title="Reanudar">
               <mat-icon>play_arrow</mat-icon>
             </button>

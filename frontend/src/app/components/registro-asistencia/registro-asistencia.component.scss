@@ -695,6 +695,11 @@ $superficie: #182d19;
     color: $verde-claro;
   }
 
+  .pausa-activa-contador {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+
   .pausa-resume {
     margin-left: auto;
     width: 28px;

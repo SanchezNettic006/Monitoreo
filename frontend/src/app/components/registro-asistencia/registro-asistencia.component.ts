@@ -65,6 +65,10 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
   tiempoTranscurrido = '00:00:00';
   intervalId: any = null;
 
+  // Cronómetro en vivo de la pausa activa
+  tiempoPausaActiva = '00:00';
+  intervalIdPausa: any = null;
+
   // Horas extras
   horaExtraActiva: HoraExtraResponse | null = null;
   tiempoHoraExtra = '00:00:00';
@@ -195,7 +199,7 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
         this.totalPausas = parseFloat(response.total);
 
         // Identificar pausa activa
-        this.pausaActiva = this.pausas.find(p => p.estado === 'pausa_activa') || null;
+        this.establecerPausaActiva(this.pausas.find(p => p.estado === 'pausa_activa') || null);
         this.guardarSnapshotLocal();
       },
       error: (error) => {
@@ -496,7 +500,7 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
     this.cargando = true;
     this.asistenciaService.iniciarPausa(this.registroHoy.id, tipo).subscribe({
       next: (response: any) => {
-        this.pausaActiva = response.pausa;
+        this.establecerPausaActiva(response.pausa);
         this.pausas.push(response.pausa);
         this.snackBar.open(`✅ Pausa ${tipo} iniciada`, 'Cerrar', { duration: 2000 });
         this.cargando = false;
@@ -518,7 +522,7 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
     this.cargando = true;
     this.asistenciaService.finalizarPausa(this.registroHoy.id).subscribe({
       next: (response: any) => {
-        this.pausaActiva = null;
+        this.establecerPausaActiva(null);
         this.totalPausas = response.total_pausas;
         this.snackBar.open(`✅ Pausa finalizada (${this.formatearDuracion(response.pausa.duracion)})`, 'Cerrar', { duration: 2000 });
         this.cargarPausas(); // Recargar lista
@@ -637,6 +641,47 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
     if (this.intervalIdHoraExtra) {
       clearInterval(this.intervalIdHoraExtra);
     }
+    if (this.intervalIdPausa) {
+      clearInterval(this.intervalIdPausa);
+    }
+  }
+
+  /**
+   * Único punto donde se asigna pausaActiva: arranca o detiene su cronómetro en vivo.
+   */
+  private establecerPausaActiva(pausa: PausaAsistencia | null): void {
+    this.pausaActiva = pausa;
+
+    if (this.intervalIdPausa) {
+      clearInterval(this.intervalIdPausa);
+      this.intervalIdPausa = null;
+    }
+
+    if (!pausa) {
+      this.tiempoPausaActiva = '00:00';
+      return;
+    }
+
+    this.actualizarCronometroPausa();
+    this.intervalIdPausa = setInterval(() => {
+      this.actualizarCronometroPausa();
+    }, 1000);
+  }
+
+  private actualizarCronometroPausa(): void {
+    if (!this.pausaActiva) return;
+
+    const inicio = new Date(this.pausaActiva.hora_inicio);
+    const ahora = new Date();
+    const diffMs = Math.max(0, ahora.getTime() - inicio.getTime());
+
+    const horas = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutos = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    const segundos = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+    this.tiempoPausaActiva = horas > 0
+      ? `${this.pad(horas)}:${this.pad(minutos)}:${this.pad(segundos)}`
+      : `${this.pad(minutos)}:${this.pad(segundos)}`;
   }
 
   // ==================== MÉTODOS PARA HORAS EXTRAS ====================
@@ -942,7 +987,7 @@ export class RegistroAsistenciaComponent implements OnInit, OnDestroy {
 
       this.registroHoy = snapshot.registroHoy;
       this.estado = snapshot.estado;
-      this.pausaActiva = snapshot.pausaActiva;
+      this.establecerPausaActiva(snapshot.pausaActiva);
       this.totalPausas = snapshot.totalPausas ?? 0;
 
       if (this.registroHoy && this.estado === 'activo' && this.registroHoy.hora_entrada) {
