@@ -71,6 +71,12 @@ export class Empleado {
   @Column({ default: false })
   solo_tramites!: boolean;
 
+  // false para quien no trabaja sábados (líderes/admin): el sábado no cuenta
+  // al calcular días de vacaciones/permisos. true (default) para el resto,
+  // donde el sábado cuenta como día completo.
+  @Column({ default: true })
+  trabaja_sabado!: boolean;
+
   @Column()
   usuario_id!: number;
 

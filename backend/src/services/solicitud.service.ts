@@ -42,17 +42,21 @@ export class SolicitudService {
   /**
    * Días que corresponde descontar por un rango de fechas, para cualquier
    * tipo de trámite (vacaciones, permiso, cita médica, etc.), según la regla
-   * de la empresa (domingo no cuenta, sábado medio día, asueto/feriado del
-   * calendario tampoco cuenta, un "medio día" del calendario cuenta 0.5 sin
-   * importar el día de la semana). Se usa tanto para calcular en vivo
-   * mientras el empleado elige fechas, como para fijar el valor real al
-   * crear la solicitud — nunca se confía en un número escrito a mano.
+   * de la empresa (domingo no cuenta, asueto/feriado del calendario tampoco
+   * cuenta, un "medio día" del calendario cuenta 0.5 sin importar el día de
+   * la semana; el sábado cuenta día completo salvo para quien tiene
+   * trabaja_sabado=false, para quien no cuenta). Se usa tanto para calcular
+   * en vivo mientras el empleado elige fechas, como para fijar el valor real
+   * al crear la solicitud — nunca se confía en un número escrito a mano.
    */
   async calcularDiasSolicitud(empleadoId: number, fechaInicio: string, fechaFin: string): Promise<number> {
-    const diasEspeciales = await this.diaCalendarioRepository.find({
-      where: { fecha: Between(fechaInicio, fechaFin) },
-      relations: ['empleadosExceptuados'],
-    });
+    const [diasEspeciales, empleado] = await Promise.all([
+      this.diaCalendarioRepository.find({
+        where: { fecha: Between(fechaInicio, fechaFin) },
+        relations: ['empleadosExceptuados'],
+      }),
+      this.empleadoRepository.findOne({ where: { id: empleadoId } }),
+    ]);
 
     const noExceptuado = (d: DiaCalendario) => !d.empleadosExceptuados?.some((e) => e.id === empleadoId);
     const fechasFeriado = new Set(
@@ -62,7 +66,13 @@ export class SolicitudService {
       diasEspeciales.filter((d) => d.tipo === 'medio_dia' && noExceptuado(d)).map((d) => d.fecha),
     );
 
-    return contarDiasVacaciones(fechaInicio, fechaFin, fechasFeriado, fechasMedioDia);
+    return contarDiasVacaciones(
+      fechaInicio,
+      fechaFin,
+      fechasFeriado,
+      fechasMedioDia,
+      empleado?.trabaja_sabado ?? true,
+    );
   }
 
   /**
