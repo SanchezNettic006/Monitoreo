@@ -75,7 +75,7 @@ export class AsistenciaService {
         .where('id IN (:...ids)', { ids: horasExtraSinVincular.map((he) => he.id) })
         .execute();
 
-      const sumaDuracion = horasExtraSinVincular.reduce((sum, he) => sum + (he.duracion || 0), 0);
+      const sumaDuracion = horasExtraSinVincular.reduce((sum, he) => sum + (Number(he.duracion) || 0), 0);
       if (sumaDuracion > 0) {
         recordGuardado.horas_extra = sumaDuracion;
         await this.recordRepository.save(recordGuardado);
@@ -394,7 +394,7 @@ export class AsistenciaService {
       where: { record: { id: recordId }, estado: EstadoPausa.FINALIZADA },
     });
 
-    const totalDuracion = totalPausas.reduce((sum, p) => sum + (p.duracion || 0), 0);
+    const totalDuracion = totalPausas.reduce((sum, p) => sum + (Number(p.duracion) || 0), 0);
     record.total_pausas = totalDuracion;
     await this.recordRepository.save(record);
 
@@ -416,7 +416,7 @@ export class AsistenciaService {
 
     const totalPausas = pausas
       .filter((p) => p.duracion)
-      .reduce((sum, p) => sum + (p.duracion || 0), 0);
+      .reduce((sum, p) => sum + (Number(p.duracion) || 0), 0);
 
     return {
       pausas,
