@@ -85,13 +85,11 @@ class MostrarErrorAlEnviar implements ErrorStateMatcher {
               </mat-form-field>
 
               <!-- Los días ya no se escriben a mano en ningún tipo de trámite: se
-                   calculan solos a partir del rango de fechas (domingo no cuenta,
-                   sábado medio día, asueto/feriado no cuenta) — así nunca quedan
-                   descuadrados con las fechas elegidas. -->
+                   calculan solos a partir del rango de fechas, según la regla de
+                   la empresa — así nunca quedan descuadrados con las fechas elegidas. -->
               <mat-form-field appearance="fill" class="full-width">
                 <mat-label>Dias Solicitados</mat-label>
                 <input matInput type="text" [value]="calculandoDias ? 'Calculando...' : formulario.get('dias_solicitados')?.value" readonly />
-                <mat-hint align="end">Calculado: domingo no cuenta, sábado medio día, asueto no cuenta</mat-hint>
               </mat-form-field>
             </div>
 
