@@ -19,6 +19,15 @@ export class DescansoService {
     const ultimoDia = new Date(anio, mesNum, 0).getDate();
     const fechaFin = `${anio}-${String(mesNum).padStart(2, '0')}-${String(ultimoDia).padStart(2, '0')}`;
 
+    return this.listarPorDepartamentosEnRango(departamentoIds, fechaInicio, fechaFin);
+  }
+
+  /** Igual que listarPorDepartamentos, pero para el año completo (vista anual del calendario) */
+  async listarPorDepartamentosDelAnio(departamentoIds: number[] | undefined, anio: number) {
+    return this.listarPorDepartamentosEnRango(departamentoIds, `${anio}-01-01`, `${anio}-12-31`);
+  }
+
+  private async listarPorDepartamentosEnRango(departamentoIds: number[] | undefined, fechaInicio: string, fechaFin: string) {
     const query = this.descansoRepository
       .createQueryBuilder('descanso')
       .leftJoinAndSelect('descanso.empleado', 'empleado')

@@ -23,10 +23,21 @@
       </mat-select>
     </mat-form-field>
 
-    <div class="mes-selector">
+    <div class="vista-toggle">
+      <button type="button" [class.activo]="vista === 'mes'" (click)="cambiarVista('mes')">Mes</button>
+      <button type="button" [class.activo]="vista === 'anio'" (click)="cambiarVista('anio')">Año</button>
+    </div>
+
+    <div class="mes-selector" *ngIf="vista === 'mes'">
       <button mat-icon-button (click)="cambiarMes(-1)"><mat-icon>chevron_left</mat-icon></button>
       <span class="mes-actual">{{ nombreMes }} {{ anio }}</span>
       <button mat-icon-button (click)="cambiarMes(1)"><mat-icon>chevron_right</mat-icon></button>
+    </div>
+
+    <div class="mes-selector" *ngIf="vista === 'anio'">
+      <button mat-icon-button (click)="cambiarAnio(-1)"><mat-icon>chevron_left</mat-icon></button>
+      <span class="mes-actual">{{ anio }}</span>
+      <button mat-icon-button (click)="cambiarAnio(1)"><mat-icon>chevron_right</mat-icon></button>
     </div>
   </div>
 
@@ -34,7 +45,8 @@
     No hay empleados en tu equipo para asignarles descanso.
   </p>
 
-  <ng-container *ngIf="empleadoSeleccionadoId && !cargando">
+  <!-- Vista Mes: calendario normal a todo lo ancho -->
+  <ng-container *ngIf="empleadoSeleccionadoId && !cargando && vista === 'mes'">
     <div class="dias-semana">
       <span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sa</span><span>Do</span>
     </div>
@@ -52,4 +64,30 @@
       </div>
     </div>
   </ng-container>
+
+  <!-- Vista Año: mosaico compacto estilo GitHub (53 semanas x 7 días) -->
+  <div class="mosaico-anio-wrapper" *ngIf="empleadoSeleccionadoId && !cargando && vista === 'anio'">
+    <div class="mosaico-anio">
+      <div class="mosaico-labels-mes">
+        <span
+          *ngFor="let semana of semanasAnio; let i = index"
+          class="mosaico-label-mes"
+          [style.grid-column]="i + 1"
+        >{{ labelMesDeSemana(i) }}</span>
+      </div>
+      <div class="mosaico-grid">
+        <div class="mosaico-semana" *ngFor="let semana of semanasAnio">
+          <div
+            *ngFor="let celda of semana"
+            class="mosaico-celda"
+            [class.vacio]="!celda.fecha"
+            [class.trabaja]="celda.fecha && !celda.descansa"
+            [class.descanso]="celda.fecha && celda.descansa"
+            [title]="celda.fecha || ''"
+            (click)="onClickCeldaAnio(celda)"
+          ></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

@@ -4,15 +4,26 @@ import { descansoService } from '@services/descanso.service';
 import { OperationalError } from '@middleware/errorHandler';
 
 export class DescansoController {
-  // GET /api/descansos?mes=YYYY-MM
+  // GET /api/descansos?mes=YYYY-MM  o  GET /api/descansos?anio=YYYY
   async listar(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const mes = String(req.query.mes || '');
-      if (!/^\d{4}-\d{2}$/.test(mes)) {
-        throw new OperationalError(400, 'Parámetro mes inválido, se espera YYYY-MM');
-      }
+      const mes = req.query.mes ? String(req.query.mes) : undefined;
+      const anio = req.query.anio ? String(req.query.anio) : undefined;
 
-      const descansos = await descansoService.listarPorDepartamentos(req.departamentoId, mes);
+      let descansos;
+      if (mes) {
+        if (!/^\d{4}-\d{2}$/.test(mes)) {
+          throw new OperationalError(400, 'Parámetro mes inválido, se espera YYYY-MM');
+        }
+        descansos = await descansoService.listarPorDepartamentos(req.departamentoId, mes);
+      } else if (anio) {
+        if (!/^\d{4}$/.test(anio)) {
+          throw new OperationalError(400, 'Parámetro anio inválido, se espera YYYY');
+        }
+        descansos = await descansoService.listarPorDepartamentosDelAnio(req.departamentoId, Number(anio));
+      } else {
+        throw new OperationalError(400, 'Se requiere el parámetro mes (YYYY-MM) o anio (YYYY)');
+      }
 
       return res.status(200).json({
         exitoso: true,

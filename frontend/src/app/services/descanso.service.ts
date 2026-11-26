@@ -38,6 +38,13 @@ export class DescansoService {
       .pipe(map((r) => r.data || []));
   }
 
+  /** Descansos del equipo en un año completo, para la vista anual del calendario */
+  listarPorAnio(anio: number): Observable<DescansoEmpleado[]> {
+    return this.http
+      .get<{ exitoso: boolean; data: DescansoEmpleado[] }>(`${this.apiUrl}?anio=${anio}`)
+      .pipe(map((r) => r.data || []));
+  }
+
   crear(empleadoId: number, fecha: string): Observable<DescansoEmpleado> {
     return this.http
       .post<{ exitoso: boolean; data: DescansoEmpleado }>(this.apiUrl, { empleado_id: empleadoId, fecha })
