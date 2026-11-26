@@ -14,8 +14,8 @@ export class CalendarioController {
         throw new OperationalError(400, 'Fecha, tipo y nombre son requeridos');
       }
 
-      if (tipo !== 'festivo' && tipo !== 'no_laborable') {
-        throw new OperationalError(400, "Tipo inválido, debe ser 'festivo' o 'no_laborable'");
+      if (tipo !== 'festivo' && tipo !== 'no_laborable' && tipo !== 'medio_dia') {
+        throw new OperationalError(400, "Tipo inválido, debe ser 'festivo', 'no_laborable' o 'medio_dia'");
       }
 
       const dia = await calendarioService.crearDia(

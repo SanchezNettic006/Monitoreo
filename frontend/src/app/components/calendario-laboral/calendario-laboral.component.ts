@@ -50,7 +50,11 @@ interface MesCalendario {
       <mat-radio-group [(ngModel)]="tipo" class="tipo-group">
         <mat-radio-button value="festivo">Festivo</mat-radio-button>
         <mat-radio-button value="no_laborable">No laborable</mat-radio-button>
+        <mat-radio-button value="medio_dia">Medio día</mat-radio-button>
       </mat-radio-group>
+      <p class="medio-dia-hint" *ngIf="tipo === 'medio_dia'">
+        Día laborable normal para asistencia; solo cuenta medio día (0.5) si alguien pide vacaciones ese día.
+      </p>
 
       <div class="excepciones-section">
         <p class="excepciones-titulo">
@@ -77,7 +81,8 @@ interface MesCalendario {
   styles: [`
     .fecha-info { color: #666; font-size: 13px; margin: 0 0 12px; }
     .campo-completo { width: 100%; }
-    .tipo-group { display: flex; gap: 16px; margin: 8px 0 16px; }
+    .tipo-group { display: flex; gap: 16px; margin: 8px 0 4px; flex-wrap: wrap; }
+    .medio-dia-hint { font-size: 12px; color: #888; margin: 0 0 16px; }
     .excepciones-section { margin-top: 8px; }
     .excepciones-titulo { font-size: 13px; font-weight: 600; color: #333; margin: 0 0 4px; display: flex; flex-direction: column; gap: 2px; }
     .excepciones-hint { font-size: 12px; font-weight: 400; color: #888; }

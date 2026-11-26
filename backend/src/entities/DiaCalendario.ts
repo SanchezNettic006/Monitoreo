@@ -1,7 +1,9 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from 'typeorm';
 import { Empleado } from './Empleado';
 
-export type TipoDiaCalendario = 'festivo' | 'no_laborable';
+// 'medio_dia': cuenta 0.5 día de vacaciones en vez de 1 (ej. 24 y 31 de
+// diciembre) — ver SolicitudService.calcularDiasSolicitud
+export type TipoDiaCalendario = 'festivo' | 'no_laborable' | 'medio_dia';
 
 // Día especial global del calendario laboral (aplica a todos los empleados,
 // salvo los listados en `empleadosExceptuados`, para quienes ese día se

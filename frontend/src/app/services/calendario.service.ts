@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-export type TipoDiaCalendario = 'festivo' | 'no_laborable';
+export type TipoDiaCalendario = 'festivo' | 'no_laborable' | 'medio_dia';
 
 export interface DiaCalendario {
   id: number;

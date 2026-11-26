@@ -43,9 +43,10 @@ export class SolicitudService {
    * Días que corresponde descontar por un rango de fechas, para cualquier
    * tipo de trámite (vacaciones, permiso, cita médica, etc.), según la regla
    * de la empresa (domingo no cuenta, sábado medio día, asueto/feriado del
-   * calendario tampoco cuenta). Se usa tanto para calcular en vivo mientras
-   * el empleado elige fechas, como para fijar el valor real al crear la
-   * solicitud — nunca se confía en un número escrito a mano.
+   * calendario tampoco cuenta, un "medio día" del calendario cuenta 0.5 sin
+   * importar el día de la semana). Se usa tanto para calcular en vivo
+   * mientras el empleado elige fechas, como para fijar el valor real al
+   * crear la solicitud — nunca se confía en un número escrito a mano.
    */
   async calcularDiasSolicitud(empleadoId: number, fechaInicio: string, fechaFin: string): Promise<number> {
     const diasEspeciales = await this.diaCalendarioRepository.find({
@@ -53,13 +54,15 @@ export class SolicitudService {
       relations: ['empleadosExceptuados'],
     });
 
+    const noExceptuado = (d: DiaCalendario) => !d.empleadosExceptuados?.some((e) => e.id === empleadoId);
     const fechasFeriado = new Set(
-      diasEspeciales
-        .filter((d) => !d.empleadosExceptuados?.some((e) => e.id === empleadoId))
-        .map((d) => d.fecha),
+      diasEspeciales.filter((d) => d.tipo !== 'medio_dia' && noExceptuado(d)).map((d) => d.fecha),
+    );
+    const fechasMedioDia = new Set(
+      diasEspeciales.filter((d) => d.tipo === 'medio_dia' && noExceptuado(d)).map((d) => d.fecha),
     );
 
-    return contarDiasVacaciones(fechaInicio, fechaFin, fechasFeriado);
+    return contarDiasVacaciones(fechaInicio, fechaFin, fechasFeriado, fechasMedioDia);
   }
 
   /**

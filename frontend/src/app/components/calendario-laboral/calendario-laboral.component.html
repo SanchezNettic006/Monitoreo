@@ -6,6 +6,7 @@
     <div class="leyenda">
       <span class="leyenda-item"><span class="dot festivo"></span> Día festivo</span>
       <span class="leyenda-item"><span class="dot no-laborable"></span> Día no laborable</span>
+      <span class="leyenda-item"><span class="dot medio-dia"></span> Medio día (vacaciones)</span>
     </div>
 
     <div class="anio-selector">
@@ -28,6 +29,7 @@
           [class.vacio]="!dia"
           [class.festivo]="dia?.diaEspecial?.tipo === 'festivo'"
           [class.no-laborable]="dia?.diaEspecial?.tipo === 'no_laborable'"
+          [class.medio-dia]="dia?.diaEspecial?.tipo === 'medio_dia'"
           [class.con-excepciones]="!!dia?.diaEspecial?.empleadosExceptuados?.length"
           [title]="tituloCelda(dia)"
           (click)="onClickDia(dia)"

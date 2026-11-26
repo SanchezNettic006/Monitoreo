@@ -314,9 +314,12 @@ export class ReportesService {
     const empleados = await queryEmpleados.getMany();
 
     // Usamos strings YYYY-MM-DD para comparar contra la columna 'date', evitando
-    // que TypeORM reformatee un Date con la zona horaria local y desplace el día
+    // que TypeORM reformatee un Date con la zona horaria local y desplace el día.
+    // 'medio_dia' (24/31 dic, etc.) queda fuera: sigue siendo un día laborable
+    // normal para efectos de asistencia — solo cuenta medio día al pedir
+    // vacaciones (ver SolicitudService.calcularDiasSolicitud).
     const diasEspeciales = await this.diaCalendarioRepository.find({
-      where: { fecha: Between(fechaInicio, fechaFin) },
+      where: { fecha: Between(fechaInicio, fechaFin), tipo: In(['festivo', 'no_laborable']) },
       relations: ['empleadosExceptuados'],
     });
 
@@ -667,7 +670,7 @@ export class ReportesService {
       .getMany();
 
     const diasEspeciales = await this.diaCalendarioRepository.find({
-      where: { fecha: Between(fechaInicio, fechaFin) },
+      where: { fecha: Between(fechaInicio, fechaFin), tipo: In(['festivo', 'no_laborable']) },
       relations: ['empleadosExceptuados'],
     });
 
