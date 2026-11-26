@@ -97,8 +97,12 @@
             class="barra"
             *ngFor="let barra of barrasSemana"
             [style.grid-column]="(barra.colIni + 1) + ' / ' + (barra.colFin + 2)"
+            [title]="barra.titulo"
           >
-            <span class="barra-titulo">{{ barra.titulo }}</span>
+            <span class="barra-texto">
+              <span class="barra-nombre">{{ barra.nombre }}</span>
+              <span class="barra-tipo">{{ barra.tipo }}</span>
+            </span>
             <span class="barra-rango">{{ barra.rango }}</span>
           </div>
         </div>

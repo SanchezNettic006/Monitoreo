@@ -22,6 +22,8 @@ interface DiaSemana {
 
 interface BarraSemana {
   titulo: string;
+  tipo: string;
+  nombre: string;
   colIni: number;
   colFin: number;
   rango: string;
@@ -344,8 +346,15 @@ export class DashboardComponent implements OnInit {
       const colIni = dias.findIndex((d) => d.fecha === fechas[0]);
       const colFin = dias.findIndex((d) => d.fecha === fechas[fechas.length - 1]);
       if (colIni === -1 || colFin === -1) continue;
+      // El backend arma el título como "Tipo - Nombre Apellido"; se separa para
+      // mostrar el nombre como texto principal (lo que realmente importa ver aquí).
+      const separador = titulo.indexOf(' - ');
+      const tipo = separador >= 0 ? titulo.slice(0, separador) : titulo;
+      const nombre = separador >= 0 ? titulo.slice(separador + 3) : '';
       barras.push({
         titulo: titulo.replace(' - ', ' · '),
+        tipo,
+        nombre,
         colIni,
         colFin,
         rango: this.formatearRangoDias(fechas[0], fechas[fechas.length - 1]),

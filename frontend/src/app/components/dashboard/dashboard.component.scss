@@ -444,10 +444,24 @@
   gap: 10px;
   overflow: hidden;
 
-  .barra-titulo {
+  .barra-texto {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .barra-nombre {
     font-size: 13px;
     font-weight: 600;
     color: #dbe4ff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .barra-tipo {
+    font-size: 10px;
+    color: #9fb0e8;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
