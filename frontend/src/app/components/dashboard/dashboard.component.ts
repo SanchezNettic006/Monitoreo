@@ -216,7 +216,7 @@ export class DashboardComponent implements OnInit {
         // El líder solo supervisa; no debe contarse a sí mismo en el conteo de asistencia de su equipo.
         // Tampoco a quienes marcan en reloj biométrico físico (nunca tendrán entrada en la app).
         const empleados = todosEmpleados.filter(
-          (e: any) => e.usuario_id !== this.currentUser?.id && !e.solo_tramites,
+          (e: any) => e.usuario_id !== this.currentUser?.id && !e.solo_tramites && e.estado !== 'inactivo',
         );
         const nombresEmpleados = empleados.map((e: any) => `${e.nombre} ${e.apellido}`);
         this.totalEmpleadosEquipo = nombresEmpleados.length;

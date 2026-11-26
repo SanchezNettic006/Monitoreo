@@ -196,7 +196,7 @@ export class PresenteHoyDialogComponent implements OnInit {
         // Quienes marcan en reloj biométrico físico (solo_tramites) nunca tendrán
         // entrada en la app: no tiene sentido contarlos como "pendientes" de marcar.
         const empleados = (Array.isArray(response.data) ? response.data : [response.data]).filter(
-          (e: any) => !e.solo_tramites,
+          (e: any) => !e.solo_tramites && e.estado !== 'inactivo',
         );
         const lista: EmpleadoHoy[] = empleados.map((e: any) => ({
           id: e.id,
