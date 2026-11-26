@@ -10,6 +10,7 @@ import { TramitesDashboardComponent } from './components/tramites/tramites-dashb
 import { CalendarioLaboralComponent } from './components/calendario-laboral/calendario-laboral.component';
 import { MisHorasComponent } from './components/mis-horas/mis-horas.component';
 import { MiEquipoComponent } from './components/mi-equipo/mi-equipo.component';
+import { CalendarioEquipoComponent } from './components/mi-equipo/calendario-equipo/calendario-equipo.component';
 import { HorasExtrasComponent } from './components/horas-extras/horas-extras.component';
 import { ProyectosComponent } from './components/proyectos/proyectos.component';
 import { PanelGeneralComponent } from './components/panel-general/panel-general.component';
@@ -29,6 +30,7 @@ export const routes: Routes = [
   { path: 'asistencia', component: RegistroAsistenciaComponent, canActivate: [authGuard, noSoloTramitesGuard] },
   { path: 'mis-horas', component: MisHorasComponent, canActivate: [authGuard, noSoloTramitesGuard] },
   { path: 'mi-equipo', component: MiEquipoComponent, canActivate: [authGuard, liderGuard] },
+  { path: 'mi-equipo-calendario', component: CalendarioEquipoComponent, canActivate: [authGuard, liderGuard] },
   { path: 'proyectos', component: ProyectosComponent, canActivate: [authGuard, adminOLiderGuard] },
   { path: 'horas-extras', component: HorasExtrasComponent, canActivate: [authGuard, adminOLiderGuard] },
   { path: 'reportes', component: ReportesComponent, canActivate: [authGuard, adminGuard] },

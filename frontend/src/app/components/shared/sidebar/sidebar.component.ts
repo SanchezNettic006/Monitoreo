@@ -57,6 +57,7 @@ export class SidebarComponent implements OnInit {
         { label: 'Registro', icono: 'place', ruta: '/asistencia', ocultoSiSoloTramites: true },
         { label: 'Mis horas', icono: 'schedule', ruta: '/mis-horas', ocultoSiSoloTramites: true },
         { label: 'Mi equipo', icono: 'groups', ruta: '/mi-equipo', roles: ['lider'] },
+        { label: 'Calendario', icono: 'event_available', ruta: '/mi-equipo-calendario', roles: ['lider'] },
         { label: 'Calendario laboral', icono: 'calendar_month', ruta: '/calendario', roles: ['admin'] },
       ],
     },
