@@ -107,6 +107,94 @@
   padding: 24px 0;
 }
 
+.contenido {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.calendario-col {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+
+.resumen-col {
+  flex: 0 0 300px;
+}
+
+.resumen-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 18px 20px;
+
+  h3 {
+    margin: 0 0 2px;
+    font-size: 15px;
+    color: #222;
+  }
+
+  .resumen-periodo {
+    margin: 0 0 14px;
+    font-size: 12px;
+    color: #999;
+    text-transform: capitalize;
+  }
+
+  .resumen-vacio {
+    color: #999;
+    font-size: 13px;
+    margin: 0;
+  }
+}
+
+.resumen-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 420px;
+  overflow-y: auto;
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+    color: #333;
+    text-transform: capitalize;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .quitar {
+    border: none;
+    background: transparent;
+    color: #999;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    border-radius: 50%;
+
+    &:hover {
+      background: #f0f0f0;
+      color: #d32f2f;
+    }
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
 .dias-semana {
   display: grid;
   grid-template-columns: repeat(7, 1fr);

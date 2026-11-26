@@ -27,6 +27,8 @@ const NOMBRES_MES_CORTO = [
   'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
 ];
 
+const NOMBRES_DIA_SEMANA = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
 @Component({
   selector: 'app-calendario-equipo',
   standalone: true,
@@ -88,6 +90,46 @@ export class CalendarioEquipoComponent implements OnInit {
 
   get nombreMes(): string {
     return this.nombresMeses[this.mes - 1];
+  }
+
+  get nombreEmpleadoSeleccionado(): string {
+    return this.empleados.find((e) => e.id === this.empleadoSeleccionadoId)?.nombre || '';
+  }
+
+  /** Descansos marcados del empleado seleccionado, en el período que se esté viendo (mes o año), ordenados */
+  get descansosEmpleadoActual(): DescansoEmpleado[] {
+    if (!this.empleadoSeleccionadoId) return [];
+    const fuente = this.vista === 'mes' ? this.descansosDelMes : this.descansosDelAnio;
+    return fuente
+      .filter((d) => d.empleado_id === this.empleadoSeleccionadoId)
+      .slice()
+      .sort((a, b) => a.fecha.localeCompare(b.fecha));
+  }
+
+  formatearFechaCorta(fecha: string): string {
+    const [anio, mes, dia] = fecha.slice(0, 10).split('-').map(Number);
+    const fechaLocal = new Date(anio, mes - 1, dia);
+    return `${NOMBRES_DIA_SEMANA[fechaLocal.getDay()]} ${dia} ${NOMBRES_MES_CORTO[mes - 1]}`;
+  }
+
+  quitarDescanso(descanso: DescansoEmpleado): void {
+    if (this.guardando) return;
+    this.guardando = true;
+    this.descansoService.eliminar(descanso.id).subscribe({
+      next: () => {
+        if (this.vista === 'mes') {
+          this.descansosDelMes = this.descansosDelMes.filter((d) => d.id !== descanso.id);
+        } else {
+          this.descansosDelAnio = this.descansosDelAnio.filter((d) => d.id !== descanso.id);
+          this.construirMosaicoAnio();
+        }
+        this.guardando = false;
+      },
+      error: (error) => {
+        this.snackBar.open(error.error?.mensaje || 'Error al quitar el descanso', 'Cerrar', { duration: 3000 });
+        this.guardando = false;
+      },
+    });
   }
 
   cambiarVista(vista: 'mes' | 'anio'): void {

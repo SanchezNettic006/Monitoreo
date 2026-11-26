@@ -45,48 +45,72 @@
     No hay empleados en tu equipo para asignarles descanso.
   </p>
 
-  <!-- Vista Mes: calendario normal a todo lo ancho -->
-  <ng-container *ngIf="empleadoSeleccionadoId && !cargando && vista === 'mes'">
-    <div class="dias-semana">
-      <span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sa</span><span>Do</span>
-    </div>
-    <div class="dias-grid">
-      <div
-        *ngFor="let dia of dias"
-        class="dia-celda"
-        [class.vacio]="!dia"
-        [class.trabaja]="dia && !descansoDeCelda(dia.fecha)"
-        [class.descanso]="dia && !!descansoDeCelda(dia.fecha)"
-        [title]="dia ? (descansoDeCelda(dia.fecha) ? 'Descansa este día — clic para marcar que trabaja' : 'Trabaja este día — clic para marcar descanso') : ''"
-        (click)="onClickDia(dia)"
-      >
-        {{ dia?.numero || '' }}
-      </div>
-    </div>
-  </ng-container>
-
-  <!-- Vista Año: mosaico compacto estilo GitHub (53 semanas x 7 días) -->
-  <div class="mosaico-anio-wrapper" *ngIf="empleadoSeleccionadoId && !cargando && vista === 'anio'">
-    <div class="mosaico-anio">
-      <div class="mosaico-labels-mes">
-        <span
-          *ngFor="let semana of semanasAnio; let i = index"
-          class="mosaico-label-mes"
-          [style.grid-column]="i + 1"
-        >{{ labelMesDeSemana(i) }}</span>
-      </div>
-      <div class="mosaico-grid">
-        <div class="mosaico-semana" *ngFor="let semana of semanasAnio">
-          <div
-            *ngFor="let celda of semana"
-            class="mosaico-celda"
-            [class.vacio]="!celda.fecha"
-            [class.trabaja]="celda.fecha && !celda.descansa"
-            [class.descanso]="celda.fecha && celda.descansa"
-            [title]="celda.fecha || ''"
-            (click)="onClickCeldaAnio(celda)"
-          ></div>
+  <div class="contenido" *ngIf="empleadoSeleccionadoId && !cargando">
+    <div class="calendario-col">
+      <!-- Vista Mes: calendario normal -->
+      <ng-container *ngIf="vista === 'mes'">
+        <div class="dias-semana">
+          <span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sa</span><span>Do</span>
         </div>
+        <div class="dias-grid">
+          <div
+            *ngFor="let dia of dias"
+            class="dia-celda"
+            [class.vacio]="!dia"
+            [class.trabaja]="dia && !descansoDeCelda(dia.fecha)"
+            [class.descanso]="dia && !!descansoDeCelda(dia.fecha)"
+            [title]="dia ? (descansoDeCelda(dia.fecha) ? 'Descansa este día — clic para marcar que trabaja' : 'Trabaja este día — clic para marcar descanso') : ''"
+            (click)="onClickDia(dia)"
+          >
+            {{ dia?.numero || '' }}
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Vista Año: mosaico compacto estilo GitHub (53 semanas x 7 días) -->
+      <div class="mosaico-anio-wrapper" *ngIf="vista === 'anio'">
+        <div class="mosaico-anio">
+          <div class="mosaico-labels-mes">
+            <span
+              *ngFor="let semana of semanasAnio; let i = index"
+              class="mosaico-label-mes"
+              [style.grid-column]="i + 1"
+            >{{ labelMesDeSemana(i) }}</span>
+          </div>
+          <div class="mosaico-grid">
+            <div class="mosaico-semana" *ngFor="let semana of semanasAnio">
+              <div
+                *ngFor="let celda of semana"
+                class="mosaico-celda"
+                [class.vacio]="!celda.fecha"
+                [class.trabaja]="celda.fecha && !celda.descansa"
+                [class.descanso]="celda.fecha && celda.descansa"
+                [title]="celda.fecha || ''"
+                (click)="onClickCeldaAnio(celda)"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="resumen-col">
+      <div class="resumen-card">
+        <h3>Descansos de {{ nombreEmpleadoSeleccionado }}</h3>
+        <p class="resumen-periodo">{{ vista === 'mes' ? (nombreMes + ' ' + anio) : anio }}</p>
+
+        <p class="resumen-vacio" *ngIf="descansosEmpleadoActual.length === 0">
+          Sin días de descanso marcados en este período.
+        </p>
+
+        <ul class="resumen-lista" *ngIf="descansosEmpleadoActual.length > 0">
+          <li *ngFor="let descanso of descansosEmpleadoActual">
+            <span>{{ formatearFechaCorta(descanso.fecha) }}</span>
+            <button type="button" class="quitar" title="Quitar descanso" (click)="quitarDescanso(descanso)">
+              <mat-icon>close</mat-icon>
+            </button>
+          </li>
+        </ul>
       </div>
     </div>
   </div>
