@@ -434,6 +434,15 @@ export async function inicializarColumnas() {
       } else {
         console.log('✅ Columna solo_tramites ya existe');
       }
+
+      const columnaTrabajaSabadoExiste = await queryRunner.hasColumn('empleado', 'trabaja_sabado');
+      if (!columnaTrabajaSabadoExiste) {
+        console.log('📋 Agregando columna trabaja_sabado...');
+        await queryRunner.query(`ALTER TABLE empleado ADD COLUMN trabaja_sabado BOOLEAN NOT NULL DEFAULT true`);
+        console.log('✅ Columna trabaja_sabado agregada exitosamente');
+      } else {
+        console.log('✅ Columna trabaja_sabado ya existe');
+      }
     }
 
     console.log('🔧 Verificando columna proyecto_trabajado en record_asistencia...');

@@ -15,6 +15,8 @@ export interface Empleado {
   dias_vacaciones_anuales?: number;
   /** true si marca entrada/salida en un reloj biométrico físico, no por esta app (solo usa Trámites) */
   solo_tramites?: boolean;
+  /** false para quien no trabaja sábados (líderes/admin): el sábado no cuenta al pedir vacaciones/permisos */
+  trabaja_sabado?: boolean;
   usuario_id: number;
   departamento_id: number;
   usuario?: {

@@ -114,6 +114,9 @@ export class FormularioEmpleadoComponent {
       nuevaPassword: ['', this.editando ? [Validators.minLength(6)] : []],
       // Marca entrada/salida en reloj biométrico físico de oficina, no por esta app
       solo_tramites: [this.data?.solo_tramites ?? false],
+      // false para quien no trabaja sábados (líderes/admin): el sábado no cuenta
+      // al calcular días de vacaciones/permisos
+      trabaja_sabado: [this.data?.trabaja_sabado ?? true],
     });
   }
 
