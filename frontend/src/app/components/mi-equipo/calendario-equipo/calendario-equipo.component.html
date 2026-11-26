@@ -4,10 +4,16 @@
   </div>
 
   <p class="descripcion">
-    Marca los días de descanso rotativo de cada persona (ej. quien trabaja domingo y
-    descansa otro día entre semana). Ese día no contará como falta ni aparecerá como
-    "aún no ha iniciado" en los resúmenes de asistencia.
+    Por defecto todos los días están marcados como "trabaja". Haz clic en un día para
+    quitarle la marca y señalar que ese día descansa (ej. quien trabaja domingo y
+    descansa otro día entre semana). Un día sin marcar no contará como falta ni
+    aparecerá como "aún no ha iniciado" en los resúmenes de asistencia.
   </p>
+
+  <div class="leyenda">
+    <span class="leyenda-item"><span class="dot trabaja"></span> Trabaja</span>
+    <span class="leyenda-item"><span class="dot descanso"></span> Descansa</span>
+  </div>
 
   <div class="controles">
     <mat-form-field appearance="fill" class="selector-empleado">
@@ -37,7 +43,9 @@
         *ngFor="let dia of dias"
         class="dia-celda"
         [class.vacio]="!dia"
+        [class.trabaja]="dia && !descansoDeCelda(dia.fecha)"
         [class.descanso]="dia && !!descansoDeCelda(dia.fecha)"
+        [title]="dia ? (descansoDeCelda(dia.fecha) ? 'Descansa este día — clic para marcar que trabaja' : 'Trabaja este día — clic para marcar descanso') : ''"
         (click)="onClickDia(dia)"
       >
         {{ dia?.numero || '' }}
