@@ -10,6 +10,8 @@ import { AsignacionProyecto } from '@entities/AsignacionProyecto';
 import { config } from '@config/env';
 import { enumerarFechas, formatFechaLocal, hoyLocal } from '@utils/fecha.utils';
 import { SolicitudService } from '@services/solicitud.service';
+import { descansoService } from '@services/descanso.service';
+import { DescansoEmpleado } from '@entities/DescansoEmpleado';
 import { OperationalError } from '@middleware/errorHandler';
 import path from 'path';
 import { Between, In } from 'typeorm';
@@ -644,7 +646,14 @@ export class ReportesService {
    */
   private async clasificarDias(empleados: Empleado[], fechaInicio: string, fechaFin: string) {
     if (fechaInicio > fechaFin || empleados.length === 0) {
-      return { empleados, fechasDelRango: [] as string[], fechasConRegistro: new Set<string>(), diasEspeciales: [] as DiaCalendario[], solicitudesAprobadas: [] as SolicitudTramite[] };
+      return {
+        empleados,
+        fechasDelRango: [] as string[],
+        fechasConRegistro: new Set<string>(),
+        diasEspeciales: [] as DiaCalendario[],
+        solicitudesAprobadas: [] as SolicitudTramite[],
+        descansos: [] as DescansoEmpleado[],
+      };
     }
 
     const empleadoIds = empleados.map((e) => e.id);
@@ -689,14 +698,20 @@ export class ReportesService {
         .map((he) => `${he.usuario.empleado!.id}-${formatFechaLocal(he.hora_inicio)}`),
     ]);
     const fechasDelRango = enumerarFechas(fechaInicio, fechaFin);
+    const descansos = await descansoService.obtenerEnRango(empleadoIds, fechaInicio, fechaFin);
 
-    return { empleados, fechasDelRango, fechasConRegistro, diasEspeciales, solicitudesAprobadas };
+    return { empleados, fechasDelRango, fechasConRegistro, diasEspeciales, solicitudesAprobadas, descansos };
   }
 
   private estadoDelDia(
     empleadoId: number,
     fecha: string,
-    datos: { fechasConRegistro: Set<string>; diasEspeciales: DiaCalendario[]; solicitudesAprobadas: SolicitudTramite[] },
+    datos: {
+      fechasConRegistro: Set<string>;
+      diasEspeciales: DiaCalendario[];
+      solicitudesAprobadas: SolicitudTramite[];
+      descansos: DescansoEmpleado[];
+    },
   ): 'reportado' | 'pendiente' | 'justificado' {
     if (datos.fechasConRegistro.has(`${empleadoId}-${fecha}`)) return 'reportado';
 
@@ -718,6 +733,10 @@ export class ReportesService {
       return fecha >= inicio && fecha <= fin;
     });
     if (solicitud) return 'justificado';
+
+    // Descanso rotativo marcado por el líder (ej. PLIN trabaja domingo y rota sus descansos)
+    const descanso = datos.descansos.find((d) => d.empleado_id === empleadoId && formatFechaLocal(d.fecha) === fecha);
+    if (descanso) return 'justificado';
 
     return 'pendiente';
   }

@@ -363,6 +363,24 @@ export async function inicializarColumnas() {
         console.log('✅ Tabla lider_departamento_extra ya existe');
       }
 
+      const tablaDescansoEmpleadoExiste = await queryRunner.hasTable('descanso_empleado');
+      if (!tablaDescansoEmpleadoExiste) {
+        console.log('⚠️ Creando tabla descanso_empleado...');
+        await queryRunner.query(`
+          CREATE TABLE descanso_empleado (
+            id SERIAL PRIMARY KEY,
+            empleado_id INTEGER NOT NULL REFERENCES empleado(id) ON DELETE CASCADE,
+            fecha DATE NOT NULL,
+            creado_por_usuario_id INTEGER NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE (empleado_id, fecha)
+          )
+        `);
+        console.log('✅ Tabla descanso_empleado creada exitosamente');
+      } else {
+        console.log('✅ Tabla descanso_empleado ya existe');
+      }
+
       const tablaSolicitudExiste = await queryRunner.hasTable('solicitud_tramite');
       if (tablaSolicitudExiste) {
         const columnaFotoSolicitudExiste = await queryRunner.hasColumn('solicitud_tramite', 'url_foto');

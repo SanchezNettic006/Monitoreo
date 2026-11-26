@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -9,6 +11,7 @@ import { CalendarioService, EventoProximo } from '../../services/calendario.serv
 import { EmpleadoService } from '../../services/empleado.service';
 import { HoraExtraService } from '../../services/hora-extra.service';
 import { SolicitudService, Solicitud, SaldoVacaciones } from '../../services/solicitud.service';
+import { DescansoService } from '../../services/descanso.service';
 import { AusenciasDepartamentoDialogComponent } from './ausencias-departamento-dialog/ausencias-departamento-dialog.component';
 import { PresenteHoyDialogComponent } from './presente-hoy-dialog/presente-hoy-dialog.component';
 
@@ -70,6 +73,7 @@ export class DashboardComponent implements OnInit {
     private empleadoService: EmpleadoService,
     private horaExtraService: HoraExtraService,
     private solicitudService: SolicitudService,
+    private descansoService: DescansoService,
     private dialog: MatDialog,
     private router: Router,
   ) {}
@@ -238,25 +242,22 @@ export class DashboardComponent implements OnInit {
               registros.filter((r) => r.tipo === 'asistencia' && r.entrada).map((r) => r.empleado),
             );
 
-            this.solicitudService.obtenerAusentesHoy().subscribe({
-              next: (ausentes) => {
-                const nombresAusentes = new Set(ausentes.map((a) => a.nombre_completo));
-                this.empleadosIniciadosHoy = nombresEmpleados.filter((n) => nombresConEntrada.has(n));
-                this.empleadosAusentesHoy = nombresEmpleados.filter(
-                  (n) => !nombresConEntrada.has(n) && nombresAusentes.has(n),
-                );
-                this.empleadosPendientesHoy = nombresEmpleados.filter(
-                  (n) => !nombresConEntrada.has(n) && !nombresAusentes.has(n),
-                );
-                this.cargandoResumenEquipo = false;
-              },
-              error: () => {
-                // Si falla, no bloquea el resumen: simplemente no se descuenta a nadie por ausencia justificada.
-                this.empleadosIniciadosHoy = nombresEmpleados.filter((n) => nombresConEntrada.has(n));
-                this.empleadosAusentesHoy = [];
-                this.empleadosPendientesHoy = nombresEmpleados.filter((n) => !nombresConEntrada.has(n));
-                this.cargandoResumenEquipo = false;
-              },
+            forkJoin({
+              ausentes: this.solicitudService.obtenerAusentesHoy().pipe(catchError(() => of([]))),
+              descansos: this.descansoService.obtenerDescansosHoy().pipe(catchError(() => of([]))),
+            }).subscribe(({ ausentes, descansos }) => {
+              const nombresAusentes = new Set([
+                ...ausentes.map((a) => a.nombre_completo),
+                ...descansos.map((d) => d.nombre_completo),
+              ]);
+              this.empleadosIniciadosHoy = nombresEmpleados.filter((n) => nombresConEntrada.has(n));
+              this.empleadosAusentesHoy = nombresEmpleados.filter(
+                (n) => !nombresConEntrada.has(n) && nombresAusentes.has(n),
+              );
+              this.empleadosPendientesHoy = nombresEmpleados.filter(
+                (n) => !nombresConEntrada.has(n) && !nombresAusentes.has(n),
+              );
+              this.cargandoResumenEquipo = false;
             });
           },
           error: () => {

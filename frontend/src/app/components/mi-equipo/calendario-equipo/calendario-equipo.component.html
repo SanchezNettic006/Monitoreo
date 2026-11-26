@@ -1,0 +1,43 @@
+<div class="calendario-equipo">
+  <p class="descripcion">
+    Marca los días de descanso rotativo de cada persona (ej. quien trabaja domingo y
+    descansa otro día entre semana). Ese día no contará como falta ni aparecerá como
+    "aún no ha iniciado" en los resúmenes de asistencia.
+  </p>
+
+  <div class="controles">
+    <mat-form-field appearance="fill" class="selector-empleado">
+      <mat-label>Empleado</mat-label>
+      <mat-select [(ngModel)]="empleadoSeleccionadoId" (selectionChange)="cambiarEmpleado()">
+        <mat-option *ngFor="let empleado of empleados" [value]="empleado.id">{{ empleado.nombre }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div class="mes-selector">
+      <button mat-icon-button (click)="cambiarMes(-1)"><mat-icon>chevron_left</mat-icon></button>
+      <span class="mes-actual">{{ nombreMes }} {{ anio }}</span>
+      <button mat-icon-button (click)="cambiarMes(1)"><mat-icon>chevron_right</mat-icon></button>
+    </div>
+  </div>
+
+  <p class="sin-empleados" *ngIf="!cargando && empleados.length === 0">
+    No hay empleados en tu equipo para asignarles descanso.
+  </p>
+
+  <ng-container *ngIf="empleadoSeleccionadoId && !cargando">
+    <div class="dias-semana">
+      <span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sa</span><span>Do</span>
+    </div>
+    <div class="dias-grid">
+      <div
+        *ngFor="let dia of dias"
+        class="dia-celda"
+        [class.vacio]="!dia"
+        [class.descanso]="dia && !!descansoDeCelda(dia.fecha)"
+        (click)="onClickDia(dia)"
+      >
+        {{ dia?.numero || '' }}
+      </div>
+    </div>
+  </ng-container>
+</div>

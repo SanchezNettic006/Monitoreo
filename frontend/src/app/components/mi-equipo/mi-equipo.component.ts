@@ -14,6 +14,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { GestionarSolicitudesComponent } from '../tramites/gestionar-solicitudes/gestionar-solicitudes.component';
 import { HorasExtrasComponent } from '../horas-extras/horas-extras.component';
+import { CalendarioEquipoComponent } from './calendario-equipo/calendario-equipo.component';
 import { FotosDialogComponent } from '../reportes/reportes.component';
 import { ReportesService, AsistenciaReporte } from '../../services/reportes.service';
 import { EmpleadoService, Empleado } from '../../services/empleado.service';
@@ -38,6 +39,7 @@ import { ExportarExcelService } from '../../services/exportar-excel.service';
     MatDividerModule,
     GestionarSolicitudesComponent,
     HorasExtrasComponent,
+    CalendarioEquipoComponent,
   ],
   templateUrl: './mi-equipo.component.html',
   styleUrl: './mi-equipo.component.scss',

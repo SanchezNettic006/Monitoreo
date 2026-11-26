@@ -16,6 +16,7 @@ import notificacionRoutes from '@routes/notificacion.routes';
 import calendarioRoutes from '@routes/calendario.routes';
 import grupoRoutes from '@routes/grupo.routes';
 import telegramRoutes from '@routes/telegram.routes';
+import descansoRoutes from '@routes/descanso.routes';
 
 const app: Express = express();
 
@@ -45,6 +46,7 @@ app.use('/api/notificaciones', notificacionRoutes);
 app.use('/api/calendario', calendarioRoutes);
 app.use('/api/grupos', grupoRoutes);
 app.use('/api/telegram', telegramRoutes);
+app.use('/api/descansos', descansoRoutes);
 
 // Health check
 app.get('/health', (req: Request, res: Response) => {

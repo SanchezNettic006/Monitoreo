@@ -8,7 +8,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { EmpleadoService } from '../../../services/empleado.service';
 import { ReportesService, AsistenciaReporte } from '../../../services/reportes.service';
 import { SolicitudService } from '../../../services/solicitud.service';
+import { DescansoService } from '../../../services/descanso.service';
 import { DetalleCumplimientoDialogComponent } from '../../reportes/reportes.component';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 interface EmpleadoHoy {
   id: number;
@@ -72,7 +75,7 @@ interface EmpleadoHoy {
           <p class="sin-datos" *ngIf="pendientes.length === 0">Todos los empleados ya marcaron</p>
         </mat-tab>
 
-        <mat-tab [label]="'De permiso/vacaciones (' + ausentes.length + ')'" *ngIf="ausentes.length > 0">
+        <mat-tab [label]="'No les toca hoy (' + ausentes.length + ')'" *ngIf="ausentes.length > 0">
           <ul class="lista-empleados" *ngIf="ausentes.length > 0">
             <li
               *ngFor="let empleado of ausentes"
@@ -175,6 +178,7 @@ export class PresenteHoyDialogComponent implements OnInit {
     private empleadoService: EmpleadoService,
     private reportesService: ReportesService,
     private solicitudService: SolicitudService,
+    private descansoService: DescansoService,
     private dialog: MatDialog,
   ) {}
 
@@ -219,24 +223,22 @@ export class PresenteHoyDialogComponent implements OnInit {
             const nombresConEntrada = new Set(
               registros.filter((r) => r.tipo === 'asistencia' && r.entrada).map((r) => r.empleado),
             );
-            this.solicitudService.obtenerAusentesHoy().subscribe({
-              next: (ausentes) => {
-                const nombresAusentes = new Set(ausentes.map((a) => a.nombre_completo));
-                this.presentes = lista.filter((e) => nombresConEntrada.has(e.nombre)).sort(porNombre);
-                this.ausentes = lista
-                  .filter((e) => !nombresConEntrada.has(e.nombre) && nombresAusentes.has(e.nombre))
-                  .sort(porNombre);
-                this.pendientes = lista
-                  .filter((e) => !nombresConEntrada.has(e.nombre) && !nombresAusentes.has(e.nombre))
-                  .sort(porNombre);
-                this.cargando = false;
-              },
-              error: () => {
-                this.presentes = lista.filter((e) => nombresConEntrada.has(e.nombre)).sort(porNombre);
-                this.ausentes = [];
-                this.pendientes = lista.filter((e) => !nombresConEntrada.has(e.nombre)).sort(porNombre);
-                this.cargando = false;
-              },
+            forkJoin({
+              ausentes: this.solicitudService.obtenerAusentesHoy().pipe(catchError(() => of([]))),
+              descansos: this.descansoService.obtenerDescansosHoy().pipe(catchError(() => of([]))),
+            }).subscribe(({ ausentes, descansos }) => {
+              const nombresAusentes = new Set([
+                ...ausentes.map((a) => a.nombre_completo),
+                ...descansos.map((d) => d.nombre_completo),
+              ]);
+              this.presentes = lista.filter((e) => nombresConEntrada.has(e.nombre)).sort(porNombre);
+              this.ausentes = lista
+                .filter((e) => !nombresConEntrada.has(e.nombre) && nombresAusentes.has(e.nombre))
+                .sort(porNombre);
+              this.pendientes = lista
+                .filter((e) => !nombresConEntrada.has(e.nombre) && !nombresAusentes.has(e.nombre))
+                .sort(porNombre);
+              this.cargando = false;
             });
           },
           error: () => {
